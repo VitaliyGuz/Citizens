@@ -3,11 +3,9 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
-using System.Data.Entity.Migrations;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.ModelBinding;
@@ -86,10 +84,30 @@ namespace Citizens.Controllers.API
             return Updated(precinct);
         }
 
-        
-
         // POST: odata/Precincts
         public async Task<IHttpActionResult> Post(Precinct precinct)
+        {
+            if (precinct.DistrictId == 0)
+            {
+                precinct.DistrictId = 144;
+            }
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            db.Precincts.Add(precinct);
+            await db.SaveChangesAsync();
+
+            return Created(precinct);
+        }
+
+        
+
+        // PATCH: odata/Precincts(5)
+        [AcceptVerbs("PATCH", "MERGE")]
+        [ODataRoute("Precincts")]
+        public async Task<IHttpActionResult> Patch(Precinct precinct)
         {
 
             //Delta<Precinct>() patch = precinct;
@@ -106,90 +124,49 @@ namespace Citizens.Controllers.API
             }
 
 
-
-
-            else
+            //Добавляем или изменяем адреса участков
+            //foreach (var address in precinct.PrecinctAddresses)
+            var array2 = precinct.PrecinctAddresses.ToArray();
+            foreach (var address in array2)
             {
-                Precinct dbEntry = await db.Precincts.FindAsync(precinct.Id);
-                if (dbEntry == null)
-                {
-                    //add
-                    //db.Precincts.Add(precinct);
-                    dbEntry = new Precinct
-                    {
-                        Id = precinct.Id,
-                        CityId = precinct.CityId,
-                        DistrictId = precinct.DistrictId,
-                        House = precinct.House
-                    };
-                    db.Precincts.Add(dbEntry);
+                object[] key = new object[3];
 
+                key[0] = address.CityId;
+                key[1] = address.StreetId;
+                key[2] = address.House;
+                //.Include(a => a.Children.Select( c=> c.ChildRelationshipType));
+                var address1 = address;
+                PrecinctAddress precinctAddress = await db.PrecinctAddresses.Include("City.CityType").Include("Street.StreetType").SingleOrDefaultAsync(i => i.CityId == address1.CityId && i.StreetId == address1.StreetId && i.House == address1.House);
+                if (precinctAddress == null)
+                {
+                    //db.PrecinctAddresses.Add(address);
+                    precinctAddress = new PrecinctAddress
+                    {
+                        CityId = address.CityId,
+                        StreetId = address.StreetId,
+                        House = address.House,
+                        PrecinctId = address.PrecinctId
+                    };
+                    db.PrecinctAddresses.Add(precinctAddress);
                 }
                 else
                 {
-                    //update
-                    dbEntry.Id = precinct.Id;
-                    dbEntry.CityId = precinct.CityId;
-                    dbEntry.DistrictId = precinct.DistrictId;
-                    dbEntry.House = precinct.House;
-
-                    //Удаляем адреса
-                    var array1 = db.PrecinctAddresses.Where(pa => pa.PrecinctId == dbEntry.Id).ToArray();
-                    foreach (var address in array1)
-                    //foreach (PrecinctAddress address in dbEntry.PrecinctAddresses)
-                    {                        
-                        if (precinct.PrecinctAddresses.Count(c => c.CityId == address.CityId && c.StreetId == address.StreetId && c.House == address.House) == 0)
-                            db.PrecinctAddresses.Remove(address);
-                    }
-                }
-
-                //Добавляем или изменяем адреса участков
-                //foreach (var address in precinct.PrecinctAddresses)
-                var array2 = precinct.PrecinctAddresses.ToArray();
-                foreach (var address in array2)
-                {
-                    object[] key = new object[3];
-
-                    key[0] = address.CityId;
-                    key[1] = address.StreetId;
-                    key[2] = address.House;
-                    //.Include(a => a.Children.Select( c=> c.ChildRelationshipType));
-                    var address1 = address;
-                    PrecinctAddress precinctAddress = await db.PrecinctAddresses.Include("City.CityType").Include("Street.StreetType").SingleOrDefaultAsync(i => i.CityId == address1.CityId && i.StreetId == address1.StreetId && i.House == address1.House);
-                    if (precinctAddress == null)
+                    if (precinctAddress.PrecinctId == address.PrecinctId)
                     {
-                        //db.PrecinctAddresses.Add(address);
-                        precinctAddress = new PrecinctAddress
-                        {
-                            CityId = address.CityId,
-                            StreetId = address.StreetId,
-                            House = address.House,
-                            PrecinctId = address.PrecinctId
-                        };
-                        db.PrecinctAddresses.Add(precinctAddress);
+                            
+
                     }
                     else
                     {
-                        if (precinctAddress.PrecinctId == address.PrecinctId)
-                        {
-                            precinctAddress.CityId = address.CityId;
-                            precinctAddress.StreetId = address.StreetId;
-                            precinctAddress.House = address.House;
-                            precinctAddress.PrecinctId = address.PrecinctId;
-
-                        }
-                        else
-                        {
-                            textConflict = textConflict + "Адреса " + precinctAddress.City.CityType.Name + precinctAddress.City.Name +
-                                             ", " + precinctAddress.Street.StreetType.Name + precinctAddress.Street.Name +
-                                             "," + precinctAddress.House + " вже знаходиться в дільниці " +
-                                             precinctAddress.PrecinctId.ToString() + "\r\n";
-                            
-                        }
+                        textConflict = textConflict + "Адреса " + precinctAddress.City.CityType.Name + precinctAddress.City.Name +
+                                       ", " + precinctAddress.Street.StreetType.Name + precinctAddress.Street.Name +
+                                       "," + precinctAddress.House + " вже знаходиться в дільниці " +
+                                       precinctAddress.PrecinctId.ToString() + "\r\n";
 
                     }
 
                 }
+
             }
 
             if (textConflict != "")
@@ -202,51 +179,6 @@ namespace Citizens.Controllers.API
             await db.SaveChangesAsync();
 
             return Created(precinct);
-        }
-
-        // PATCH: odata/Precincts(5)
-        [AcceptVerbs("PATCH", "MERGE")]
-        [ODataRoute("Precincts")]
-        public async Task<IHttpActionResult> Patch(Delta<Precinct> patch)
-        {
-            var dbEntry = patch.GetEntity();
-            Validate(dbEntry);
-
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            //Precinct precinct = await db.Precincts.FindAsync(dbEntry.Id);
-            //if (precinct == null)
-            //{
-                //return NotFound();
-                db.Precincts.AddOrUpdate(dbEntry);
-                await db.SaveChangesAsync();
-                return Created(dbEntry);
-            //}
-            //else
-            //{
-            //    patch.Patch(precinct);
-            //}
-
-            //try
-            //{
-            //    await db.SaveChangesAsync();
-            //}
-            //catch (DbUpdateConcurrencyException)
-            //{
-            //    if (!PrecinctExists(dbEntry.Id))
-            //    {
-            //        return NotFound();
-            //    }
-            //    else
-            //    {
-            //        throw;
-            //    }
-            //}
-
-            //return Updated(precinct);
         }
 
         // DELETE: odata/Precincts(5)
