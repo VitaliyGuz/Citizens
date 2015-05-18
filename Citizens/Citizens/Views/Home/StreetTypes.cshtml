@@ -1,0 +1,62 @@
+﻿<html>
+<head>
+    <title>Типи вулиць</title>
+
+    <script src="~/Scripts/Citizen/Services/streetTypesServices.js"></script>
+    <script src="~/Scripts/Citizen/Controllers/streetTypesControllers.js"></script>
+
+</head>
+
+<body ng-app="streetTypesControllers" ng-controller="streetTypesController">
+    <div class="container" style="margin-top:35px;">
+        <h3>Тип вулиць</h3>
+        <h5 ng-show="loading">Завантаження... <i class="fa fa-refresh fa-spin"></i></h5>
+        <hr>
+        <div class="alert alert-danger" ng-show="errorMsg.length>0">
+            <strong>Error!</strong> {{errorMsg}}
+        </div>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Дії</th>
+                    <th>№</th>
+                    <th>Тип вулиці</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="streetType in streetTypes">
+                    <td>
+                        <button class="btn" ng-click="edit(streetType.Id,$index)">
+                            <span class="glyphicon glyphicon-pencil"></span>  Змінити
+                        </button>
+                        <button class="btn btn-danger" ng-click="delete(streetType.Id,$index)">
+                            <span class="glyphicon glyphicon-remove"></span>  Видалити
+                        </button>
+                    </td>
+                    <td>{{ $index + 1 }}</td>
+                    <td>{{ streetType.Name }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <hr>
+        <button class="btn btn-success" ng-click="newStreetType()">
+            <span class="glyphicon glyphicon-plus"></span>  Створити
+        </button>
+    </div>
+    <div class="container">
+        <hr>
+        <form class="col-lg-6" ng-submit="submit()" ng-show="isEdit||isNew">
+            <div class="form-inline">
+
+                <label>Тип вулиці</label>
+                <input ng-model="streetType.Name" type="text" class="form-control" required>
+                <button type="submit" class="btn btn-success">
+                    <span class="glyphicon glyphicon-save"></span> Зберегти
+                    <i ng-show="loading" class="fa fa-refresh fa-spin"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

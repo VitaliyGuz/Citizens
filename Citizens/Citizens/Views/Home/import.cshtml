@@ -1,0 +1,33 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Upload</h2>
+<div>
+    @using (Html.BeginForm("Upload", "ImportData", FormMethod.Post, new { enctype = "multipart/form-data" }))
+    {
+        <input name="uploadFile" type="file" /><input type="submit" value="UploadFile" title="Upload file" onclick="return CheckFileName();" />
+    }
+</div>
+
+
+Upload File Here
+
+
+<script type="text/javascript">
+    function CheckFileName() {
+        var fileName = document.getElementById("uploadFile").value;
+        
+        if (fileName === "") {
+            alert("Browse to upload a valid File with xls / xlsx extension");
+            return false;
+        }
+        else if (fileName.split(".")[1].toUpperCase() === "XLS" || fileName.split(".")[1].toUpperCase() === "XLSX")
+            return true;
+        else {
+            alert("File with " + fileName.split(".")[1] + " is invalid. Upload a validfile with xls / xlsx extensions");
+            return false;
+        }
+        return true;
+    }
+</script>

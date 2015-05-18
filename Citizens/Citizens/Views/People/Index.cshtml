@@ -1,0 +1,172 @@
+﻿@section Scripts{
+
+    <script src="~/Scripts/Citizen/Services/peopleServices.js"></script>
+    <script src="~/Scripts/Citizen/Controllers/peopleControllers.js"></script>
+    <script src="~/Scripts/Citizen/Services/streetServices.js"></script>
+    <script src="~/Scripts/Citizen/Services/cityServices.js"></script>
+    <script src="~/Scripts/Citizen/Services/precinctServises.js"></script>
+}
+<div ng-app="peopleControllers" ng-controller="listController">
+
+    @Html.Partial("Alert")
+    <h3>Картотека громадян</h3>
+    <h5 ng-show="loading">Завантаження... <i class="fa fa-refresh fa-spin"></i></h5>
+    <hr>
+    <div class="row form-horizontal">
+        <div class="col-md-3">
+            <input ng-model="filterQuery.LastName" type="text" ng-change="onFilterChange()" class="form-control" placeholder="Фільтр по прізвищу">
+            @*<label>по:</label>
+                <select ng-model="queryBy" ng-change="query={}" class="form-control">
+                    <option value="LastName">Прізвище</option>
+                    <option value="FirstName">Ім'я</option>
+                    <option value="FirstName">По-батькові</option>
+                    <option value="City.Name">Населений пункт</option>
+                    <option value="Street.Name">Вулиця</option>
+                </select>*@
+        </div>
+        <div class="col-md-2">
+            <input ng-model="filterQuery.FirstName" type="text" ng-change="onFilterChange()" class="form-control" placeholder="Фільтр по імені">
+        </div>
+        <div class="col-md-2">
+            <input ng-model="filterQuery.MidleName" type="text" ng-change="onFilterChange()" class="form-control" placeholder="Фільтр по по-батькові">
+        </div>
+    </div>
+    <hr>
+    <div class="row container">
+        <button ng-click="addNew()" class="btn btn-sm btn-success">
+            <span class="glyphicon glyphicon-plus"></span> Створити
+        </button>
+    </div>
+    <hr>
+    <table class="table table-striped table-condensed">
+        <thead>
+            <tr>
+                <th ng-repeat="thName in tableHead">{{thName}}</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr ng-show="addMode">
+                <td></td>
+                <td ng-include="'editLastName'"></td>
+                <td ng-include="'editFirstName'"></td>
+                <td ng-include="'editMidleName'"></td>
+                <td ng-include="'editDateOfBirth'"></td>
+                <td ng-include="'editGender'"></td>
+                <td ng-include="'editCityId'"></td>
+                <td ng-include="'editStreetId'"></td>
+                <td ng-include="'editHouse'"></td>
+                <td ng-include="'editApartment'"></td>
+                <td ng-include="'editPrecinctId'"></td>
+                <td ng-include="'editBtn'"></td>
+            </tr>
+            <tr dir-paginate="people in peoples | itemsPerPage: pageSize" current-page="currentPage" total-items="totalItems">
+                <td>{{ getIndex($index) }}</td>
+                <td ng-include="getTemplate(people,'LastName')"></td>
+                <td ng-include="getTemplate(people,'FirstName')"></td>
+                <td ng-include="getTemplate(people,'MidleName')"></td>
+                <td ng-include="getTemplate(people,'DateOfBirth')"></td>
+                <td ng-include="getTemplate(people,'Gender')"></td>
+                <td ng-include="getTemplate(people,'CityId')"></td>
+                <td ng-include="getTemplate(people,'StreetId')"></td>
+                <td ng-include="getTemplate(people,'House')"></td>
+                <td ng-include="getTemplate(people,'Apartment')"></td>
+                <td ng-include="getTemplate(people,'PrecinctId')"></td>
+                <td ng-include="getTemplate(people,'Btn')"></td>
+            </tr>
+        </tbody>
+    </table>
+    <hr>
+    @Html.Partial("Pagination")
+
+    <script type="text/ng-template" id="editLastName">
+        <input ng-model="selected.people.LastName" type="text" class="form-control" ng-required="true">
+    </script>
+    <script type="text/ng-template" id="editFirstName">
+        <input ng-model="selected.people.FirstName" type="text" class="form-control" style="width:110px;" required>
+    </script>
+    <script type="text/ng-template" id="editMidleName">
+        <input ng-model="selected.people.MidleName" type="text" class="form-control" style="width:130px;" required>
+    </script>
+    <script type="text/ng-template" id="editDateOfBirth">
+        <input ng-model="selected.DateOfBirth" type="date" style="width:150px;" class="form-control" required>
+    </script>
+    <script type="text/ng-template" id="editGender">
+        <select class="form-control" ng-model="selected.people.Gender" style="width:65px;" required>
+            <option value='' disabled>-Стать-</option>
+            <option value="ж">ж.</option>
+            <option value="ч">ч.</option>
+        </select>
+    </script>
+    <script type="text/ng-template" id="editCityId">
+        <select class="form-control" ng-options="c.Id as c.CityType.Name+' '+c.Name for c in cities"
+                ng-model="selected.people.CityId" style="width:150px;" required>
+            <option value='' disabled>-Населений пункт-</option>
+        </select>
+    </script>
+    <script type="text/ng-template" id="editStreetId">
+        <select class="form-control" ng-options="s.Id as s.StreetType.Name+' '+s.Name for s in streets"
+                ng-model="selected.people.StreetId" style="width:150px;" required>
+            <option value='' disabled>-Вулиця-</option>
+        </select>
+    </script>
+    <script type="text/ng-template" id="editHouse">
+        <input ng-model="selected.people.House" type="text" class="form-control" style="width:50px;" required>
+    </script>
+    <script type="text/ng-template" id="editApartment">
+        <input ng-model="selected.people.Apartment" type="text" class="form-control" style="width:50px;" required>
+    </script>
+    <script type="text/ng-template" id="editPrecinctId">
+        <input ng-model="selected.people.PrecinctId" type="text" class="form-control" style="width:90px;" required>
+    </script>
+    <script type="text/ng-template" id="editBtn">
+        <button ng-click="save()" class="btn btn-xs btn-success" title="Зберегти">
+            <span class="glyphicon glyphicon-save"></span>
+            <i ng-show="saving" class="fa fa-refresh fa-spin"></i>
+        </button>
+        <button class="btn btn-xs btn-success" ng-click="reset()" title="Скасувати">
+            <span class="glyphicon glyphicon-remove"></span>
+        </button>
+    </script>
+
+
+    <script type="text/ng-template" id="displayLastName">
+        <td>{{ people.LastName }}</td>
+    </script>
+    <script type="text/ng-template" id="displayFirstName">
+        <td>{{ people.FirstName }}</td>
+    </script>
+    <script type="text/ng-template" id="displayMidleName">
+        <td>{{ people.MidleName }}</td>
+    </script>
+    <script type="text/ng-template" id="displayDateOfBirth">
+        <td>{{ people.DateOfBirth | date:'dd.MM.yyyy' }}</td>
+    </script>
+    <script type="text/ng-template" id="displayGender">
+        <td>{{ people.Gender }}</td>
+    </script>
+    <script type="text/ng-template" id="displayCityId">
+        <td>{{ people.City.CityType.Name}} {{people.City.Name}}</td>
+    </script>
+    <script type="text/ng-template" id="displayStreetId">
+        <td>{{ people.Street.StreetType.Name }} {{ people.Street.Name }}</td>
+    </script>
+    <script type="text/ng-template" id="displayHouse">
+        <td>{{ people.House }}</td>
+    </script>
+    <script type="text/ng-template" id="displayApartment">
+        <td>{{ people.Apartment }}</td>
+    </script>
+    <script type="text/ng-template" id="displayPrecinctId">
+        <td>{{ people.PrecinctAddress.PrecinctId }}</td>
+    </script>
+    <script type="text/ng-template" id="displayBtn">
+        <td>
+            <button class="btn btn-xs" ng-click="edit(people)" title="Редагувати">
+                <span class="glyphicon glyphicon-edit"></span>
+            </button>
+            <button class="btn btn-xs" ng-click="delete(people)" title="Видалити">
+                <span class="glyphicon glyphicon-trash"></span>
+            </button>
+        </td>
+    </script>
+</div>
