@@ -23,7 +23,7 @@
             </select>
         </div>
         <div class="col-md-6">
-            <button ng-click="addNewPrecinct()" class="btn btn-success">
+            <button ng-click="addNewPrecinct()" class="btn btn-success" ng-disabled="precinctEditing">
                 <span class="glyphicon glyphicon-plus"></span> Створити нову дільницю
             </button>
         </div>
@@ -39,10 +39,8 @@
             <tr dir-paginate="precinct in precincts | filterByFirstChar: query | itemsPerPage: pageSize" current-page="currentPage">
                 <td>{{ getIndex(precinct) + 1 }}</td>
                 <td>{{ precinct.Id }}</td>
-                <td>{{ precinct.City.CityType.Name }} {{ precinct.City.Name }}</td>
-                <td>{{ precinct.Street.StreetType.Name }} {{ precinct.Street.Name }}</td>
-                <td>{{ precinct.House }}</td>
-                <td>{{ precinct.District.Number }}</td>
+                <td>{{ precinct.Street.StreetType.Name }}{{ precinct.Street.Name }}, {{ precinct.House }}, {{ precinct.City.CityType.Name }}{{ precinct.City.Name }}, {{ precinct.City.RegionPart.Name }} р-н.</td>                
+                <td>{{ precinct.District.Id }}</td>
                 <td>
                     <button class="btn btn-xs" ng-click="edit(precinct)" title="Редагувати">
                         <span class="glyphicon glyphicon-edit"></span>
@@ -58,7 +56,7 @@
         </tbody>
     </table>
     <div ng-show="precinctEditing" ng-include="'PrecinctAddresses'"></div>
-    @Html.Partial("Pagination")
+    <div ng-hide="precinctEditing">@Html.Partial("Pagination")</div>
 
     <script type="text/ng-template" id="PrecinctAddresses">
         <div class="container">
@@ -66,14 +64,15 @@
                 <div class="row form-horizontal">
                     <div class="form-group col-lg-2">
                         <label>Дільниця</label>
-                        <input ng-model="selected.precinct.Id" type="text" class="form-control" required>
+                        <input ng-model="selected.precinct.Id" type="text" class="form-control" ng-disabled="!addMode" required>
                     </div>
                     <div class="form-group col-lg-3">
                         <label>Населений пункт</label>
-                        <select class="form-control" ng-options="c.Id as c.CityType.Name +' '+c.Name for c in cities"
-                                ng-model="selected.precinct.CityId">
-                            <option value='' disabled>-Необхідно вибрати-</option>
-                        </select>
+                        @*<select class="form-control" ng-options="c.Id as c.CityType.Name +' '+c.Name for c in cities"
+                                    ng-model="selected.precinct.CityId">
+                                <option value='' disabled>-Необхідно вибрати-</option>
+                            </select>*@
+                        <input type="text" typeahead-on-select="onSelectCity($item, $model, $label,selected.precinct)" ng-model="selected.precinct.City" typeahead="c.Id as c.CityType.Name +' '+c.Name + ' (' + c.RegionPart.Name + ' р-н)' for c in cities | filter: $viewValue| limitTo:10" class="form-control">
                     </div>
                     <div class="form-group col-lg-4">
                         <label>Вулиця</label>
@@ -81,7 +80,7 @@
                                     ng-model="selected.precinct.StreetId">
                                 <option value='' disabled>-Необхідно вибрати-</option>
                             </select>*@
-                        <input type="text" typeahead-on-select="onSelectStreet($item, $model, $label)" ng-model="selected.precinct.Street" typeahead="s.Id as s.StreetType.Name +' '+ s.Name for s in streets | filter: $viewValue| limitTo:10" class="form-control">
+                        <input type="text" typeahead-on-select="onSelectStreet($item, $model, $label,selected.precinct)" ng-model="selected.precinct.Street" typeahead="s.Id as s.StreetType.Name +' '+ s.Name for s in streets | filter: $viewValue| limitTo:10" class="form-control">
                     </div>
                     <div class="form-group col-lg-2">
                         <label>Буд.</label>
@@ -100,7 +99,7 @@
                         <span class="glyphicon glyphicon-save"></span> Зберегти
                         <i ng-show="saving" class="fa fa-refresh fa-spin"></i>
                     </button>
-                    <button class="btn btn-sm btn-success" ng-click="backToList()" title="Повернутися до списку дільниць">
+                    <button type="button" class="btn btn-sm btn-success" ng-click="backToList()" title="Повернутися до списку дільниць">
                         <span class="glyphicon glyphicon-backward"></span> Завершити
                     </button>
                 </div>
@@ -112,17 +111,18 @@
             <div class="row">
                 <form ng-submit="autoCompleteAddresses()">
                     <div class="form-group col-lg-3">
-                        <select class="form-control" ng-options="c.Id as c.CityType.Name +' '+c.Name for c in cities"
-                                ng-model="autocomplete.CityId" required>
-                            <option value='' disabled>-Населений пункт-</option>
-                        </select>
+                        @*<select class="form-control" ng-options="c.Id as c.CityType.Name +' '+c.Name for c in cities"
+                                    ng-model="autocomplete.CityId" required>
+                                <option value='' disabled>-Населений пункт-</option>
+                            </select>*@
+                        <input type="text" ng-change="autocomplete.CityId=0" typeahead-on-select="onSelectCity($item, $model, $label,autocomplete)" ng-model="autocomplete.City" typeahead="c.Id as c.CityType.Name +' '+c.Name + ' (' + c.RegionPart.Name + ' р-н)' for c in cities | filter: $viewValue| limitTo:10" class="form-control" placeholder="Населений пункт" required>
                     </div>
                     <div class="form-group col-lg-3">
                         @*<select class="form-control" ng-options="s.Id as s.StreetType.Name +' '+ s.Name for s in streets"
                                     ng-model="autocomplete.StreetId" required>
                                 <option value='' disabled>-Вулиця-</option>
                             </select>*@
-                        <input type="text" typeahead-on-select="onSelectAutocompleteStreet($item, $model, $label)" ng-model="autocomplete.Street" typeahead="s.Id as s.StreetType.Name +' '+ s.Name for s in streets | filter: $viewValue| limitTo:10" class="form-control" placeholder="Вулиця" required>
+                        <input type="text" ng-change="autocomplete.StreetId=0" typeahead-on-select="onSelectStreet($item, $model, $label,autocomplete)" ng-model="autocomplete.Street" typeahead="s.Id as s.StreetType.Name +' '+ s.Name for s in streets | filter: $viewValue| limitTo:10" class="form-control" placeholder="Вулиця" required>
                     </div>
                     <div class="form-group col-lg-2">
                         <input class="form-control" ng-model="autocomplete.HouseFrom" placeholder="буд. з" required />
@@ -147,6 +147,7 @@
                         <th>Населений пункт</th>
                         <th>Вулиця</th>
                         <th>Буд.</th>
+                        <th ng-hide="!changingPresinct">Нова дільниця</th>
                         <th>
                             <button ng-click="addNewAddress()" class="btn btn-sm btn-success">
                                 <span class="glyphicon glyphicon-plus"></span> Додати адресу
@@ -165,29 +166,52 @@
             <td>{{address.City.CityType.Name}} {{address.City.Name}}</td>
             <td>{{address.Street.StreetType.Name}} {{address.Street.Name}}</td>
             <td>{{address.House}}</td>
+            <td ng-hide="!changingPresinct"></td>
             <td>
                 <button class="btn btn-xs" ng-click="editAddress(address)" title="Редагувати">
                     <span class="glyphicon glyphicon-edit"></span>
+                </button>
+                <button class="btn btn-xs" ng-click="changePrecinct(address)" title="Змінити дільницю">
+                    <span class="glyphicon glyphicon-retweet"></span>
                 </button>
                 <button class="btn btn-xs" ng-click="deleteAddress(address,$index)" title="Видалити">
                     <span class="glyphicon glyphicon-trash"></span>
                 </button>
             </td>
         </script>
+        <script type="text/ng-template" id="changePresinct">
+            <td>{{ $index + 1 }}</td>
+            <td>{{address.City.CityType.Name}} {{address.City.Name}}</td>
+            <td>{{address.Street.StreetType.Name}} {{address.Street.Name}}</td>
+            <td>{{address.House}}</td>
+            <td>
+                <input type="text" typeahead-on-select="onSelectPrecinctNumber($item, $model, $label)" ng-model="newPrecinct" typeahead="p.Id as p.Id for p in precincts | filter: $viewValue| limitTo:10" class="form-control">
+            </td>
+            <td>
+                <button ng-click="saveChangesPrecinct(address,$index)" class="btn btn-sm btn-success" title="Зберегти зміни">
+                    <span class="glyphicon glyphicon-save"></span>
+                    <i ng-show="savingAddress" class="fa fa-refresh fa-spin"></i>
+                </button>
+                <button class="btn btn-sm btn-success" ng-click="resetAddress()" title="Відмінити зміни">
+                    <span class="glyphicon glyphicon-remove"></span>
+                </button>
+            </td>
+        </script>
         <script type="text/ng-template" id="edit">
             <td>{{ $index + 1 }}</td>
             <td>
-                <select class="form-control" ng-options="c.Id as c.CityType.Name +' '+c.Name for c in cities"
-                        ng-model="selected.address.CityId">
-                    <option value='' disabled>-Необхідно вибрати-</option>
-                </select>
+                @*<select class="form-control" ng-options="c.Id as c.CityType.Name +' '+c.Name for c in cities"
+                            ng-model="selected.address.CityId">
+                        <option value='' disabled>-Необхідно вибрати-</option>
+                    </select>*@
+                <input type="text" typeahead-on-select="onSelectCity($item, $model, $label,selected.address)" ng-model="selected.address.City" typeahead="c.Id as c.CityType.Name +' '+c.Name + ' (' + c.RegionPart.Name + ' р-н)' for c in cities | filter: $viewValue| limitTo:10" class="form-control" placeholder="Населений пункт">
             </td>
             <td>
                 @*<select class="form-control" ng-options="s.Id as s.StreetType.Name +' '+ s.Name for s in streets"
                             ng-model="selected.address.StreetId">
                         <option value='' disabled>-Необхідно вибрати-</option>
                     </select>*@
-                <input type="text" typeahead-on-select="onSelectPrecinctAddressStreet($item, $model, $label)" ng-model="selected.address.Street" typeahead="s.Id as s.StreetType.Name +' '+ s.Name for s in streets | filter: $viewValue| limitTo:10" class="form-control" placeholder="Вулиця">
+                <input type="text" typeahead-on-select="onSelectStreet($item, $model, $label,selected.address)" ng-model="selected.address.Street" typeahead="s.Id as s.StreetType.Name +' '+ s.Name for s in streets | filter: $viewValue| limitTo:10" class="form-control" placeholder="Вулиця">
             </td>
             <td><input class="form-control" ng-model="selected.address.House" /></td>
             <td>

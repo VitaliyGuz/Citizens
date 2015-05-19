@@ -3,7 +3,8 @@
 var app = angular.module('appCitizen', []);
 
 app.value('config', {
-        pageSize: 3
+    pageSize: 25, // by default 25
+    pageSizeTabularSection: 10
 });
 
 app.factory('serviceUtil',function(){
@@ -13,9 +14,13 @@ app.factory('serviceUtil',function(){
             if (error.status === 401) {
                 return 'Недостатньо прав для здійснення операції';
             }
-            //if (error.data != null) {
-            //    errMsg = error.data['odata.error'].innererror.message;
-            //}
+            if (error.data != null) {
+                if (angular.isObject(error.data)) {
+                    errMsg = error.data.error.innererror.message;
+                } else {
+                    errMsg = error.data;
+                }
+            }
             if (errMsg == null) {
                 errMsg = error.statusText;
             }
