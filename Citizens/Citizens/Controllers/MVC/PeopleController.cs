@@ -13,5 +13,15 @@ namespace Citizens.Controllers.MVC
         {
             return View();
         }
+
+        public ActionResult ListPeople()
+        {
+            return PartialView();
+        }
+
+        public ActionResult EditPerson()
+        {
+            return PartialView();
+        }
     }
 }

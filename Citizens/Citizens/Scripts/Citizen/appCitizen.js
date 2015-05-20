@@ -41,6 +41,9 @@ app.factory('serviceUtil',function(){
                     destination[prop] = source[prop];
                 }
             }
+        },
+        getAddressKey: function (address) {
+            return { cityId: address.CityId, streetId: address.StreetId, house: address.House.replace('/', '@') };
         }
     };
 });

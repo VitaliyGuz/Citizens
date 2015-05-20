@@ -4,7 +4,7 @@ angular.module("peopleServices", ['ngResource', 'appCitizen']).
     factory("peopleData", ['$resource', 'config', function ($resource, config) {
         var urlOdata = '/odata/People',
             order = '&$orderby=LastName,FirstName,MidleName',
-            expand = '?$expand=City($expand=CityType),Street($expand=StreetType),PrecinctAddress',
+            expand = '?$expand=City($expand=CityType,RegionPart),Street($expand=StreetType),PrecinctAddress',
             paginate = "&$count=true&$skip=:skip&$top=" + config.pageSize;
 
         return $resource('', {},

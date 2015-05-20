@@ -261,7 +261,7 @@
     <Content Include="Views\Account\Register.cshtml" />
     <Content Include="Views\Admin\Index.cshtml" />
     <Content Include="Views\Admin\Users.cshtml" />
-    <Content Include="Views\Home\EditPerson.cshtml" />
+    <Content Include="Views\People\EditPerson.cshtml" />
     <Content Include="Views\City\Index.cshtml" />
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Web.config">
@@ -350,7 +350,7 @@
     <Content Include="Views\Shared\Alert.cshtml" />
     <Content Include="Views\Shared\Pagination.cshtml" />
     <Content Include="Views\Precincts\Index.cshtml" />
-    <Content Include="Views\Home\ListPeople.cshtml" />
+    <Content Include="Views\People\ListPeople.cshtml" />
     <Content Include="Views\RegionPart\Index.cshtml" />
     <Content Include="Views\People\Index.cshtml" />
     <Content Include="Views\City\ListCities.cshtml" />

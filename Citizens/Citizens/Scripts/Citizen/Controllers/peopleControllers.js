@@ -1,170 +1,76 @@
 ﻿'use strict';
 
-var peopleControllers = angular.module('peopleControllers', ['peopleServices', 'streetServices', 'cityServices','precinctServices','angularUtils.directives.dirPagination', 'appCitizen']);
+var peopleModule = angular.module('peopleModule', ['peopleServices', 'streetServices', 'cityServices', 'precinctServices', 'angularUtils.directives.dirPagination', 'appCitizen', 'ngRoute', 'ui.bootstrap']);
 
-peopleControllers.controller("listController", ['$scope', 'peopleData', 'streetData', 'cityData', 'config', 'serviceUtil', '$filter', '$timeout', 'precinctData', 'precinctAddressesData',
-    function ($scope, peopleData, streetData, cityData, config, serviceUtil, $filter, $timeout, precinctData, precinctAddressesData) {
-        var editInd;
+peopleModule.config(['$routeProvider', function ($routeProvider) {
+        $routeProvider.
+            when('/list', {
+                templateUrl: '/People/ListPeople',
+                controller: 'listController'
+            }).
+            when('/new', {
+                templateUrl: '/People/EditPerson',
+                controller: 'editController'
+            }).
+            when('/edit/:id', {
+                templateUrl: '/People/EditPerson',
+                controller: 'editController'
+            }).
+            otherwise({
+                redirectTo : 'list'
+            });
+    }]);
+
+
+peopleModule.controller("listController", ['$rootScope','$scope','$location', 'peopleData', 'config', 'serviceUtil', '$timeout',
+    function ($rootScope, $scope, $location, peopleData, config, serviceUtil, $timeout) {
         $scope.loading = true;
         $scope.saving = false;
 
         $scope.query = {};
 
-        $scope.errorMsg = '';
-        $scope.successMsg = '';
+        $rootScope.errorMsg = '';
+        $rootScope.successMsg = '';
 
-        $scope.currentPage = 1;
+        if (!$rootScope.currentPage) {
+            $rootScope.currentPage = 1;
+        }
         $scope.pageSize = config.pageSize;
         $scope.totalItems = 0;
 
-        $scope.peoples = [];
-        $scope.selected = { people: {} , DateOfBirth:''};
-        $scope.tableHead = ['№', 'Прізвище', "Ім'я", 'По-батькові', 'Дата народж.', 'Стать', 'Нас. пункт', 'Вулиця', 'Буд.', 'Кв.','Дільниця', 'Дії'];
+        $scope.people = [];
+        $scope.tableHead = ['№', 'П.І.Б.', 'Дата народження', 'Адреса','Дільниця', 'Дії'];
 
         $scope.getIndex = function (ind) {
-            return ($scope.currentPage - 1) * config.pageSize + ind + 1;
+            return ($rootScope.currentPage - 1) * config.pageSize + ind + 1;
         }
+        
+        setPeopleOnPage(($rootScope.currentPage - 1) * config.pageSize);
 
-        setPeopleOnPage();
-
-        $scope.loading = true;
-        streetData.query(function (streets) {
-            $scope.streets = streets.value;
-            $scope.loading = false;
-        }, errorHandler);
-
-        $scope.loading = true;
-        cityData.query(function (cities) {
-            $scope.cities = cities.value;
-            $scope.loading = false;
-        }, errorHandler);
-
-        $scope.edit = function (people) {
-            //$scope.errorMsg = '';
-            //editInd = $scope.getIndex(people);
-            peopleData.query({ id: people.Id }, function (res) {
-                $scope.selected.people = res;
-                $scope.selected.DateOfBirth = new Date(res.DateOfBirth);
-                $scope.selected.people.PrecinctId = res.PrecinctAddress.PrecinctId;
-            }, errorHandler);
-        }
+        $scope.edit = function (person) {
+            $location.path('edit/' + person.Id);
+        };
 
         $scope.delete = function (people) {
-            //$scope.errorMsg = '';
             peopleData.remove({ id: people.Id },
                 function () {
-                    //$scope.peoples.splice($scope.getIndex(people), 1);
-                    setPeopleOnPage(($scope.currentPage - 1) * config.pageSize);
+                    setPeopleOnPage(($rootScope.currentPage - 1) * config.pageSize);
                 }, errorHandler);
-        }
-
-        $scope.save = function () {
-            if ($scope.selected.people.PrecinctId == 0) {
-                $scope.errorMsg = 'Не вірний номер дільниці';
-                return;
-            };
-            $scope.saving = true;
-            // todo: factory method
-            var people = {
-                "Id": 0,
-                "LastName": '',
-                "FirstName": '',
-                "MidleName": '',
-                "DateOfBirth": '',
-                "Gender": 0,
-                "CityId": 0,
-                "StreetId": 0,
-                "House": '',
-                "Apartment": 0
-            },
-            // todo: factory method
-            precinctAddress =  {
-                "CityId": 0,
-                "StreetId": 0,
-                "House": '',
-                "PrecinctId": 0
-            };
-            serviceUtil.copyProperties($scope.selected.people, people);
-            serviceUtil.copyProperties(people, precinctAddress);
-            precinctAddress.PrecinctId = $scope.selected.people.PrecinctId;
-            people.DateOfBirth = $filter('date') ($scope.selected.DateOfBirth, 'yyyy-MM-ddT00:00:00');
-            if (people.Apartment == undefined) people.Apartment = null;
-
-            precinctData.getByIdNotExpand({ id: precinctAddress.PrecinctId }, function () {
-                    savePrecinctAddress();
-                }, function () {
-                    precinctData.save({"Id": precinctAddress.PrecinctId}, function () {
-                        savePrecinctAddress();
-                }, errorHandler);
-            });
-
-            function savePrecinctAddress() {
-                var addressKey = { cityId: precinctAddress.CityId, streetId: precinctAddress.StreetId, house: precinctAddress.House };
-                precinctAddressesData.query(addressKey, function (success) {
-                    if(precinctAddress.PrecinctId === success.PrecinctId) {
-                        savePerson();
-                    } else {
-                        precinctAddressesData.changePrecinct(addressKey, precinctAddress, function () {
-                            savePerson();
-                        }, errorHandler);
-                    }
-                }, function () {
-                    precinctAddressesData.save(precinctAddress, function () {
-                        savePerson();
-                    }, errorHandler);
-                });
-            };
-
-            function savePerson() {
-                if ($scope.addMode) {
-                    peopleData.save(people, function () {
-                        setPeopleOnPage(($scope.currentPage - 1) * config.pageSize);
-                        //peopleData.query({ id: newItem.Id }, function (res) {
-                        //$scope.saving = false;
-                        //$scope.peoples.push(res);
-                        // $scope.reset();
-                        //}, errorHandler);
-                    }, errorHandler);
-                } else {
-                    peopleData.update({ id: $scope.selected.people.Id
-                    }, people, function () {
-                        setPeopleOnPage(($scope.currentPage - 1) * config.pageSize);
-                        //peopleData.query({ id: $scope.selected.people.Id }, function (res) {
-                        //$scope.saving = false;
-                        //$scope.peoples[editInd] = res;
-                        //$scope.reset();
-                        //}, errorHandler);
-                    }, errorHandler);
-                }
-            };
         };
 
         $scope.addNew = function () {
-            $scope.addMode = true;
-        };
-
-        $scope.getTemplate = function (people, colName) {
-            if (people.Id === $scope.selected.people.Id) return 'edit' +colName;
-            else return 'display' + colName;
-        };
-
-        $scope.reset = function () {    
-            $scope.addMode = false;
-            $scope.selected.people = {};
-            $scope.selected.DateOfBirth = '';
+            $location.path('new');
         };
 
         function errorHandler(e) {
-            $scope.saving = false;
             $scope.loading = false;
-            $scope.reset();
-            $scope.errorMsg = serviceUtil.getErrorMessage(e);
+            $rootScope.errorMsg = serviceUtil.getErrorMessage(e);
         };
 
         function closeAlertAtTimeout() {
             $timeout(function () {
-                $scope.successMsg = '';
-                $scope.errorMsg = '';
+                $rootScope.successMsg = '';
+                $rootScope.errorMsg = '';
             }, 2000);
         };
 
@@ -175,9 +81,8 @@ peopleControllers.controller("listController", ['$scope', 'peopleData', 'streetD
         });
         
         $scope.onPageChange = function (newPageNumber) {
-            var skipItems;
-            skipItems = (newPageNumber - 1) * config.pageSize;
-            setPeopleOnPage(skipItems);
+            $rootScope.currentPage = newPageNumber;
+            setPeopleOnPage((newPageNumber - 1) * config.pageSize);
         };
         
         function setPeopleOnPage(skipItems) {
@@ -191,11 +96,9 @@ peopleControllers.controller("listController", ['$scope', 'peopleData', 'streetD
         };
         
         function successHandler(data) {
-            $scope.peoples = data.value;
-            $scope.totalItems = data['odata.count'];
             $scope.loading = false;
-            $scope.saving = false;
-            $scope.reset();
+            $scope.people = data.value;
+            $scope.totalItems = data['@odata.count'];
         };
 
         function getFilterString() {
@@ -219,9 +122,162 @@ peopleControllers.controller("listController", ['$scope', 'peopleData', 'streetD
         $scope.onFilterChange = function () {
             setPeopleOnPage();
         };
-
-        //$scope.$watch('query.LastName', function (newValue) {
-        //    console.log(newValue);
-        //});
         
     }]);
+
+peopleModule.controller('editController',['$timeout','$filter','$rootScope','$scope','$location','$routeParams','streetData','cityData','peopleData','serviceUtil', 'precinctData', 'precinctAddressesData',
+    function ($timeout,$filter, $rootScope, $scope, $location, $routeParams, streetData, cityData, peopleData, serviceUtil, precinctData, precinctAddressesData) {
+        var addMode;
+        $rootScope.errorMsg = '';
+        $rootScope.successMsg = '';
+        addMode = true;
+
+        $scope.loading = true;
+        streetData.query(function (streets) {
+            $scope.loading = false;
+            $scope.streets = streets.value;
+        }, errorHandler);
+
+        $scope.loading = true;
+        cityData.getAll(function (cities) {
+            $scope.loading = false;
+            $scope.cities = cities.value;
+        }, errorHandler);
+
+        $scope.loading = true;
+        precinctData.getAll(function (precincts) {
+            $scope.loading = false;
+            $scope.precincts = precincts.value;
+        }, errorHandler);
+
+        if ($routeParams.id != undefined) {
+            $scope.loading = true;
+            peopleData.query({ id: $routeParams.id }, function (res) {
+                $scope.loading = false;
+                addMode = false;
+                $scope.person = res;
+                $scope.dateOfBirth = new Date(res.DateOfBirth);
+                $scope.person.PrecinctId = res.PrecinctAddress.PrecinctId;
+            }, errorHandler);
+        }
+
+        function errorHandler(e) {
+            $scope.loading = false;
+            $scope.saving = false;
+            $rootScope.errorMsg = serviceUtil.getErrorMessage(e);
+        };
+
+        $scope.save = function () {
+            if (!$scope.person.PrecinctId) {
+                $rootScope.errorMsg = 'Не вірний номер дільниці';
+                return;
+            };
+
+            if (!$scope.person.CityId) {
+                $rootScope.errorMsg = "Населений пункт '" + $scope.person.City + "' не знайдено";
+                return;
+            };
+
+            if (!$scope.person.StreetId) {
+                $rootScope.errorMsg = "Вулицю '" + $scope.person.Street + "' не знайдено";
+                return;
+            };
+
+            $scope.saving = true;
+            // todo: factory method
+            var person = {
+                "Id": 0,
+                "LastName": '',
+                "FirstName": '',
+                "MidleName": '',
+                "DateOfBirth": '',
+                "Gender": 0,
+                "CityId": 0,
+                "StreetId": 0,
+                "House": '',
+                "Apartment": 0
+            },
+            // todo: factory method
+            precinctAddress =  {
+                "CityId": 0,
+                "StreetId": 0,
+                "House": '',
+                "PrecinctId": 0
+            };
+            serviceUtil.copyProperties($scope.person, person);
+            serviceUtil.copyProperties(person, precinctAddress);
+            precinctAddress.PrecinctId = $scope.person.PrecinctId;
+            person.DateOfBirth = $filter('date')($scope.dateOfBirth, 'yyyy-MM-ddT00:00:00+00:00');
+            if (!person.Apartment) person.Apartment = null;
+
+            precinctData.getByIdNotExpand({ id: precinctAddress.PrecinctId }, function () {
+                    savePrecinctAddress();
+                }, function () {
+                    precinctData.save({"Id": precinctAddress.PrecinctId}, function () {
+                        savePrecinctAddress();
+                }, errorHandler);
+            });
+
+            function savePrecinctAddress() {
+                var addressKey = serviceUtil.getAddressKey(precinctAddress);
+                precinctAddressesData.query(addressKey, function (success) {
+                    if(precinctAddress.PrecinctId === success.PrecinctId) {
+                        savePerson();
+                    } else {
+                        precinctAddressesData.changePrecinct(addressKey, precinctAddress, function () {
+                            savePerson();
+                        }, errorHandler);
+                    }
+                }, function () {
+                    precinctAddressesData.save(precinctAddress, function () {
+                        savePerson();
+                    }, errorHandler);
+                });
+            };
+
+            function savePerson() {
+                if (addMode) {
+                    peopleData.save(person, function () {
+                        $scope.saving = false;
+                        $rootScope.successMsg = "Фізичну особу створено успішно!";
+                    }, errorHandler);
+                } else {
+                    peopleData.update({ id: $scope.person.Id }, person, function () {
+                        $scope.saving = false;
+                        $rootScope.successMsg = "Зміни успішно збережено!";
+                    }, errorHandler);
+                }
+            };
+        };
+
+        function closeAlertAtTimeout() {
+            $timeout(function () {
+                $rootScope.successMsg = '';
+                $rootScope.errorMsg = '';
+            }, 2000);
+        };
+
+        $scope.$watch('successMsg + errorMsg', function (newValue) {
+            if (newValue.length > 0) {
+                closeAlertAtTimeout();
+            }
+        });
+
+        $scope.backToList = function () {
+            $location.path('list');
+        };
+
+        $scope.onSelectStreet = function ($item, $model, $label) {
+            $scope.person.Street = $item;
+            $scope.person.StreetId = $model;
+        };
+
+        $scope.onSelectCity = function ($item, $model, $label) {
+            $scope.person.City = $item;
+            $scope.person.CityId = $model;
+        };
+
+        $scope.onSelectPrecinctNumber = function ($item, $model, $label) {
+            $scope.person.PrecinctId = $model;
+        };
+}]);
