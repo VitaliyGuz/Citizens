@@ -52,6 +52,12 @@ namespace Citizens.Models
 
         public DbSet<CityRegionPart> CityRegionParts { get; set; }
 
+        public DbSet<PropertyKey> PropertyKeys { get; set; }
+
+        public DbSet<PropertyValue> PropertyValues { get; set; }
+
+        public DbSet<PersonAdditionalProperty> PersonAdditionalProperties { get; set; }
+
 
 
 

@@ -307,20 +307,72 @@ namespace Citizens.Models
             }.ForEach(userPrecinct => context.UserPrecincts.Add(userPrecinct));
             context.SaveChanges();
 
-
-            string connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["CitizensDb"].ConnectionString;
-            using (SqlConnection connection = new SqlConnection(connectionString))
+            new List<PropertyKey>
             {
-                string path1 = HttpContext.Current.Server.MapPath("~/Scripts/Sql/createPersonType.sql");
-                FileInfo file = new FileInfo(path1);
-                string sqlInsert = file.OpenText().ReadToEnd();
-                SqlCommand insertCommand = new SqlCommand(sqlInsert, connection);
+                new PropertyKey
+                {
+                    Name = "Серія паспорту",
+                    PropertyType = PropertyType.Рядок
+                },
+                new PropertyKey
+                {
+                    Name = "Національність",
+                    PropertyType = PropertyType.Довідник
+                }
+            }.ForEach(propertyKey => context.PropertyKeys.Add(propertyKey));
+            context.SaveChanges();
 
-                // Execute the command.
-                connection.Open();
-                insertCommand.CommandTimeout = 0;
-                insertCommand.ExecuteNonQuery();
-            }
+            new List<PropertyValue>
+            {
+                new PropertyValue
+                {
+                    PropertyKeyId = 2,
+                    Value = "України"                    
+                },
+                new PropertyValue
+                {
+                    PropertyKeyId = 2,
+                    Value = "Росії"                    
+                }
+            }.ForEach(propertyValue => context.PropertyValues.Add(propertyValue));
+            context.SaveChanges();
+
+            new List<PersonAdditionalProperty>
+            {
+                new PersonAdditionalProperty
+                {
+                    PersonId = 1,
+                    PropertyKeyId = 1,
+                    StringValue = "КО"
+                },
+                new PersonAdditionalProperty
+                {
+                    PersonId = 1,
+                    PropertyKeyId = 2,
+                    PropertyValueId = 1
+                },
+                new PersonAdditionalProperty
+                {
+                    PersonId = 2,
+                    PropertyKeyId = 2,
+                    PropertyValueId = 2
+                }
+            }.ForEach(personAdditionalProperty => context.PersonAdditionalProperties.Add(personAdditionalProperty));
+            context.SaveChanges();
+
+            //string connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["CitizensDb"].ConnectionString;
+            //using (SqlConnection connection = new SqlConnection(connectionString))
+            //{
+            //    string path1 = HttpContext.Current.Server.MapPath("~/Scripts/Sql/createPersonType.sql");
+            //    FileInfo file = new FileInfo(path1);
+            //    string sqlInsert = file.OpenText().ReadToEnd();
+            //    SqlCommand insertCommand = new SqlCommand(sqlInsert, connection);
+
+            //    // Execute the command.
+            //    connection.Open();
+            //    insertCommand.CommandTimeout = 0;
+            //    insertCommand.ExecuteNonQuery();
+            //}
 
         }
     }

@@ -49,5 +49,7 @@ namespace Citizens.Models
         public int PrecinctId { get; set; }
 
         public PrecinctAddress PrecinctAddress { get; set; }
+
+        public ICollection<PersonAdditionalProperty> PersonAdditionalProperties { get; set; }
     }
 }

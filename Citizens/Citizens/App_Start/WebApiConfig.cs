@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Web.Http;
 using Citizens.Infrastructure;
 
@@ -36,6 +37,9 @@ namespace Citizens
             builder.EntitySet<Street>("Streets");
             builder.EntitySet<StreetType>("StreetTypes");
             builder.EntitySet<UserPrecinct>("UserPrecincts");
+            builder.EntitySet<PropertyKey>("PropertyKeys");
+            builder.EntitySet<PropertyValue>("PropertyValues");
+            builder.EntitySet<PersonAdditionalProperty>("PersonAdditionalProperties");
 
 
             builder.EntitySet<User>("Users");
@@ -45,6 +49,7 @@ namespace Citizens
             //builder.EntitySet<IdentityUserLogin>("Logins");
             //var conventions = ODataRoutingConventions.CreateDefault();
             //conventions.Insert(0, new CompositeKeyRoutingConvention());
+            //conventions.Insert(0, new UnEncodeOdataUri());
             config.MapODataServiceRoute(
             routeName: "odata",
             routePrefix: "odata",
@@ -84,6 +89,34 @@ namespace Citizens
             //    Newtonsoft.Json.ReferenceLoopHandling.Ignore;
         }
     }
+
+    //public class UnEncodeOdataUri : EntityRoutingConvention
+    //{
+    //    public override string SelectAction(ODataPath odataPath, HttpControllerContext controllerContext,
+    //        ILookup<string, HttpActionDescriptor> actionMap)
+    //    {
+    //        var newpath = controllerContext.Request.RequestUri.OriginalString
+    //            .Replace("[GREATER]", @">")
+    //            .Replace("[LESS]", @"<")
+    //            .Replace("[STAR]", @"*")
+    //            .Replace("[EQUAL]", @"=")
+    //            .Replace("[COLON]", @":")
+    //            .Replace("[SQUOTE]", "'")
+    //            .Replace("[SQUOTE]", "'")
+    //            .Replace("[PERCENT]", "%")
+    //            .Replace("[PLUS]", "+")
+    //            .Replace("[FSLASH]", @"/")
+    //            .Replace("[BSLASH]", @"\")
+    //            .Replace("[QUESTION]", "?")
+    //            .Replace("[POUND]", "#")
+    //            .Replace("[AMPERSAND]", "&")
+    //            .Replace("[DQUOTE]", "\"");
+    //        controllerContext.Request = new HttpRequestMessage(controllerContext.Request.Method, new Uri(newpath));
+    //        var action = base.SelectAction(odataPath, controllerContext, actionMap);
+    //        return action;
+    //    }
+    //}
+
     //public class CompositeKeyRoutingConvention : EntityRoutingConvention
     //{
     //    public override string SelectAction(ODataPath odataPath, HttpControllerContext controllerContext, ILookup<string, HttpActionDescriptor> actionMap)
