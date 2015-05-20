@@ -34,7 +34,8 @@ namespace Citizens.Models
                 userMgr.Create(new User
                 {
                     UserName = userName,
-                    Email = email
+                    Email = email,
+                    FirstName = userName
                 }, password);
                 userAdmin = userMgr.FindByName(userName);
             }
@@ -59,7 +60,8 @@ namespace Citizens.Models
                 userMgr.Create(new User
                 {
                     UserName = userName,
-                    Email = email
+                    Email = email,
+                    FirstName = userName
                 }, password);
                 userOperator = userMgr.FindByName(userName);
             }
