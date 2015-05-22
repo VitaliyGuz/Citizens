@@ -43,7 +43,7 @@ app.factory('serviceUtil',function(){
             }
         },
         getAddressKey: function (address) {
-            return { cityId: address.CityId, streetId: address.StreetId, house: address.House.replace('/', '@') };
+            return { cityId: address.CityId, streetId: address.StreetId, house: address.House };
         }
     };
 });
