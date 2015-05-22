@@ -6,7 +6,7 @@
         <div class="form-group col-lg-2">
             <label>Тип</label>
             <select class="form-control" ng-options="t.Id as t.Name for t in cityTypes" ng-model="city.CityTypeId" required>
-                <option value='' disabled>-Необхідно вибрати-</option>
+                <option value='' disabled>-Вибрати-</option>
             </select>
         </div>
         <div class="form-group col-lg-4">
@@ -17,7 +17,7 @@
             <label>Район</label>
             <select class="form-control" ng-options="p.Id as p.Name for p in regionParts"
                     ng-model="city.RegionPartId" required>
-                <option value='' disabled>-Необхідно вибрати-</option>
+                <option value='' disabled>-Вибрати-</option>
             </select>
         </div>
     </div>  
@@ -62,7 +62,7 @@
     <td>
         <select class="form-control" ng-options="r.Id as r.Name for r in cityRegionParts"
                 ng-model="selected.cityDistrict.RegionPartId" required>
-            <option value='' disabled>-Необхідно вибрати-</option>
+            <option value='' disabled>-Вибрати-</option>
         </select>
     </td>
     <td>
