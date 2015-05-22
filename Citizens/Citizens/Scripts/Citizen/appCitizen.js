@@ -14,14 +14,14 @@ app.factory('serviceUtil',function(){
             if (error.status === 401) {
                 return 'Недостатньо прав для здійснення операції';
             }
-            if (error.data != null) {
+            if (error.data !='') {
                 if (angular.isObject(error.data)) {
                     errMsg = error.data.error.innererror.message;
                 } else {
                     errMsg = error.data;
                 }
             }
-            if (errMsg == null) {
+            if (!errMsg) {
                 errMsg = error.statusText;
             }
             return errMsg;

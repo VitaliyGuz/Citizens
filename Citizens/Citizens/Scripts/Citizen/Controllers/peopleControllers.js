@@ -125,12 +125,14 @@ peopleModule.controller("listController", ['$rootScope','$scope','$location', 'p
         
     }]);
 
-peopleModule.controller('editController',['$timeout','$filter','$rootScope','$scope','$location','$routeParams','streetData','cityData','peopleData','serviceUtil', 'precinctData', 'precinctAddressesData',
-    function ($timeout,$filter, $rootScope, $scope, $location, $routeParams, streetData, cityData, peopleData, serviceUtil, precinctData, precinctAddressesData) {
-        var addMode;
+peopleModule.controller('editController',['$timeout','$filter','$rootScope','$scope','$location','$routeParams','streetData','cityData','peopleData','serviceUtil', 'precinctData', 'precinctAddressesData','additionalPropsData',
+    function ($timeout, $filter, $rootScope, $scope, $location, $routeParams, streetData, cityData, peopleData, serviceUtil, precinctData, precinctAddressesData, additionalPropsData) {
+        var addMode, editInd;
         $rootScope.errorMsg = '';
         $rootScope.successMsg = '';
         addMode = true;
+        $scope.tableHead = ['№', 'Назва', 'Значення'];
+        $scope.selected = { property: {} };
 
         $scope.loading = true;
         streetData.query(function (streets) {
@@ -149,21 +151,100 @@ peopleModule.controller('editController',['$timeout','$filter','$rootScope','$sc
             $scope.loading = false;
             $scope.precincts = precincts.value;
         }, errorHandler);
+        
+        $scope.loading = true;
+        additionalPropsData.getKeys(function (keys) {
+            $scope.loading = false;
+            $scope.propKeys = keys.value;
+            convertTypes($scope.propKeys);
+        }, errorHandler);
+
+        $scope.loading = true;
+        additionalPropsData.getValues(function (values) {
+            $scope.loading = false;
+            $scope.propValues = values.value;
+        }, errorHandler);
 
         if ($routeParams.id != undefined) {
             $scope.loading = true;
-            peopleData.query({ id: $routeParams.id }, function (res) {
+            peopleData.getById({ id: $routeParams.id }, function (res) {
                 $scope.loading = false;
                 addMode = false;
                 $scope.person = res;
                 $scope.dateOfBirth = new Date(res.DateOfBirth);
                 $scope.person.PrecinctId = res.PrecinctAddress.PrecinctId;
+                $scope.additionalProperties = getPropertyPairs(res.PersonAdditionalProperties);
             }, errorHandler);
         }
+
+        function getPropertyPairs(properties) {
+            var result;
+            function getPair(item) {
+                var pair = { key: item.PropertyKey };
+                if (item.IntValue) {
+                    pair.key.PropertyType = 'number';
+                    pair.value = { desc: item.IntValue };
+                    return pair;
+                }
+                if (item.StringValue) {
+                    pair.key.PropertyType = 'text';
+                    pair.value = { desc: item.StringValue };
+                    return pair;
+                }
+                if (item.DateTimeValue) {
+                    pair.key.PropertyType = 'date';
+                    pair.value = { desc: item.DateTimeValue };
+                    return pair;
+                }
+                if (item.PropertyValue) {
+                    pair.key.PropertyType = 'ref';
+                    pair.value = { desc: item.PropertyValue.Value, obj: item.PropertyValue };
+                    return pair;
+                }
+            };
+            if (angular.isArray(properties)) {
+                result = [];
+                angular.forEach(properties, function (item) {
+                    result.push(getPair(item));
+                });
+            } else {
+                result = getPair(properties);
+            }
+            return result;
+        };
+        
+        function getFieldName(strType) {
+            switch (strType) {
+                case 'number':  return 'IntValue';
+                case 'text':    return 'StringValue';
+                case 'date':    return 'DateTimeValue';
+                case 'ref':     return 'PropertyValueId';
+            }
+        };
+        
+        function convertTypes(keys) {
+            angular.forEach(keys, function (item) {
+                switch (item.PropertyType) {
+                    case 'Число':
+                        item.PropertyType = 'number';
+                        break;
+                    case 'Рядок':
+                        item.PropertyType = 'text';
+                        break;
+                    case 'Дата':
+                        item.PropertyType = 'date';
+                        break;
+                    case 'Довідник':
+                        item.PropertyType = 'ref';
+                        break;
+                }
+            });
+        };
 
         function errorHandler(e) {
             $scope.loading = false;
             $scope.saving = false;
+            $scope.savingProp = false;
             $rootScope.errorMsg = serviceUtil.getErrorMessage(e);
         };
 
@@ -207,7 +288,7 @@ peopleModule.controller('editController',['$timeout','$filter','$rootScope','$sc
             serviceUtil.copyProperties($scope.person, person);
             serviceUtil.copyProperties(person, precinctAddress);
             precinctAddress.PrecinctId = $scope.person.PrecinctId;
-            person.DateOfBirth = $filter('date')($scope.dateOfBirth, 'yyyy-MM-ddT00:00:00+00:00');
+            person.DateOfBirth = formatDateToDateTime($scope.dateOfBirth);
             if (!person.Apartment) person.Apartment = null;
 
             precinctData.getByIdNotExpand({ id: precinctAddress.PrecinctId }, function () {
@@ -249,7 +330,11 @@ peopleModule.controller('editController',['$timeout','$filter','$rootScope','$sc
                 }
             };
         };
-
+        
+        function formatDateToDateTime(date) {
+            return $filter('date')(date, 'yyyy-MM-ddT00:00:00+00:00');
+        };
+    
         function closeAlertAtTimeout() {
             $timeout(function () {
                 $rootScope.successMsg = '';
@@ -279,5 +364,110 @@ peopleModule.controller('editController',['$timeout','$filter','$rootScope','$sc
 
         $scope.onSelectPrecinctNumber = function ($item, $model, $label) {
             $scope.person.PrecinctId = $model;
+        };
+
+        $scope.onSelectProperty = function ($item, $model, $label) {
+            $scope.selected.property.Value = $item;
+            $scope.selected.property.ValueId = $model;
+        };
+        
+        $scope.onChangePropertyKey = function () {
+            $scope.selected.property.Key.PropertyType === 'ref' ? $scope.isPrimitive = false : $scope.isPrimitive = true;
+            $scope.selected.property.Value = '';
+        };
+    
+        $scope.getTemplate = function (prop) {
+            $scope.isDate = false;
+            if (prop.key.PropertyType === 'date') $scope.isDate = true;
+            if ($scope.selected.property.Key && prop.key.Id === $scope.selected.property.Key.Id && !$scope.addPropertyMode) return 'edit';
+            else return 'display';
+        };
+
+        $scope.editProperty = function (prop, ind) {
+            var type = prop.key.PropertyType;
+            $scope.addPropertyMode = false;
+            editInd = ind;
+            $scope.isPrimitive = true;
+            if (type === 'ref') {
+                $scope.isPrimitive = false;
+            }
+            if (type === 'date') {
+                $scope.selected.property.Value = new Date(prop.value.desc);
+            } else if (type === 'number') {
+                $scope.selected.property.Value = Number(prop.value.desc);
+            } else {
+                $scope.selected.property.Value = prop.value.desc;
+                if (!$scope.isPrimitive) {
+                    $scope.selected.property.ValueId = prop.value.obj.id;
+                    $scope.selected.property.Value = prop.value.obj;
+                }          
+            }
+            $scope.selected.property.Key = prop.key;
+        };
+
+        $scope.reset = function () {
+            $scope.addPropertyMode = false;
+            $scope.selected.property = {};
+        };
+        
+        $scope.addNewProperty = function () {
+            $scope.addPropertyMode = true;
+        };
+
+        $scope.saveProperty = function (paramProp) {
+            var propType, newProperty, newPropValue;
+            if (!$scope.selected.property.Key) {
+                $rootScope.errorMsg = 'Не вибрано тип характеристики';
+                return;
+            }
+            propType = $scope.selected.property.Key.PropertyType;
+            if (propType === 'ref' && !$scope.selected.property.ValueId) {
+                $rootScope.errorMsg = 'Значення ' + $scope.selected.property.Value + ' для характеристики ' + $scope.selected.property.Key.Name + ' не знайдено';
+                return;
+            }
+            newPropValue = $scope.selected.property.Value;
+            if (!newPropValue) {
+                $rootScope.errorMsg = 'Не вказано значення характеристики';
+                return;
+            }
+            $scope.savingProp = true;
+            // todo: factory method
+            newProperty = {
+                "PersonId": $scope.person.Id,
+                "PropertyKeyId": $scope.selected.property.Key.Id,
+                "IntValue": null,
+                "StringValue": null,
+                "DateTimeValue": null,
+                "PropertyValueId": null
+            };
+            
+            if (propType === 'ref') {
+                newPropValue = $scope.selected.property.ValueId;
+            }
+            newProperty[getFieldName(propType)] = newPropValue;
+            if ($scope.addPropertyMode) {
+                additionalPropsData.save(newProperty, successHandler, errorHandler);
+            } else {
+                additionalPropsData.update({ personId: newProperty.PersonId, propertyKeyId: newProperty.PropertyKeyId }, newProperty,
+                    successHandler, errorHandler);
+            }
+            
+            function successHandler() {
+                $scope.savingProp = false;
+                newProperty.PropertyKey = $scope.selected.property.Key;
+                newProperty.PropertyValue = $scope.selected.property.Value;
+                if ($scope.addPropertyMode) {
+                    $scope.additionalProperties.push(getPropertyPairs(newProperty));
+                } else {
+                    $scope.additionalProperties[editInd] = getPropertyPairs(newProperty);
+                }
+                $scope.reset();
+            };
+        };
+        
+        $scope.deleteProperty = function (prop,ind) {
+            additionalPropsData.remove({ personId: $scope.person.Id, propertyKeyId: prop.key.Id }, function () {
+                $scope.additionalProperties.splice(ind, 1);
+            }, errorHandler);
         };
 }]);
