@@ -302,6 +302,7 @@
     <Compile Include="Controllers\MVC\PrecinctsController.cs" />
     <Compile Include="Controllers\MVC\PrepController.cs" />
     <Compile Include="Controllers\MVC\RegionPartController.cs" />
+    <Compile Include="Extensions\PathAndSlashEscapeODataPathHandler.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>

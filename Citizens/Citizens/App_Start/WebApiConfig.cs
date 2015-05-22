@@ -15,6 +15,7 @@ using System.Web.OData.Builder;
 using System.Web.OData.Routing.Conventions;
 using System.Web.OData.Routing;
 using System.Web.OData.Extensions;
+using Citizens.Extensions;
 
 namespace Citizens
 {
@@ -22,7 +23,7 @@ namespace Citizens
     {
         public static void Register(HttpConfiguration config)
         {
-            //config.Filters.Add(new AuthorizeAttribute());            
+            config.Filters.Add(new AuthorizeAttribute());            
             // Web API configuration and services
             ODataConventionModelBuilder builder = new ODataConventionModelBuilder();
             builder.EntitySet<City>("Cities");
@@ -50,10 +51,15 @@ namespace Citizens
             //var conventions = ODataRoutingConventions.CreateDefault();
             //conventions.Insert(0, new CompositeKeyRoutingConvention());
             //conventions.Insert(0, new UnEncodeOdataUri());
+            config.EnableCaseInsensitive(caseInsensitive: true);
+            config.EnableUnqualifiedNameCall(unqualifiedNameCall: true);
+            config.EnableEnumPrefixFree(enumPrefixFree: true);
+            var edm = builder.GetEdmModel();
             config.MapODataServiceRoute(
             routeName: "odata",
             routePrefix: "odata",
-            model: builder.GetEdmModel());
+            model: edm,
+            pathHandler: new PathAndSlashEscapeODataPathHandler(), routingConventions: ODataRoutingConventions.CreateDefaultWithAttributeRouting(config, edm));
             //config.Routes.MapODataRoute(
             //    routeName: "odata",
             //    routePrefix: "odata",

@@ -92,12 +92,12 @@ namespace Citizens
             ////    AuthenticationType = DefaultAuthenticationTypes.ApplicationCookie
             ////});
 			// For more information on how to configure your application, visit http://go.microsoft.com/fwlink/?LinkID=316888
-			//app.UseOAuthBearerTokens(new OAuthAuthorizationServerOptions
-			//{
-			//    Provider = new StoreAuthProvider(),
-			//    AllowInsecureHttp = true,
-			//    TokenEndpointPath = new PathString("/Authenticate")
-			//});            
+			app.UseOAuthBearerTokens(new OAuthAuthorizationServerOptions
+			{
+			    Provider = new StoreAuthProvider(),
+			    AllowInsecureHttp = true,
+			    TokenEndpointPath = new PathString("/Authenticate")
+			});            
 		}
     }
 }
