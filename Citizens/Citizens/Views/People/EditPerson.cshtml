@@ -113,7 +113,7 @@
     </td>
     <td ng-hide="addPropertyMode">{{ prop.key.Name }}</td>
     <td>
-        <input ng-show="isPrimitive" class="form-control" type="{{ selected.property.Key.PropertyType }}" ng-model="selected.property.Value" />
+        <input ng-show="isPrimitive" class="form-control" type="{{ selected.property.Key.PropertyType.html }}" ng-model="selected.property.Value" />
         <input ng-hide="isPrimitive" type="text" ng-change="selected.property.ValueId=0" typeahead-on-select="onSelectProperty($item, $model, $label)" ng-model="selected.property.Value" typeahead="p.Id as p.Value for p in propValues | filter: $viewValue| limitTo:10" class="form-control">
     </td>
     <td>

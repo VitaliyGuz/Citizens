@@ -23,7 +23,7 @@ angular.module("peopleServices", ['ngResource', 'appCitizen']).
             urlOdataValues = '/odata/PropertyValues',
             urlOdataKeys = '/odata/PropertyKeys',
             key = "(PersonId=:personId,PropertyKeyId=:propertyKeyId)",
-            params = { personId: "@personId", propertyKeyId: "@propertyKeyId"};
+            params = { personId: "@personId", propertyKeyId: "@propertyKeyId" };
         return $resource('', {},
 		{
 		    'getByKey': { method: 'GET', params: params, url: urlOdata + key },
@@ -41,4 +41,16 @@ angular.module("peopleServices", ['ngResource', 'appCitizen']).
 		    'removeKey': { method: 'DELETE', params: { id: "@id" }, url: urlOdataKeys + "(:id)" },
 		    'removeValue': { method: 'DELETE', params: { id: "@id" }, url: urlOdataValues + "(:id)" }
 		});
+    }]).
+    factory("propertyTypes", [function () {
+        return {
+            getAll: function () {
+                return [
+                    { field: 'IntValue', html: 'number', label: 'Число' },
+                    { field: 'StringValue', html: 'text', label: 'Рядок' },
+                    { field: 'DateTimeValue', html: 'date', label: 'Дата' },
+                    { field: 'PropertyValueId', html: 'ref', label: 'Довідник' },
+                ]
+            }
+        }
     }])

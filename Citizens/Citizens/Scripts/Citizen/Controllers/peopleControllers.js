@@ -125,8 +125,8 @@ peopleModule.controller("listController", ['$rootScope','$scope','$location', 'p
         
     }]);
 
-peopleModule.controller('editController',['$timeout','$filter','$rootScope','$scope','$location','$routeParams','streetData','cityData','peopleData','serviceUtil', 'precinctData', 'precinctAddressesData','additionalPropsData',
-    function ($timeout, $filter, $rootScope, $scope, $location, $routeParams, streetData, cityData, peopleData, serviceUtil, precinctData, precinctAddressesData, additionalPropsData) {
+peopleModule.controller('editController', ['$timeout', '$filter', '$rootScope', '$scope', '$location', '$routeParams', 'streetData', 'cityData', 'peopleData', 'serviceUtil', 'precinctData', 'precinctAddressesData', 'additionalPropsData', 'propertyTypes',
+    function ($timeout, $filter, $rootScope, $scope, $location, $routeParams, streetData, cityData, peopleData, serviceUtil, precinctData, precinctAddressesData, additionalPropsData, propertyTypes) {
         var addMode, editInd;
         $rootScope.errorMsg = '';
         $rootScope.successMsg = '';
@@ -178,29 +178,22 @@ peopleModule.controller('editController',['$timeout','$filter','$rootScope','$sc
         }
 
         function getPropertyPairs(properties) {
-            var result;
+            var result, types = propertyTypes.getAll();
             function getPair(item) {
                 var pair = { key: item.PropertyKey };
-                if (item.IntValue) {
-                    pair.key.PropertyType = 'number';
-                    pair.value = { desc: item.IntValue };
-                    return pair;
-                }
-                if (item.StringValue) {
-                    pair.key.PropertyType = 'text';
-                    pair.value = { desc: item.StringValue };
-                    return pair;
-                }
-                if (item.DateTimeValue) {
-                    pair.key.PropertyType = 'date';
-                    pair.value = { desc: item.DateTimeValue };
-                    return pair;
-                }
-                if (item.PropertyValue) {
-                    pair.key.PropertyType = 'ref';
-                    pair.value = { desc: item.PropertyValue.Value, obj: item.PropertyValue };
-                    return pair;
-                }
+                for (var i = 0; i <= types.length; i++){
+                    var type = types[i], val = item[type.field];
+                    if (val) {
+                        pair.key.PropertyType = type;
+                        if (type.html === 'ref') {
+                            pair.value = { desc: item.PropertyValue.Value, obj: item.PropertyValue };
+                        } else {
+                            pair.value = { desc: val };
+                        }
+                        break;
+                    }
+                };
+                return pair;
             };
             if (angular.isArray(properties)) {
                 result = [];
@@ -213,31 +206,11 @@ peopleModule.controller('editController',['$timeout','$filter','$rootScope','$sc
             return result;
         };
         
-        function getFieldName(strType) {
-            switch (strType) {
-                case 'number':  return 'IntValue';
-                case 'text':    return 'StringValue';
-                case 'date':    return 'DateTimeValue';
-                case 'ref':     return 'PropertyValueId';
-            }
-        };
-        
         function convertTypes(keys) {
             angular.forEach(keys, function (item) {
-                switch (item.PropertyType) {
-                    case 'Число':
-                        item.PropertyType = 'number';
-                        break;
-                    case 'Рядок':
-                        item.PropertyType = 'text';
-                        break;
-                    case 'Дата':
-                        item.PropertyType = 'date';
-                        break;
-                    case 'Довідник':
-                        item.PropertyType = 'ref';
-                        break;
-                }
+                angular.forEach(propertyTypes.getAll(), function (type) {
+                    if (item.PropertyType === type.label) item.PropertyType = type;
+                });
             });
         };
 
@@ -372,28 +345,28 @@ peopleModule.controller('editController',['$timeout','$filter','$rootScope','$sc
         };
         
         $scope.onChangePropertyKey = function () {
-            $scope.selected.property.Key.PropertyType === 'ref' ? $scope.isPrimitive = false : $scope.isPrimitive = true;
+            $scope.selected.property.Key.PropertyType.html === 'ref' ? $scope.isPrimitive = false : $scope.isPrimitive = true;
             $scope.selected.property.Value = '';
         };
     
         $scope.getTemplate = function (prop) {
             $scope.isDate = false;
-            if (prop.key.PropertyType === 'date') $scope.isDate = true;
+            if (prop.key.PropertyType.html === 'date') $scope.isDate = true;
             if ($scope.selected.property.Key && prop.key.Id === $scope.selected.property.Key.Id && !$scope.addPropertyMode) return 'edit';
             else return 'display';
         };
 
         $scope.editProperty = function (prop, ind) {
-            var type = prop.key.PropertyType;
+            var typeStr = prop.key.PropertyType.html;
             $scope.addPropertyMode = false;
             editInd = ind;
             $scope.isPrimitive = true;
-            if (type === 'ref') {
+            if (typeStr === 'ref') {
                 $scope.isPrimitive = false;
             }
-            if (type === 'date') {
+            if (typeStr === 'date') {
                 $scope.selected.property.Value = new Date(prop.value.desc);
-            } else if (type === 'number') {
+            } else if (typeStr === 'number') {
                 $scope.selected.property.Value = Number(prop.value.desc);
             } else {
                 $scope.selected.property.Value = prop.value.desc;
@@ -420,16 +393,17 @@ peopleModule.controller('editController',['$timeout','$filter','$rootScope','$sc
                 $rootScope.errorMsg = 'Не вибрано тип характеристики';
                 return;
             }
-            propType = $scope.selected.property.Key.PropertyType;
-            if (propType === 'ref' && !$scope.selected.property.ValueId) {
-                $rootScope.errorMsg = 'Значення ' + $scope.selected.property.Value + ' для характеристики ' + $scope.selected.property.Key.Name + ' не знайдено';
-                return;
-            }
             newPropValue = $scope.selected.property.Value;
             if (!newPropValue) {
                 $rootScope.errorMsg = 'Не вказано значення характеристики';
                 return;
             }
+            propType = $scope.selected.property.Key.PropertyType;
+            if (propType.html === 'ref' && !$scope.selected.property.ValueId) {
+                $rootScope.errorMsg = 'Значення ' + $scope.selected.property.Value + ' для характеристики ' + $scope.selected.property.Key.Name + ' не знайдено';
+                return;
+            }
+            
             $scope.savingProp = true;
             // todo: factory method
             newProperty = {
@@ -441,10 +415,10 @@ peopleModule.controller('editController',['$timeout','$filter','$rootScope','$sc
                 "PropertyValueId": null
             };
             
-            if (propType === 'ref') {
+            if (propType.html === 'ref') {
                 newPropValue = $scope.selected.property.ValueId;
             }
-            newProperty[getFieldName(propType)] = newPropValue;
+            newProperty[propType.field] = newPropValue;
             if ($scope.addPropertyMode) {
                 additionalPropsData.save(newProperty, successHandler, errorHandler);
             } else {
