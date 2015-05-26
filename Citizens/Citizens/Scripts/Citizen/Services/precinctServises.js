@@ -3,7 +3,7 @@
 angular.module("precinctServices", ['ngResource'])
     .factory("precinctData", ['$resource', function ($resource) {
         var urlOdata = '/odata/Precincts',
-            baseExpand = "?$expand=City($expand=CityType,RegionPart),Street($expand=StreetType),District",
+            baseExpand = "?$expand=City($expand=CityType,RegionPart),Street($expand=StreetType),District,RegionPart",
             addressesExpand = "PrecinctAddresses($expand=City($expand=CityType)),PrecinctAddresses($expand=Street($expand=StreetType))",
             params = { id: "@id" };
         return $resource('', {},

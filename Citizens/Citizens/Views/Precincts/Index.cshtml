@@ -3,6 +3,7 @@
     <script src="~/Scripts/Citizen/Services/precinctServises.js"></script>
     <script src="~/Scripts/Citizen/Controllers/precinctControllers.js"></script>
     <script src="~/Scripts/Citizen/Services/cityServices.js"></script>
+    <script src="~/Scripts/Citizen/Services/regionPartServices.js"></script>
     <script src="~/Scripts/AngularUtils/directives/angular-scrollable-table.min.js"></script>
     <script src="~/Scripts/AngularUtils/directives/ui-bootstrap-custom-tpls-0.12.1.min.js"></script>
     <link href="~/Content/css/scrollable-table.css" rel="stylesheet" />
@@ -45,9 +46,6 @@
                     <button class="btn btn-xs" ng-click="edit(precinct)" title="Редагувати">
                         <span class="glyphicon glyphicon-edit"></span>
                     </button>
-                    @*<button class="btn btn-xs" ng-click="details(precinct)" title="Детально">
-                            <span class="glyphicon glyphicon-info-sign"></span>
-                        </button>*@
                     <button class="btn btn-xs" ng-click="delete(precinct)" title="Видалити">
                         <span class="glyphicon glyphicon-trash"></span>
                     </button>
@@ -68,23 +66,19 @@
                     </div>
                     <div class="form-group col-lg-3">
                         <label>Населений пункт</label>
-                        @*<select class="form-control" ng-options="c.Id as c.CityType.Name +' '+c.Name for c in cities"
-                                    ng-model="selected.precinct.CityId">
-                                <option value='' disabled>-Необхідно вибрати-</option>
-                            </select>*@
-                        <input type="text" ng-change="selected.precinct.CityId=0" typeahead-on-select="onSelectCity($item, $model, $label,selected.precinct)" ng-model="selected.precinct.City" typeahead="c.Id as c.CityType.Name +' '+c.Name + ' (' + c.RegionPart.Name + ' р-н)' for c in cities | filter: $viewValue| limitTo:10" class="form-control" required>
+                        <input type="text" ng-change="selected.precinct.CityId=0" typeahead-on-select="onSelectCity($item, $model, $label)" ng-model="selected.precinct.City" typeahead="c.Id as c.CityType.Name +' '+c.Name + ' (' + c.RegionPart.Name + ' р-н)' for c in cities | filter: $viewValue| limitTo:10" class="form-control" required>
                     </div>
-                    <div class="form-group col-lg-4">
+                    <div class="form-group col-lg-3">
                         <label>Вулиця</label>
-                        @*<select class="form-control" ng-options="s.Id as s.StreetType.Name +' '+ s.Name for s in streets"
-                                    ng-model="selected.precinct.StreetId">
-                                <option value='' disabled>-Необхідно вибрати-</option>
-                            </select>*@
-                        <input type="text" ng-change="selected.precinct.StreetId=0" typeahead-on-select="onSelectStreet($item, $model, $label,selected.precinct)" ng-model="selected.precinct.Street" typeahead="s.Id as s.StreetType.Name +' '+ s.Name for s in streets | filter: $viewValue| limitTo:10" class="form-control" required>
+                        <input type="text" ng-change="selected.precinct.StreetId=0" typeahead-on-select="onSelectStreet($item, $model, $label)" ng-model="selected.precinct.Street" typeahead="s.Id as s.StreetType.Name +' '+ s.Name for s in streets | filter: $viewValue| limitTo:10" class="form-control" required>
                     </div>
-                    <div class="form-group col-lg-2">
+                    <div class="form-group col-lg-1">
                         <label>Буд.</label>
                         <input ng-model="selected.precinct.House" type="text" class="form-control" required>
+                    </div>
+                    <div class="form-group col-lg-2">
+                        <label>Район</label>
+                        <input type="text" ng-change="selected.precinct.RegionPartId=0" typeahead-on-select="onSelectRegionPart($item, $model, $label)" ng-model="selected.precinct.RegionPart" typeahead="r.Id as r.Name +' ('+ r.RegionPartType +')' for r in regionParts | filter: $viewValue| limitTo:10" class="form-control" required>
                     </div>
                     <div class="form-group col-lg-2">
                         <label>Округ</label>
@@ -111,17 +105,9 @@
             <div class="row">
                 <form ng-submit="autoCompleteAddresses()">
                     <div class="form-group col-lg-3">
-                        @*<select class="form-control" ng-options="c.Id as c.CityType.Name +' '+c.Name for c in cities"
-                                    ng-model="autocomplete.CityId" required>
-                                <option value='' disabled>-Населений пункт-</option>
-                            </select>*@
                         <input type="text" ng-change="autocomplete.CityId=0" typeahead-on-select="onSelectCity($item, $model, $label,autocomplete)" ng-model="autocomplete.City" typeahead="c.Id as c.CityType.Name +' '+c.Name + ' (' + c.RegionPart.Name + ' р-н)' for c in cities | filter: $viewValue| limitTo:10" class="form-control" placeholder="Населений пункт" required>
                     </div>
                     <div class="form-group col-lg-3">
-                        @*<select class="form-control" ng-options="s.Id as s.StreetType.Name +' '+ s.Name for s in streets"
-                                    ng-model="autocomplete.StreetId" required>
-                                <option value='' disabled>-Вулиця-</option>
-                            </select>*@
                         <input type="text" ng-change="autocomplete.StreetId=0" typeahead-on-select="onSelectStreet($item, $model, $label,autocomplete)" ng-model="autocomplete.Street" typeahead="s.Id as s.StreetType.Name +' '+ s.Name for s in streets | filter: $viewValue| limitTo:10" class="form-control" placeholder="Вулиця" required>
                     </div>
                     <div class="form-group col-lg-2">
@@ -200,17 +186,9 @@
         <script type="text/ng-template" id="edit">
             <td>{{ $index + 1 }}</td>
             <td>
-                @*<select class="form-control" ng-options="c.Id as c.CityType.Name +' '+c.Name for c in cities"
-                            ng-model="selected.address.CityId">
-                        <option value='' disabled>-Необхідно вибрати-</option>
-                    </select>*@
                 <input type="text" ng-change="selected.address.CityId=0" typeahead-on-select="onSelectCity($item, $model, $label,selected.address)" ng-model="selected.address.City" typeahead="c.Id as c.CityType.Name +' '+c.Name + ' (' + c.RegionPart.Name + ' р-н)' for c in cities | filter: $viewValue| limitTo:10" class="form-control" placeholder="Населений пункт">
             </td>
             <td>
-                @*<select class="form-control" ng-options="s.Id as s.StreetType.Name +' '+ s.Name for s in streets"
-                            ng-model="selected.address.StreetId">
-                        <option value='' disabled>-Необхідно вибрати-</option>
-                    </select>*@
                 <input type="text" ng-change="selected.address.StreetId=0" typeahead-on-select="onSelectStreet($item, $model, $label,selected.address)" ng-model="selected.address.Street" typeahead="s.Id as s.StreetType.Name +' '+ s.Name for s in streets | filter: $viewValue| limitTo:10" class="form-control" placeholder="Вулиця">
             </td>
             <td><input class="form-control" ng-model="selected.address.House" /></td>
