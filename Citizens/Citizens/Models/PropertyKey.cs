@@ -5,7 +5,7 @@ using System.Web;
 
 namespace Citizens.Models
 {
-    public enum PropertyType { Число, Рядок, Дата, Довідник };
+    public enum PropertyType { Число, Рядок, Дата, Довідник, Місто, Вулиця };
     public class PropertyKey
     {
         public int Id { get; set; }

@@ -34,6 +34,8 @@ namespace Citizens.Models
 
         public DbSet<Person> People { get; set; }
 
+        public DbSet<PersonChangeHistory> PeopleChangeHistory { get; set; }
+
         public DbSet<Region> Regions { get; set; }
 
         public DbSet<RegionPart> RegionParts { get; set; }

@@ -33,5 +33,13 @@ namespace Citizens.Models
         public RegionPart RegionPart { get; set; }
 
         public ICollection<PrecinctAddress> PrecinctAddresses { get; set; }
+
+        public double? lat { get; set; }
+
+        public double? lng { get; set; }
+
+        public string location_type { get; set; }
+
+        
     }
 }

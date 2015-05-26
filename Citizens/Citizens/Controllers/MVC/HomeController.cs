@@ -107,7 +107,7 @@ namespace Citizens.Controllers
                                         //streets.Add(new Street()
                                         string name = ds.Tables[0].Rows[i][0].ToString();
                                         var findStreetType = context.StreetTypes.Where(u => u.Name == name).FirstOrDefault();
-                                        if (findStreetType == null)
+                                        if (findStreetType == null && name != "")
                                         {
                                             context.StreetTypes.Add(new StreetType()
                                             {
@@ -138,7 +138,7 @@ namespace Citizens.Controllers
                                         string type = ds.Tables[0].Rows[i][1].ToString();
                                         var findStreetType = context.StreetTypes.Where(u => u.Name == type).FirstOrDefault();
                                         var findStreet = context.Streets.Where(u => u.Name == name && u.StreetType.Name == type).FirstOrDefault();
-                                        if (findStreet == null)
+                                        if (findStreet == null && name != "")
                                         {
                                             context.Streets.Add(new Street()
                                             {
@@ -169,7 +169,7 @@ namespace Citizens.Controllers
                                     {
                                         string name = ds.Tables[0].Rows[i][0].ToString();
                                         var findCityType = context.CityTypes.Where(u => u.Name == name).FirstOrDefault();
-                                        if (findCityType == null)
+                                        if (findCityType == null && name != "")
                                         {
                                             context.CityTypes.Add(new CityType()
                                             {
@@ -181,7 +181,35 @@ namespace Citizens.Controllers
                                 }
                             }
 
-                            query = "SELECT DISTINCT City, CityType FROM [" + sheetName + "]";
+                            query = "SELECT DISTINCT RegionPart FROM [" + sheetName + "]";
+                            adapter = new OleDbDataAdapter(query, conn);
+                            ds = new DataSet();
+                            adapter.Fill(ds, "Items");
+                            if (ds.Tables.Count > 0)
+                            {
+                                if (ds.Tables[0].Rows.Count > 0)
+                                {
+                                    //var context = new CitizenDbContext();
+
+                                    for (int i = 0; i < ds.Tables[0].Rows.Count; i++)
+                                    {
+                                        string name = ds.Tables[0].Rows[i][0].ToString();
+                                        var findRegionPart = context.RegionParts.Where(u => u.Name == name).FirstOrDefault();
+                                        if (findRegionPart == null && name != "")
+                                        {
+                                            context.RegionParts.Add(new RegionPart()
+                                            {
+                                                Name = name,
+                                                RegionPartType = RegionPartType.область,
+                                                RegionId = 1
+                                            });
+                                        }
+                                    }
+                                    context.SaveChanges();
+                                }
+                            }
+
+                            query = "SELECT DISTINCT City, CityType, RegionPart FROM [" + sheetName + "]";
                             adapter = new OleDbDataAdapter(query, conn);
                             ds = new DataSet();
                             adapter.Fill(ds, "Items");
@@ -197,15 +225,17 @@ namespace Citizens.Controllers
 
                                         string name = ds.Tables[0].Rows[i][0].ToString();
                                         string type = ds.Tables[0].Rows[i][1].ToString();
+                                        string regionPart = ds.Tables[0].Rows[i][2].ToString();
                                         var findCityType = context.CityTypes.Where(u => u.Name == type).FirstOrDefault();
+                                        var findRegionPart = context.RegionParts.Where(u => u.Name == regionPart).FirstOrDefault();
                                         var findCity = context.Cities.Where(u => u.Name == name && u.CityType.Name == type).FirstOrDefault();
-                                        if (findCity == null)
+                                        if (findCity == null && name != "")
                                         {
                                             context.Cities.Add(new City()
                                             {
-                                                Name = ds.Tables[0].Rows[i][0].ToString(),
+                                                Name = name,
                                                 CityType = findCityType,
-                                                //RegionId = 1
+                                                RegionPart = findRegionPart
                                             });
                                         }
 
@@ -324,7 +354,7 @@ namespace Citizens.Controllers
                                 // Execute the command.
                                 connection.Open();
                                 insertCommand.CommandTimeout = 0;
-                                insertCommand.ExecuteNonQuery();
+                                //insertCommand.ExecuteNonQuery();
                             }
 
 

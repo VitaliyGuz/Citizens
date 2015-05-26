@@ -7,10 +7,13 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Citizens.Models
 {
+
     public enum Gender { ж, ч };
-    public class Person
+    public class PersonBase
     {
-        public int Id { get; set; }
+        [Key]
+        [Column(Order = 0)]
+        public virtual int Id { get; set; }
 
         [StringLength(20)]
         public string FirstName { get; set; }
@@ -26,16 +29,16 @@ namespace Citizens.Models
         public Gender? Gender { get; set; }
 
         [ForeignKey("PrecinctAddress")]
-        [Column(Order = 1)]
+        [Column(Order = 3)]
         [Required]
         public int CityId { get; set; }
 
         [ForeignKey("PrecinctAddress")]
-        [Column(Order = 2)]
+        [Column(Order = 4)]
         public int? StreetId { get; set; }
 
         [ForeignKey("PrecinctAddress")]
-        [Column(Order = 3)]
+        [Column(Order = 5)]
         [StringLength(10)]
         public string House { get; set; }
 
@@ -51,5 +54,33 @@ namespace Citizens.Models
         public PrecinctAddress PrecinctAddress { get; set; }
 
         public ICollection<PersonAdditionalProperty> PersonAdditionalProperties { get; set; }
+    }
+
+    public class Person : PersonBase
+    {
+        [Key]
+        [Column(Order = 0)]
+        public override int Id { get; set; }
+    }
+
+    [Table("PersonChangeHistory")]
+    public class PersonChangeHistory : PersonBase
+    {
+        [Key]
+        [Column(Order = 0)]
+        public override int Id { get; set; }
+
+        [Key]
+        [Column(Order = 1)]
+        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        public DateTime ChangeTime { get; set; }
+
+        [Key]
+        [Column(Order = 2)]
+        [DatabaseGenerated(DatabaseGeneratedOption.None)]
+        public string UserId { get; set; }
+
+        public User User { get; set; }
+
     }
 }

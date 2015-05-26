@@ -11,7 +11,7 @@ using System.Data;
 
 namespace Citizens.Models
 {
-    public class ProductDbInitializer : DropCreateDatabaseAlways<CitizenDbContext>
+    public class ProductDbInitializer : DropCreateDatabaseIfModelChanges<CitizenDbContext>
     {
         protected override void Seed(CitizenDbContext context)
         {
@@ -177,7 +177,10 @@ namespace Citizens.Models
                     CityId = 1,
                     StreetId = 1,
                     District = poltavaDistrict144,
-                    RegionPartId = 1
+                    RegionPartId = 1,
+                    lat = 49.5880818,
+                    lng = 34.5539573,
+                    location_type = "ROOFTOP"
                 },
                 new Precinct()
                 {
@@ -186,7 +189,10 @@ namespace Citizens.Models
                     CityId = 1,
                     StreetId = 2,
                     District = poltavaDistrict144,
-                    RegionPartId = 2
+                    RegionPartId = 2,
+                    lat = 49.6880818,
+                    lng = 34.6539573,
+                    location_type = "ROOFTOP"
                 }
             }.ForEach(precinct => context.Precincts.Add(precinct));
             context.SaveChanges();
@@ -320,6 +326,26 @@ namespace Citizens.Models
                 {
                     Name = "Національність",
                     PropertyType = PropertyType.Довідник
+                },
+                new PropertyKey
+                {
+                    Name = "Номер Паспорту",
+                    PropertyType = PropertyType.Число
+                },
+                new PropertyKey
+                {
+                    Name = "Дата видачі паспорту",
+                    PropertyType = PropertyType.Дата
+                },
+                new PropertyKey
+                {
+                    Name = "Місто проживання",
+                    PropertyType = PropertyType.Місто
+                },
+                new PropertyKey
+                {
+                    Name = "Вулиця проживання",
+                    PropertyType = PropertyType.Вулиця
                 }
             }.ForEach(propertyKey => context.PropertyKeys.Add(propertyKey));
             context.SaveChanges();
@@ -352,6 +378,30 @@ namespace Citizens.Models
                     PersonId = 1,
                     PropertyKeyId = 2,
                     PropertyValueId = 1
+                },
+                new PersonAdditionalProperty
+                {
+                    PersonId = 1,
+                    PropertyKeyId = 3,
+                    IntValue = 334214
+                },
+                new PersonAdditionalProperty
+                {
+                    PersonId = 1,
+                    PropertyKeyId = 4,
+                    IntValue = 1
+                },
+                new PersonAdditionalProperty
+                {
+                    PersonId = 1,
+                    PropertyKeyId = 5,
+                    DateTimeValue = DateTime.Parse("12/01/2001")
+                },
+                new PersonAdditionalProperty
+                {
+                    PersonId = 1,
+                    PropertyKeyId = 6,
+                    IntValue = 1
                 },
                 new PersonAdditionalProperty
                 {
