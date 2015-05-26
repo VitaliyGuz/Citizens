@@ -389,13 +389,13 @@ namespace Citizens.Models
                 {
                     PersonId = 1,
                     PropertyKeyId = 4,
-                    IntValue = 1
+                    DateTimeValue = DateTime.Parse("12/01/2001")                    
                 },
                 new PersonAdditionalProperty
                 {
                     PersonId = 1,
                     PropertyKeyId = 5,
-                    DateTimeValue = DateTime.Parse("12/01/2001")
+                    IntValue = 1                    
                 },
                 new PersonAdditionalProperty
                 {
