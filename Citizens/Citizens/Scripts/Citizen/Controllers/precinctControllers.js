@@ -85,6 +85,7 @@ precinctControllers.controller("listController", ['$scope', 'streetData', 'typeS
             editInd = $scope.getIndex(precinct);
             precinctData.getById({ id: precinct.Id }, function (res) {
                 $scope.selected.precinct = res;
+                $scope.selected.precinct.Number = res.Id;
                 $scope.precinctAddresses = res.PrecinctAddresses;
                 $scope.precinctEditing = true;
                 $scope.queryBy = 'City.Name';
@@ -150,6 +151,7 @@ precinctControllers.controller("listController", ['$scope', 'streetData', 'typeS
 
             serviceUtil.copyProperties($scope.selected.precinct, precinct);
             if ($scope.addMode) {
+                precinct.Id = $scope.selected.precinct.Number;
                 precinctData.save(precinct, function (newItem) {
                         successHandler({ id: newItem.Id });
                     }, errorHandler);
@@ -165,6 +167,7 @@ precinctControllers.controller("listController", ['$scope', 'streetData', 'typeS
                         $scope.addMode = false;
                         $scope.precincts.push(res);
                         $scope.selected.precinct = res;
+                        $scope.selected.precinct.Number = res.Id;
                         $scope.successMsg = 'Дільницю успішно створено!';
                     } else {
                         $scope.precincts[editInd] = res;
@@ -379,14 +382,14 @@ precinctControllers.controller("listController", ['$scope', 'streetData', 'typeS
             }
         };
 
-        $scope.onSelectStreet = function ($item, $model, $label) {
-            $scope.selected.precinct.Street = $item;
-            $scope.selected.precinct.StreetId = $model;
+        $scope.onSelectStreet = function ($item, $model, $label, model) {
+            model.Street = $item;
+            model.StreetId = $model;
         };
 
-        $scope.onSelectCity = function ($item, $model, $label) {
-            $scope.selected.precinct.City = $item;
-            $scope.selected.precinct.CityId = $model;
+        $scope.onSelectCity = function ($item, $model, $label, model) {
+            model.City = $item;
+            model.CityId = $model;
         };
 
         $scope.onSelectPrecinctNumber = function ($item, $model, $label) {

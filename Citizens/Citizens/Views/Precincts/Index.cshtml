@@ -62,15 +62,15 @@
                 <div class="row form-horizontal">
                     <div class="form-group col-lg-2">
                         <label>Дільниця</label>
-                        <input ng-model="selected.precinct.Id" type="text" class="form-control" ng-disabled="!addMode" required>
+                        <input ng-model="selected.precinct.Number" type="text" class="form-control" ng-disabled="!addMode" required>
                     </div>
                     <div class="form-group col-lg-3">
                         <label>Населений пункт</label>
-                        <input type="text" ng-change="selected.precinct.CityId=0" typeahead-on-select="onSelectCity($item, $model, $label)" ng-model="selected.precinct.City" typeahead="c.Id as c.CityType.Name +' '+c.Name + ' (' + c.RegionPart.Name + ' р-н)' for c in cities | filter: $viewValue| limitTo:10" class="form-control" required>
+                        <input type="text" ng-change="selected.precinct.CityId=0" typeahead-on-select="onSelectCity($item, $model, $label,selected.precinct)" ng-model="selected.precinct.City" typeahead="c.Id as c.CityType.Name +' '+c.Name + ' (' + c.RegionPart.Name + ' р-н)' for c in cities | filter: $viewValue| limitTo:10" class="form-control" required>
                     </div>
                     <div class="form-group col-lg-3">
                         <label>Вулиця</label>
-                        <input type="text" ng-change="selected.precinct.StreetId=0" typeahead-on-select="onSelectStreet($item, $model, $label)" ng-model="selected.precinct.Street" typeahead="s.Id as s.StreetType.Name +' '+ s.Name for s in streets | filter: $viewValue| limitTo:10" class="form-control" required>
+                        <input type="text" ng-change="selected.precinct.StreetId=0" typeahead-on-select="onSelectStreet($item, $model, $label,selected.precinct)" ng-model="selected.precinct.Street" typeahead="s.Id as s.StreetType.Name +' '+ s.Name for s in streets | filter: $viewValue| limitTo:10" class="form-control" required>
                     </div>
                     <div class="form-group col-lg-1">
                         <label>Буд.</label>
