@@ -31,7 +31,7 @@ namespace Citizens.Controllers.API
         private CitizenDbContext db = new CitizenDbContext();
 
         // GET: odata/People
-        [EnableQuery]
+        [EnableQuery(MaxNodeCount = 200)]
         public IQueryable<Person> GetPeople()
         {
             //var dbQuery =
