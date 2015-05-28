@@ -48,6 +48,40 @@ app.factory('serviceUtil',function(){
     };
 });
 
+//app.factory('cachedAddressData', ['streetData', 'cityData', '$q', function (streetData, cityData, $q) {
+//    var citiesCache = [], streetsCache = [];
+//    return {
+//        asyncGetCities: function () {
+//            var deferred = $q.defer();
+//            if (citiesCache.length === 0) {
+//                cityData.getAll(function (successData) {
+//                    citiesCache = successData.value;
+//                    deferred.resolve(citiesCache);
+//                }, function (error) {
+//                    deferred.reject(error);
+//                });
+//            } else {
+//                deferred.resolve(citiesCache);
+//            }
+//            return deferred.promise;
+//        },
+//        asyncGetStreets: function () {
+//            var deferred = $q.defer();
+//            if(streetsCache.length === 0) {
+//                streetData.query(function (successData) {
+//                    streetsCache = successData.value;
+//                    deferred.resolve(streetsCache);
+//                }, function (error) {
+//                    deferred.reject(error);
+//                });
+//            } else {
+//                deferred.resolve(streetsCache);
+//            }
+//            return deferred.promise;
+//        }
+//    };
+//}]);
+
 app.filter('filterByFirstChar', function () {
     return function (input, search) {
         if (!input) return input;

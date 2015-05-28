@@ -6,7 +6,7 @@ angular.module("regionPartServices", ['ngResource'])
             filterByType = "$filter=RegionPartType eq :type";
         return $resource('', {},
 		{
-		    'query': { method: 'GET', params: { id: "@id" }, url: urlOdata + "(:id)?$expand=Region" },
+		    'query': { method: 'GET', params: { id: "@id" }, url: urlOdata + "(:id)?$expand=Region", cache: true },
 		    'getAllByType': { method: 'GET', params: { type: "@type" }, url: urlOdata + "?$expand=Region" + "&" + filterByType },
 		    'update': { method: 'PUT', params: { id: "@id" }, url: urlOdata + "(:id)" },
 		    'save': { method: "POST", url: urlOdata },

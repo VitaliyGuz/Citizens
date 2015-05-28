@@ -6,7 +6,7 @@ angular.module("cityServices", ['ngResource']).
             params = { id: "@id" };
         return $resource('', {},
 		{
-		    'getAll': { method: 'GET', url: urlOdata + "?$expand=CityType,RegionPart&$orderby=Name asc" },
+		    'getAll': { method: 'GET', url: urlOdata + "?$expand=CityType,RegionPart&$orderby=Name asc", cache: true },
 		    'getById': { method: 'GET', params: params, url: urlOdata + "(:id)?$expand=CityType,RegionPart,CityRegionParts($expand=RegionPart)" },
 		    'update': { method: 'PUT', params: params, url: urlOdata + "(:id)" },
 		    'save': { method: "POST", url: urlOdata },
@@ -18,7 +18,7 @@ angular.module("cityServices", ['ngResource']).
             params = { id: "@id" };
         return $resource('', {},
 		{
-		    'query': { method: 'GET', params: params, url: urlOdata + "(:id)" },
+		    'query': { method: 'GET', params: params, url: urlOdata + "(:id)", cache: true },
 		    'update': { method: 'PUT', params: params, url: urlOdata + "(:id)" },
 		    'save': { method: "POST", url: urlOdata },
 		    'remove': { method: 'DELETE', params: params, url: urlOdata + "(:id)" }

@@ -8,7 +8,7 @@ angular.module("precinctServices", ['ngResource'])
             params = { id: "@id" };
         return $resource('', {},
 		{
-		    'getAll': { method: 'GET', url: urlOdata + baseExpand +"&$orderby=Id asc"},
+		    'getAll': { method: 'GET', url: urlOdata + baseExpand + "&$orderby=Id asc", cache: true },
 		    'getById': { method: 'GET', params: params, url: urlOdata + "(:id)" + baseExpand + "," + addressesExpand },
 		    'getByIdNotExpand': { method: 'GET', params: params, url: urlOdata + "(:id)" },
 		    'saveAll': { method: 'PATCH', url: urlOdata },
