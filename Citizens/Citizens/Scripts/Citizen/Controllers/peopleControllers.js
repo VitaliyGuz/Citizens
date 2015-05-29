@@ -23,7 +23,7 @@ peopleModule.config(['$routeProvider', function ($routeProvider) {
 
 peopleModule.controller("listController", ['$rootScope', '$scope', '$location', 'peopleData', 'config', 'serviceUtil', '$timeout', 'additionalPropsData', 'cityData', 'streetData', 'propertyTypes',
     function ($rootScope, $scope, $location, peopleData, config, serviceUtil, $timeout, additionalPropsData, cityData, streetData, propertyTypes) {
-        var propValues = [];
+        var propValues = [], DATE_FORMAT = 'yyyy-MM-ddT00:00:00';
         $scope.loading = true;
         $scope.saving = false;
         $scope.filterQuery = {};
@@ -169,9 +169,10 @@ peopleModule.controller("listController", ['$rootScope', '$scope', '$location', 
                         filterStr = concatIfExist(filterStr, " and ") + filterBasePatternProp
                             .replace(/:innerPattern/g, filterInnerStr)
                     } else if ((propKeyType === 'date' || propKeyType === 'number') && propKey.input.from && propKey.input.to) {
+                        //console.log(propKey.input.from.toISOString());
                         filterStr = concatIfExist(filterStr, " and ") + filterPatternPropInterval
-                            .replace(/:from/g, propKeyType === 'date' ? propKey.input.from.toISOString() : propKey.input.from)
-                            .replace(/:to/g, propKeyType === 'date' ? propKey.input.to.toISOString() : propKey.input.to)
+                            .replace(/:from/g, propKeyType === 'date' ? serviceUtil.formatDate(propKey.input.from,DATE_FORMAT)+'Z' : propKey.input.from)
+                            .replace(/:to/g, propKeyType === 'date' ? serviceUtil.formatDate(propKey.input.to, DATE_FORMAT)+'Z' : propKey.input.to)
                     } else if (propKeyType === 'text' && propKey.input.length > 0) {
                         filterStr = concatIfExist(filterStr, " and ") + filterPatternProp
                             .replace(/:val/g, "'"+propKey.input+"'")
@@ -217,7 +218,8 @@ peopleModule.controller("listController", ['$rootScope', '$scope', '$location', 
 
 peopleModule.controller('editController', ['$timeout', '$filter', '$rootScope', '$scope', '$location', '$routeParams', 'peopleData', 'serviceUtil', 'precinctData', 'precinctAddressesData', 'additionalPropsData', 'cityData', 'streetData', 'propertyTypes',
     function ($timeout, $filter, $rootScope, $scope, $location, $routeParams, peopleData, serviceUtil, precinctData, precinctAddressesData, additionalPropsData, cityData, streetData, propertyTypes) {
-        var addMode, editInd, propValues = [];
+        var addMode, editInd, propValues = [],
+            DATE_FORMAT = 'yyyy-MM-ddT00:00:00+00:00';
         $rootScope.errorMsg = '';
         $rootScope.successMsg = '';
         addMode = true;
@@ -384,7 +386,7 @@ peopleModule.controller('editController', ['$timeout', '$filter', '$rootScope', 
             serviceUtil.copyProperties($scope.person, person);
             serviceUtil.copyProperties(person, precinctAddress);
             precinctAddress.PrecinctId = $scope.person.PrecinctId;
-            person.DateOfBirth = formatDateToDateTime($scope.dateOfBirth);
+            person.DateOfBirth = serviceUtil.formatDate($scope.dateOfBirth, DATE_FORMAT);
             if (!person.Apartment) person.Apartment = null;
 
             precinctData.getByIdNotExpand({ id: precinctAddress.PrecinctId }, function () {
@@ -429,9 +431,9 @@ peopleModule.controller('editController', ['$timeout', '$filter', '$rootScope', 
             };
         };
         
-        function formatDateToDateTime(date) {
-            return $filter('date')(date, 'yyyy-MM-ddT00:00:00+00:00');
-        };
+        //function formatDate(date,pattern) {
+        //    return $filter('date')(date, pattern);
+        //};
     
         function closeAlertAtTimeout() {
             $timeout(function () {
@@ -558,6 +560,9 @@ peopleModule.controller('editController', ['$timeout', '$filter', '$rootScope', 
             if (propType.html.indexOf('ref') === 0) {
                 newPropValue = $scope.selected.property.ValueId;
             }
+            if (propType.html === 'date') {
+                newPropValue = serviceUtil.formatDate(newPropValue, DATE_FORMAT);
+            }            
             newProperty[propType.field] = newPropValue;
             if ($scope.addPropertyMode) {
                 additionalPropsData.save(newProperty, successHandler, errorHandler);

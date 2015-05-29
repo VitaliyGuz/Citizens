@@ -13,48 +13,48 @@
     </div>
 </div>
 <hr>
-<div class="row col-lg-3" ng-show="showFilters">
-    <div class="form-group" ng-repeat="propKey in propKeys">
-        <div ng-switch="propKey.PropertyType.html">
-            <div ng-switch-when="text">
-                <label>{{propKey.Name}}:</label>
-                <input type="{{propKey.PropertyType.html}}" ng-model="propKey.input" class="form-control">
-            </div>
-            <div ng-switch-when="date">
-                <label>{{propKey.Name}}:</label>
-                з <input type="date" ng-model="propKey.input.from" class="form-control">
-                по <input type="date" ng-model="propKey.input.to" class="form-control">
-            </div>
-            <div ng-switch-when="number">
-                <label>{{propKey.Name}}:</label>
-                з <input type="number" ng-model="propKey.input.from" class="form-control">
-                по <input type="number" ng-model="propKey.input.to" class="form-control">
-            </div>
-            <div ng-switch-when="ref">
-                <label>{{propKey.Name}}:</label>
-                <div class="checkbox">
-                    <label ng-repeat="v in getPropertyValuesByKeyId(propKey.Id)" class="checkbox">
-                        <input type="checkbox" ng-click="toggleSelection(propKey,v)" />{{v.Value}}
-                    </label>
+<div ng-show="showFilters" style="height:400px;" >
+    <div class="row col-lg-3" style="overflow-y: scroll;height:380px;">
+        <div class="form-group" ng-repeat="propKey in propKeys">
+            <div ng-switch="propKey.PropertyType.html">
+                <div ng-switch-when="text">
+                    <label>{{propKey.Name}}:</label>
+                    <input type="{{propKey.PropertyType.html}}" ng-model="propKey.input" class="form-control">
+                </div>
+                <div ng-switch-when="date">
+                    <label>{{propKey.Name}}:</label>
+                    з <input type="date" ng-model="propKey.input.from" class="form-control">
+                    по <input type="date" ng-model="propKey.input.to" class="form-control">
+                </div>
+                <div ng-switch-when="number">
+                    <label>{{propKey.Name}}:</label>
+                    з <input type="number" ng-model="propKey.input.from" class="form-control">
+                    по <input type="number" ng-model="propKey.input.to" class="form-control">
+                </div>
+                <div ng-switch-when="ref">
+                    <label>{{propKey.Name}}:</label>
+                    <div class="checkbox">
+                        <label ng-repeat="v in getPropertyValuesByKeyId(propKey.Id)" class="checkbox">
+                            <input type="checkbox" ng-click="toggleSelection(propKey,v)" />{{v.Value}}
+                        </label>
+                    </div>
+                </div>
+                <div ng-switch-when="refCity">
+                    <label>{{propKey.Name}}:</label>
+                    <input type="text" typeahead-on-select="onSelectFilterCity($item, $model, $label, propKey.input)" ng-model="propKey.input.City" typeahead="c.Id as c.CityType.Name +' '+c.Name + ' (' + c.RegionPart.Name + ' р-н)' for c in cities | filter: $viewValue| limitTo:10" class="form-control" required>
+                </div>
+                <div ng-switch-when="refStreet">
+                    <label>{{propKey.Name}}:</label>
+                    <input type="text" typeahead-on-select="onSelectFilterStreet($item, $model, $label, propKey.input)" ng-model="propKey.input.Street" typeahead="s.Id as s.StreetType.Name +' '+ s.Name for s in streets | filter: $viewValue| limitTo:10" class="form-control" required>
                 </div>
             </div>
-            <div ng-switch-when="refCity">
-                <label>{{propKey.Name}}:</label>
-                <input type="text" typeahead-on-select="onSelectFilterCity($item, $model, $label, propKey.input)" ng-model="propKey.input.City" typeahead="c.Id as c.CityType.Name +' '+c.Name + ' (' + c.RegionPart.Name + ' р-н)' for c in cities | filter: $viewValue| limitTo:10" class="form-control" required>
-            </div>
-            <div ng-switch-when="refStreet">
-                <label>{{propKey.Name}}:</label>
-                <input type="text" typeahead-on-select="onSelectFilterStreet($item, $model, $label, propKey.input)" ng-model="propKey.input.Street" typeahead="s.Id as s.StreetType.Name +' '+ s.Name for s in streets | filter: $viewValue| limitTo:10" class="form-control" required>
-            </div>
+            <hr />
         </div>
-        <hr/>
+        <button ng-click="onFilterChange()" class="btn btn-sm btn-success">
+            <span class="glyphicon glyphicon-check"></span> Застосувати
+        </button>
     </div>
-    <button ng-click="onFilterChange()" class="btn btn-sm btn-success">
-        <span class="glyphicon glyphicon-check"></span> Застосувати
-    </button>
-    <hr>
 </div>
-
 <div class="row">
     <div class="col-md-12">
         <button ng-click="addNew()" class="btn btn-sm btn-success">

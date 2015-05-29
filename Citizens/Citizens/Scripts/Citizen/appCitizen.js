@@ -7,7 +7,7 @@ app.value('config', {
     pageSizeTabularSection: 10
 });
 
-app.factory('serviceUtil',function(){
+app.factory('serviceUtil', ['$filter', function ($filter) {
     return {
         getErrorMessage: function (error) {
             var errMsg;
@@ -44,9 +44,12 @@ app.factory('serviceUtil',function(){
         },
         getAddressKey: function (address) {
             return { cityId: address.CityId, streetId: address.StreetId, house: address.House };
+        },
+        formatDate: function (date,pattern) {
+            return $filter('date')(date, pattern);
         }
     };
-});
+}]);
 
 //app.factory('cachedAddressData', ['streetData', 'cityData', '$q', function (streetData, cityData, $q) {
 //    var citiesCache = [], streetsCache = [];
