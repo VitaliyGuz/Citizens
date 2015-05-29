@@ -319,7 +319,7 @@ peopleModule.controller('editController', ['$timeout', '$filter', '$rootScope', 
                                 var s = arrStreets[0];
                                 pair.value = { desc: s.StreetType.Name + ' ' + s.Name, obj: s };
                             }
-                        } else { //  if (type.html.indexOf('ref') < 0) if type is not reference
+                        } else {
                             pair.value = { desc: val };
                         }
                         break;
@@ -485,29 +485,32 @@ peopleModule.controller('editController', ['$timeout', '$filter', '$rootScope', 
             else return 'display';
         };
 
-        $scope.editProperty = function (prop, ind) {
-            var typeStr = prop.key.PropertyType.html;
+        $scope.editProperty = function (propKeyId, ind) {
+            var typeStr, prop;
             $scope.addPropertyMode = false;
             editInd = ind;
             $scope.isPrimitive = true;
-            if (typeStr.indexOf('ref') === 0) {
-                $scope.isPrimitive = false;
-            }
-            if (typeStr === 'date') {
-                $scope.selected.property.Value = new Date(prop.value.desc);
-            } else if (typeStr === 'number') {
-                $scope.selected.property.Value = Number(prop.value.desc);
-            } else {
-                $scope.selected.property.Value = prop.value.desc;
-                if (!$scope.isPrimitive) {
-                    //$scope.selected.property.ValueId = prop.value.obj.Id;
-                    $scope.selected.property.Value = prop.value.obj;
-                    if (typeStr === 'ref') {
-                        $scope.propFilteredValues = getPropertyValuesByKeyId(prop.key.Id);
+            additionalPropsData.getByKey({ personId: $scope.person.Id, propertyKeyId: propKeyId }, function (res) {
+                prop = getPropertyPairs(res);
+                typeStr = prop.key.PropertyType.html;
+                if (typeStr.indexOf('ref') === 0) {
+                    $scope.isPrimitive = false;
+                }
+                if (typeStr === 'date') {
+                    $scope.selected.property.Value = new Date(prop.value.desc);
+                } else if (typeStr === 'number') {
+                    $scope.selected.property.Value = Number(prop.value.desc);
+                } else {
+                    $scope.selected.property.Value = prop.value.desc;
+                    if (!$scope.isPrimitive) {
+                        $scope.selected.property.Value = prop.value.obj;
+                        if (typeStr === 'ref') {
+                            $scope.propFilteredValues = getPropertyValuesByKeyId(prop.key.Id);
+                        }
                     }
-                }          
-            }
-            $scope.selected.property.Key = prop.key;
+                }
+                $scope.selected.property.Key = prop.key;
+            }, errorHandler);
         };
 
         $scope.reset = function () {

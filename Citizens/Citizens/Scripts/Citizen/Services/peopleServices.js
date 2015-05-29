@@ -27,7 +27,7 @@ angular.module("peopleServices", ['ngResource', 'appCitizen']).
             params = { personId: "@personId", propertyKeyId: "@propertyKeyId" };
         return $resource('', {},
 		{
-		    'getByKey': { method: 'GET', params: params, url: urlOdata + key },
+		    'getByKey': { method: 'GET', params: params, url: urlOdata + key + "?$expand=PropertyKey,PropertyValue" },
 		    'update': { method: 'PUT', params: params, url: urlOdata + key },
 		    'save': { method: "POST", url: urlOdata },
 		    'remove': { method: 'DELETE', params: params, url: urlOdata + key },

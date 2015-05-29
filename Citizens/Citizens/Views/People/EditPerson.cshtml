@@ -86,7 +86,7 @@
     <td ng-show="isDate">{{ prop.value.desc | date:'dd.MM.yyyy' }}</td>
     <td ng-show="!isDate">{{ prop.value.desc }}</td>
     <td>
-        <button class="btn btn-xs" ng-click="editProperty(prop,$index)" title="Редагувати">
+        <button class="btn btn-xs" ng-click="editProperty(prop.key.Id,$index)" title="Редагувати">
             <span class="glyphicon glyphicon-edit"></span>
         </button>
         <button class="btn btn-xs" ng-click="deleteProperty(prop,$index)" title="Видалити">
