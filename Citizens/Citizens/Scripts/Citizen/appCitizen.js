@@ -3,7 +3,7 @@
 var app = angular.module('appCitizen', []);
 
 app.value('config', {
-    pageSize: 25, // by default 25
+    pageSize: 20, // by default 20
     pageSizeTabularSection: 10
 });
 
