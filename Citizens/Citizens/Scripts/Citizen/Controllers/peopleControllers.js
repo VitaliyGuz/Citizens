@@ -20,7 +20,7 @@ peopleModule.config(['$routeProvider', function ($routeProvider) {
                 redirectTo : 'list'
             });
     }]);
-
+//todo: add initData service for cities, streets, propKeys/Values
 peopleModule.controller("listController", ['$rootScope', '$scope', '$location', 'peopleData', 'config', 'serviceUtil', '$timeout', 'additionalPropsData', 'cityData', 'streetData', 'propertyTypes',
     function ($rootScope, $scope, $location, peopleData, config, serviceUtil, $timeout, additionalPropsData, cityData, streetData, propertyTypes) {
         var propValues = [], DATE_FORMAT = 'yyyy-MM-ddT00:00:00';
@@ -126,6 +126,7 @@ peopleModule.controller("listController", ['$rootScope', '$scope', '$location', 
         
         function successHandler(data) {
             $scope.loading = false;
+            $scope.filtering = false;
             $scope.people = data.value;
             $scope.totalItems = data['@odata.count'];
         };
@@ -191,6 +192,7 @@ peopleModule.controller("listController", ['$rootScope', '$scope', '$location', 
         };
         // todo: rename to 'applyFilter'
         $scope.onFilterChange = function () {
+            $scope.filtering = true;
             setPeopleOnPage();
         };
 
@@ -211,8 +213,16 @@ peopleModule.controller("listController", ['$rootScope', '$scope', '$location', 
         $scope.onSelectFilterCity = function ($item, $model, $label, input) {
             input.City = $item;
         };
+
         $scope.onSelectFilterStreet = function ($item, $model, $label, input) {
             input.Street = $item;
+        };
+
+        $scope.resetFilter = function () {
+            angular.forEach($scope.propKeys, function (propKey) {
+                if (propKey.input) propKey.input = undefined;
+            });
+            setPeopleOnPage();
         };
     }]);
 
@@ -430,10 +440,6 @@ peopleModule.controller('editController', ['$timeout', '$filter', '$rootScope', 
                 }
             };
         };
-        
-        //function formatDate(date,pattern) {
-        //    return $filter('date')(date, pattern);
-        //};
     
         function closeAlertAtTimeout() {
             $timeout(function () {
