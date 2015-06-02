@@ -32,7 +32,7 @@ precinctControllers.controller("listController", ['$scope', 'streetData', 'typeS
               { value: "City.Name", desc: "Населений пункт", forAddresses: true },
               { value: "Street.Name", desc: "Вулиця", forAddresses: true },
               { value: "House", desc: "Буд", forAddresses: true },
-              { value: "District.Number", desc: "Округ", forAddresses: false }
+              { value: "District.Id", desc: "Округ", forAddresses: false }
         ];
         $scope.queryBy = 'Id';
         $scope.precinctEditing = false;
@@ -84,11 +84,12 @@ precinctControllers.controller("listController", ['$scope', 'streetData', 'typeS
         $scope.edit = function (precinct) {
             editInd = $scope.getIndex(precinct);
             precinctData.getById({ id: precinct.Id }, function (res) {
+                $scope.query = {};
+                $scope.queryBy = 'City.Name';
+                $scope.precinctEditing = true;
                 $scope.selected.precinct = res;
                 $scope.selected.precinct.Number = res.Id;
                 $scope.precinctAddresses = res.PrecinctAddresses;
-                $scope.precinctEditing = true;
-                $scope.queryBy = 'City.Name';
                 $scope.precinctAddresses.sort(compareAddresses);
             }, errorHandler);
         };
@@ -274,11 +275,8 @@ precinctControllers.controller("listController", ['$scope', 'streetData', 'typeS
             $scope.errorMsg = serviceUtil.getErrorMessage(e);
         };
 
-        //function getAddressKey(address) {
-        //    return { cityId: address.CityId, streetId: address.StreetId, house: address.House.replace('/','@') };
-        //};
-
         $scope.backToList = function () {
+            $scope.query = {};
             $scope.queryBy = 'Id';
             $scope.precinctEditing = false;
             $scope.addMode = false;
@@ -429,4 +427,5 @@ precinctControllers.controller("listController", ['$scope', 'streetData', 'typeS
                 $scope.precinctAddresses.splice(ind,1);
             },errorHandler);
         };
+
     }]);

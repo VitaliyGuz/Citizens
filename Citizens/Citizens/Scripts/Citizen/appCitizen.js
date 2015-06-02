@@ -50,7 +50,13 @@ app.factory('serviceUtil', ['$filter', function ($filter) {
         }
     };
 }]);
+app.run(['$rootScope', function ($rootScope) {
 
+    $rootScope.startsWith = function (str, viewValue) {
+        return str.toString().substr(0, viewValue.length).toLowerCase() == viewValue.toLowerCase();
+    }
+
+}]);
 //app.factory('cachedAddressData', ['streetData', 'cityData', '$q', function (streetData, cityData, $q) {
 //    var citiesCache = [], streetsCache = [];
 //    return {
