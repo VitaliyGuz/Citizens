@@ -50,13 +50,11 @@ app.factory('serviceUtil', ['$filter', function ($filter) {
         }
     };
 }]);
-app.run(['$rootScope', function ($rootScope) {
-
-    $rootScope.startsWith = function (str, viewValue) {
-        return str.toString().substr(0, viewValue.length).toLowerCase() == viewValue.toLowerCase();
-    }
-
-}]);
+//app.run(['$rootScope', function ($rootScope) {
+//    $rootScope.startsWith = function (str, viewValue) {
+//        return str.toString().substr(0, viewValue.length).toLowerCase() == viewValue.toLowerCase();
+//    };
+//}]);
 //app.factory('cachedAddressData', ['streetData', 'cityData', '$q', function (streetData, cityData, $q) {
 //    var citiesCache = [], streetsCache = [];
 //    return {
@@ -90,6 +88,52 @@ app.run(['$rootScope', function ($rootScope) {
 //        }
 //    };
 //}]);
+app.filter('orderByStartsWith', function () {
+    return function (items, viewValue) {
+        var key, value;
+        // object must be with only one key
+        if (angular.isObject(viewValue)) {
+            key = Object.keys(viewValue)[0];
+            value = viewValue[key];
+        } else {
+            value = viewValue;
+        }
+        function startsWith(obj) {
+            var str = obj;
+            if (key) {
+                str = obj[key];
+            }
+            return str.toString().substr(0, value.length).toLowerCase() == value.toLowerCase();
+        };
+        function compareByDefault(a, b) {
+            var cmpA = a, cmpB = b;
+            if (key) {
+                cmpA = a[key];
+                cmpB = b[key];
+            }
+            if (cmpA > cmpB) {
+                return 1;
+            } else if (cmpA < cmpB) {
+                return -1;
+            } else {
+                return 0;
+            }
+        };
+        return items.sort(function (a, b) {
+            if (startsWith(a)) {
+                if (startsWith(b)) {
+                    return compareByDefault(a, b);
+                } else {
+                    return -1;
+                }
+            } else if (startsWith(b)) {
+                return 1;
+            } else {
+                return compareByDefault(a, b);
+            }
+       });
+    }
+});
 
 app.filter('filterByFirstChar', function () {
     return function (input, search) {

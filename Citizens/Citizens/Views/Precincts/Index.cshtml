@@ -7,6 +7,12 @@
     <script src="~/Scripts/AngularUtils/directives/angular-scrollable-table.min.js"></script>
     <script src="~/Scripts/AngularUtils/directives/ui-bootstrap-custom-tpls-0.12.1.min.js"></script>
     <link href="~/Content/css/scrollable-table.css" rel="stylesheet" />
+    @*<style>
+        .dropdown-menu {
+            max-height: 150px;
+            overflow-y: auto;
+        }
+    </style>*@
 }
 <div ng-app="precinctControllers" ng-controller="listController">
 
@@ -40,7 +46,7 @@
             <tr dir-paginate="precinct in precincts | filterByFirstChar: query | itemsPerPage: pageSize" current-page="currentPage">
                 <td>{{ getIndex(precinct) + 1 }}</td>
                 <td>{{ precinct.Id }}</td>
-                <td>{{ precinct.Street.StreetType.Name }}{{ precinct.Street.Name }}, {{ precinct.House }}, {{ precinct.City.CityType.Name }}{{ precinct.City.Name }}, {{ precinct.City.RegionPart.Name }} р-н.</td>                
+                <td>{{ precinct.Street.StreetType.Name }}{{ precinct.Street.Name }}, {{ precinct.House }}, {{ precinct.City.CityType.Name }}{{ precinct.City.Name }}, {{ precinct.City.RegionPart.Name }} р-н.</td>
                 <td>{{ precinct.District.Id }}</td>
                 <td>
                     <button class="btn btn-xs" ng-click="edit(precinct)" title="Редагувати">
@@ -67,12 +73,12 @@
                     <div class="form-group col-lg-3">
                         <label>Населений пункт</label>
                         <input type="text" ng-change="selected.precinct.CityId=0" typeahead-on-select="onSelectCity($item, $model, $label,selected.precinct)" ng-model="selected.precinct.City"
-                               typeahead="c.Id as c.CityType.Name +' '+c.Name + ' (' + c.RegionPart.Name + ' р-н)' for c in cities | filter: {Name:$viewValue}:startsWith | limitTo:10" class="form-control" required>
+                               typeahead="c.Id as c.CityType.Name +' '+c.Name + ' (' + c.RegionPart.Name + ' р-н)' for c in cities | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control" required>
                     </div>
                     <div class="form-group col-lg-3">
                         <label>Вулиця</label>
                         <input type="text" ng-change="selected.precinct.StreetId=0" typeahead-on-select="onSelectStreet($item, $model, $label,selected.precinct)" ng-model="selected.precinct.Street"
-                               typeahead="s.Id as s.StreetType.Name +' '+ s.Name for s in streets | filter: {Name:$viewValue}:startsWith | limitTo:10" class="form-control" required>
+                               typeahead="s.Id as s.StreetType.Name +' '+ s.Name for s in streets | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control" required>
                     </div>
                     <div class="form-group col-lg-1">
                         <label>Буд.</label>
@@ -80,7 +86,8 @@
                     </div>
                     <div class="form-group col-lg-2">
                         <label>Район</label>
-                        <input type="text" ng-change="selected.precinct.RegionPartId=0" typeahead-on-select="onSelectRegionPart($item, $model, $label)" ng-model="selected.precinct.RegionPart" typeahead="r.Id as r.Name +' ('+ r.RegionPartType +')' for r in regionParts | filter: {Name:$viewValue}:startsWith | limitTo:10" class="form-control" required>
+                        <input type="text" ng-change="selected.precinct.RegionPartId=0" typeahead-on-select="onSelectRegionPart($item, $model, $label)" ng-model="selected.precinct.RegionPart"
+                               typeahead="r.Id as r.Name +' ('+ r.RegionPartType +')' for r in regionParts | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control" required>
                     </div>
                     <div class="form-group col-lg-2">
                         <label>Округ</label>
@@ -108,11 +115,11 @@
                 <form ng-submit="autoCompleteAddresses()">
                     <div class="form-group col-lg-3">
                         <input type="text" ng-change="autocomplete.CityId=0" typeahead-on-select="onSelectCity($item, $model, $label,autocomplete)" ng-model="autocomplete.City"
-                               typeahead="c.Id as c.CityType.Name +' '+c.Name + ' (' + c.RegionPart.Name + ' р-н)' for c in cities | filter: {Name:$viewValue}:startsWith | limitTo:10" class="form-control" placeholder="Населений пункт" required>
+                               typeahead="c.Id as c.CityType.Name +' '+c.Name + ' (' + c.RegionPart.Name + ' р-н)' for c in cities | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control" placeholder="Населений пункт" required>
                     </div>
                     <div class="form-group col-lg-3">
                         <input type="text" ng-change="autocomplete.StreetId=0" typeahead-on-select="onSelectStreet($item, $model, $label,autocomplete)" ng-model="autocomplete.Street"
-                               typeahead="s.Id as s.StreetType.Name +' '+ s.Name for s in streets | filter: {Name:$viewValue}:startsWith | limitTo:10" class="form-control" placeholder="Вулиця" required>
+                               typeahead="s.Id as s.StreetType.Name +' '+ s.Name for s in streets | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control" placeholder="Вулиця" required>
                     </div>
                     <div class="form-group col-lg-2">
                         <input class="form-control" ng-model="autocomplete.HouseFrom" placeholder="буд. з" required />
@@ -175,8 +182,8 @@
             <td>{{address.Street.StreetType.Name}} {{address.Street.Name}}</td>
             <td>{{address.House}}</td>
             <td>
-                <input type="text" ng-change="selected.newPrecinctId=0" typeahead-on-select="onSelectPrecinctNumber($item, $model, $label)" ng-model="selected.newPrecinct" 
-                       typeahead="p.Id as p.Id for p in precincts | filter: {Id:$viewValue}:startsWith | limitTo:10" class="form-control">
+                <input type="text" ng-change="selected.newPrecinctId=0" typeahead-on-select="onSelectPrecinctNumber($item, $model, $label)" ng-model="selected.newPrecinct"
+                       typeahead="p.Id as p.Id for p in precincts | filter: {Id:$viewValue} | orderByStartsWith:{Id:$viewValue} | limitTo:10" class="form-control">
             </td>
             <td>
                 <button ng-click="saveChangesPrecinct(address,$index)" class="btn btn-sm btn-success" title="Зберегти зміни">
@@ -191,12 +198,12 @@
         <script type="text/ng-template" id="edit">
             <td>{{ $index + 1 }}</td>
             <td>
-                <input type="text" ng-change="selected.address.CityId=0" typeahead-on-select="onSelectCity($item, $model, $label,selected.address)" ng-model="selected.address.City" 
-                       typeahead="c.Id as c.CityType.Name +' '+c.Name + ' (' + c.RegionPart.Name + ' р-н)' for c in cities | filter: {Name:$viewValue}:startsWith | limitTo:10" class="form-control" placeholder="Населений пункт">
+                <input type="text" ng-change="selected.address.CityId=0" typeahead-on-select="onSelectCity($item, $model, $label,selected.address)" ng-model="selected.address.City"
+                       typeahead="c.Id as c.CityType.Name +' '+c.Name + ' (' + c.RegionPart.Name + ' р-н)' for c in cities | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control" placeholder="Населений пункт">
             </td>
             <td>
                 <input type="text" ng-change="selected.address.StreetId=0" typeahead-on-select="onSelectStreet($item, $model, $label,selected.address)" ng-model="selected.address.Street"
-                       typeahead="s.Id as s.StreetType.Name +' '+ s.Name for s in streets | filter: {Name:$viewValue}:startsWith | limitTo:10" class="form-control" placeholder="Вулиця">
+                       typeahead="s.Id as s.StreetType.Name +' '+ s.Name for s in streets | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control" placeholder="Вулиця">
             </td>
             <td><input class="form-control" ng-model="selected.address.House" /></td>
             <td>

@@ -41,11 +41,13 @@
                 </div>
                 <div ng-switch-when="refCity">
                     <label>{{propKey.Name}}:</label>
-                    <input type="text" typeahead-on-select="onSelectFilterCity($item, $model, $label, propKey.input)" ng-model="propKey.input.City" typeahead="c.Id as c.CityType.Name +' '+c.Name + ' (' + c.RegionPart.Name + ' р-н)' for c in cities | filter: $viewValue| limitTo:10" class="form-control" required>
+                    <input type="text" typeahead-on-select="onSelectFilterCity($item, $model, $label, propKey.input)" ng-model="propKey.input.City"
+                           typeahead="c.Id as c.CityType.Name +' '+c.Name + ' (' + c.RegionPart.Name + ' р-н)' for c in cities | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control" required>
                 </div>
                 <div ng-switch-when="refStreet">
                     <label>{{propKey.Name}}:</label>
-                    <input type="text" typeahead-on-select="onSelectFilterStreet($item, $model, $label, propKey.input)" ng-model="propKey.input.Street" typeahead="s.Id as s.StreetType.Name +' '+ s.Name for s in streets | filter: $viewValue| limitTo:10" class="form-control" required>
+                    <input type="text" typeahead-on-select="onSelectFilterStreet($item, $model, $label, propKey.input)" ng-model="propKey.input.Street"
+                           typeahead="s.Id as s.StreetType.Name +' '+ s.Name for s in streets | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control" required>
                 </div>
             </div>
             <hr />
