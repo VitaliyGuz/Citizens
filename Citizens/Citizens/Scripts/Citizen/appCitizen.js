@@ -50,11 +50,16 @@ app.factory('serviceUtil', ['$filter', function ($filter) {
         }
     };
 }]);
-//app.run(['$rootScope', function ($rootScope) {
-//    $rootScope.startsWith = function (str, viewValue) {
-//        return str.toString().substr(0, viewValue.length).toLowerCase() == viewValue.toLowerCase();
-//    };
-//}]);
+app.run(['$rootScope', '$timeout', function ($rootScope, $timeout) {
+    $rootScope.$watch('successMsg + errorMsg', function (newValue) {
+        if (newValue && newValue.length > 0) {
+            $timeout(function () {
+                $rootScope.successMsg = '';
+                $rootScope.errorMsg = '';
+            }, 2000);
+        }
+    });
+}]);
 //app.factory('cachedAddressData', ['streetData', 'cityData', '$q', function (streetData, cityData, $q) {
 //    var citiesCache = [], streetsCache = [];
 //    return {

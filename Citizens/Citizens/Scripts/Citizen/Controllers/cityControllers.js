@@ -69,18 +69,18 @@ cityModule.controller("listController", ['$rootScope', '$location', '$timeout', 
             $scope.errorMsg = serviceUtil.getErrorMessage(e);
         };
 
-        $scope.$watch('successMsg + errorMsg', function (newValue) {
-            if (newValue.length > 0) {
-                closeAlertAtTimeout();
-            }
-        });
+        //$scope.$watch('successMsg + errorMsg', function (newValue) {
+        //    if (newValue.length > 0) {
+        //        closeAlertAtTimeout();
+        //    }
+        //});
 
-        function closeAlertAtTimeout() {
-            $timeout(function () {
-                $rootScope.successMsg = '';
-                $rootScope.errorMsg = '';
-            }, 2000);
-        };
+        //function closeAlertAtTimeout() {
+        //    $timeout(function () {
+        //        $rootScope.successMsg = '';
+        //        $rootScope.errorMsg = '';
+        //    }, 2000);
+        //};
     }]);
 
 cityModule.controller('editController', ['$timeout', '$rootScope', '$scope', '$location', '$routeParams', 'cityData', 'cityTypesData', 'serviceUtil', 'regionPartTypes', 'regionPartData', 'cityRegionPartsData',
@@ -154,15 +154,16 @@ cityModule.controller('editController', ['$timeout', '$rootScope', '$scope', '$l
 
             function querySuccessHandler(msg, res) {
                 $scope.saving = false;
-                if ($rootScope.cities != undefined) {
+                if ($rootScope.cities) {
                     if (addMode) {
                         $rootScope.cities.push(res);
                     } else {
                         $rootScope.cities[$rootScope.editInd] = res;
                     }
+                    $rootScope.cities.sort(serviceUtil.compareByName);
                 }
                 $rootScope.successMsg = msg;
-                $rootScope.cities.sort(serviceUtil.compareByName);
+                
             };
         };
 
@@ -247,18 +248,18 @@ cityModule.controller('editController', ['$timeout', '$rootScope', '$scope', '$l
             return $scope.cityDistricts.indexOf(cityDistrict);
         };
 
-        $scope.$watch('successMsg + errorMsg', function (newValue) {
-            if (newValue.length > 0) {
-                closeAlertAtTimeout();
-            }
-        });
+        //$scope.$watch('successMsg + errorMsg', function (newValue) {
+        //    if (newValue.length > 0) {
+        //        closeAlertAtTimeout();
+        //    }
+        //});
 
-        function closeAlertAtTimeout() {
-            $timeout(function () {
-                $rootScope.successMsg = '';
-                $rootScope.errorMsg = '';
-            }, 2000);
-        };
+        //function closeAlertAtTimeout() {
+        //    $timeout(function () {
+        //        $rootScope.successMsg = '';
+        //        $rootScope.errorMsg = '';
+        //    }, 2000);
+        //};
 
         $scope.getTemplate = function (cityDistrict) {
             if (cityDistrict === editableCityDistrict) return 'edit';

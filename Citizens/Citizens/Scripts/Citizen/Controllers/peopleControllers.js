@@ -96,18 +96,18 @@ peopleModule.controller("listController", ['$rootScope', '$scope', '$location', 
             $rootScope.errorMsg = serviceUtil.getErrorMessage(e);
         };
 
-        function closeAlertAtTimeout() {
-            $timeout(function () {
-                $rootScope.successMsg = '';
-                $rootScope.errorMsg = '';
-            }, 2000);
-        };
+        //function closeAlertAtTimeout() {
+        //    $timeout(function () {
+        //        $rootScope.successMsg = '';
+        //        $rootScope.errorMsg = '';
+        //    }, 2000);
+        //};
 
-        $scope.$watch('successMsg + errorMsg', function (newValue) {
-            if (newValue.length > 0) {
-                closeAlertAtTimeout();
-            }
-        });
+        //$scope.$watch('successMsg + errorMsg', function (newValue) {
+        //    if (newValue.length > 0) {
+        //        closeAlertAtTimeout();
+        //    }
+        //});
         
         $scope.onPageChange = function (newPageNumber) {
             $rootScope.currentPage = newPageNumber;
