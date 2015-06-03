@@ -82,8 +82,17 @@ namespace Citizens
 
             app.UseGoogleAuthentication(new GoogleOAuth2AuthenticationOptions()
             {
-                ClientId = "1076913514687-663079cikh0er8u8p1cef2q97jsmno9n.apps.googleusercontent.com",
-                ClientSecret = "Sr99XlRX3bvadt3NXab7oly1"
+                //Citizens2015
+                //ClientId = "1076913514687-663079cikh0er8u8p1cef2q97jsmno9n.apps.googleusercontent.com",
+                //ClientSecret = "Sr99XlRX3bvadt3NXab7oly1"
+
+                //Poltava2015
+                //ClientId = "1076913514687-i5j7lt2a7jjbqvv8akpiv2db5jt92hf1.apps.googleusercontent.com",
+                //ClientSecret = "nPR9zOwLqXxVVa9ZmfUXeJP6"
+
+                //LocalHost
+                ClientId = "1076913514687-bj5f9emeg981lv3tnimqtkr17imhkgff.apps.googleusercontent.com",
+                ClientSecret = "vIbSmTS0oheIUHFt7WTBp4Ww"
             });
 
             

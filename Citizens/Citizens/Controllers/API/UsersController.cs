@@ -34,8 +34,7 @@ namespace Citizens.Controllers.API
         private CitizenDbContext db = new CitizenDbContext();
 
         // GET: odata/Users
-        [EnableQuery]
-        [AllowAnonymous]
+        [EnableQuery]        
         public IQueryable<User> GetUsers()
         {
             return db.Users.Include(u => u.Roles);

@@ -25,8 +25,7 @@ namespace Citizens.Controllers.API
     builder.EntitySet<Precinct>("Precincts"); 
     builder.EntitySet<AppUser>("AppUsers"); 
     config.Routes.MapODataRoute("odata", "odata", builder.GetEdmModel());
-    */
-    [AllowAnonymous]
+    */    
     
     public class UserPrecinctsController : ODataController
     {

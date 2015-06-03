@@ -76,11 +76,11 @@ namespace Citizens
             // Web API routes
             //config.MapHttpAttributeRoutes();
 
-            //config.Routes.MapHttpRoute(
-            //    name: "OrdersRoute",
-            //    routeTemplate: "nonrest/{controller}/{action}/{id}",
-            //    defaults: new { id = RouteParameter.Optional }
-            //);
+            config.Routes.MapHttpRoute(
+                name: "OrdersRoute",
+                routeTemplate: "nonrest/{controller}/{action}/{id}",
+                defaults: new { id = RouteParameter.Optional }
+            );
 
             //config.Routes.MapHttpRoute(
             //    name: "DefaultApi",

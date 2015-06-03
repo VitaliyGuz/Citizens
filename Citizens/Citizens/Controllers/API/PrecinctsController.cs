@@ -33,8 +33,7 @@ namespace Citizens.Controllers.API
         private CitizenDbContext db = new CitizenDbContext();
 
         // GET: odata/Precincts
-        [EnableQuery(MaxExpansionDepth = 3)]
-        [AllowAnonymous]
+        [EnableQuery(MaxExpansionDepth = 3)]        
         public IQueryable<Precinct> GetPrecincts()
         {
             return db.Precincts;
