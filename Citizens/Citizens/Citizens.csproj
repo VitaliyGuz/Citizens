@@ -239,12 +239,14 @@
     <Content Include="Scripts\Citizen\appCitizen.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
+    <Content Include="Scripts\Citizen\Controllers\authControllers.js" />
     <Content Include="Scripts\Citizen\Controllers\cityControllers.js" />
     <Content Include="Scripts\Citizen\Controllers\peopleControllers.js" />
     <Content Include="Scripts\Citizen\Controllers\precinctControllers.js" />
     <Content Include="Scripts\Citizen\Controllers\regionPartControllers.js" />
     <Content Include="Scripts\Citizen\Controllers\streetControllers.js" />
     <Content Include="Scripts\Citizen\Controllers\userControllers.js" />
+    <Content Include="Scripts\Citizen\Services\authServices.js" />
     <Content Include="Scripts\Citizen\Services\cityServices.js" />
     <Content Include="Scripts\Citizen\Services\peopleServices.js" />
     <Content Include="Scripts\Citizen\Services\precinctServises.js" />
