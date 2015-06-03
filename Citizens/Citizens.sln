@@ -5,31 +5,11 @@ VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Citizens", "Citizens\Citizens.csproj", "{513ED9D0-D81C-4E51-AA51-2E88B08C729C}"
 EndProject
-Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "Client", "http://localhost:36561", "{C5F3FE3A-6EFC-45C2-BFC7-BE51D16D1442}"
-	ProjectSection(WebsiteProperties) = preProject
-		UseIISExpress = "true"
-		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.5.1"
-		Debug.AspNetCompiler.VirtualPath = "/localhost_36561"
-		Debug.AspNetCompiler.PhysicalPath = "Client\"
-		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_36561\"
-		Debug.AspNetCompiler.Updateable = "true"
-		Debug.AspNetCompiler.ForceOverwrite = "true"
-		Debug.AspNetCompiler.FixedNames = "false"
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.VirtualPath = "/localhost_36561"
-		Release.AspNetCompiler.PhysicalPath = "Client\"
-		Release.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_36561\"
-		Release.AspNetCompiler.Updateable = "true"
-		Release.AspNetCompiler.ForceOverwrite = "true"
-		Release.AspNetCompiler.FixedNames = "false"
-		Release.AspNetCompiler.Debug = "False"
-		SlnRelativePath = "Client\"
-		DefaultWebSiteLanguage = "Visual Basic"
-	EndProjectSection
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client", "Client\Client.csproj", "{CED36679-B0FA-445C-B551-52329CF7FAD6}"
 EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 1
+		SccNumberOfProjects = 2
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://vitality2007.visualstudio.com/defaultcollection
 		SccProjectUniqueName0 = Citizens\\Citizens.csproj
@@ -37,6 +17,11 @@ Global
 		SccAuxPath0 = https://vitality2007.visualstudio.com/defaultcollection
 		SccLocalPath0 = Citizens
 		SccProvider0 = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccProjectUniqueName1 = Client\\Client.csproj
+		SccProjectName1 = Client
+		SccAuxPath1 = https://vitality2007.visualstudio.com/defaultcollection
+		SccLocalPath1 = Client
+		SccProvider1 = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -47,10 +32,10 @@ Global
 		{513ED9D0-D81C-4E51-AA51-2E88B08C729C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{513ED9D0-D81C-4E51-AA51-2E88B08C729C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{513ED9D0-D81C-4E51-AA51-2E88B08C729C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C5F3FE3A-6EFC-45C2-BFC7-BE51D16D1442}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C5F3FE3A-6EFC-45C2-BFC7-BE51D16D1442}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C5F3FE3A-6EFC-45C2-BFC7-BE51D16D1442}.Release|Any CPU.ActiveCfg = Debug|Any CPU
-		{C5F3FE3A-6EFC-45C2-BFC7-BE51D16D1442}.Release|Any CPU.Build.0 = Debug|Any CPU
+		{CED36679-B0FA-445C-B551-52329CF7FAD6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CED36679-B0FA-445C-B551-52329CF7FAD6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CED36679-B0FA-445C-B551-52329CF7FAD6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CED36679-B0FA-445C-B551-52329CF7FAD6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
