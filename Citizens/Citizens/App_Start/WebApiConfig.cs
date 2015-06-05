@@ -23,7 +23,7 @@ namespace Citizens
     {
         public static void Register(HttpConfiguration config)
         {
-            config.Filters.Add(new AuthorizeAttribute());            
+            //config.Filters.Add(new AuthorizeAttribute());            
             // Web API configuration and services
             ODataConventionModelBuilder builder = new ODataConventionModelBuilder();
             builder.EntitySet<City>("Cities");
