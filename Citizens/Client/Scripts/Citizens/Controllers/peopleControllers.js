@@ -9,11 +9,16 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
         $scope.loading = true;
         $scope.saving = false;
         $scope.filterQuery = {};
-        $rootScope.errorMsg = '';
-        $rootScope.successMsg = '';
 
-        if (!$rootScope.currentPage) {
-            $rootScope.currentPage = 1;
+        if ($location.search().curPage) {
+            var intCurPage = parseInt($location.search().curPage);
+            if (intCurPage <= 0) {
+                $scope.currentPage = 1;
+            } else {
+                $scope.currentPage = intCurPage;
+            }
+        } else {
+            $scope.currentPage = 1;
         }
         $scope.pageSize = config.pageSize;
         $scope.totalItems = 0;
@@ -53,24 +58,24 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
         }, errorHandler);
 
         $scope.getIndex = function (ind) {
-            return ($rootScope.currentPage - 1) * config.pageSize + ind + 1;
+            return ($scope.currentPage - 1) * config.pageSize + ind + 1;
         }
         
-        setPeopleOnPage(($rootScope.currentPage - 1) * config.pageSize);
+        setPeopleOnPage(($scope.currentPage - 1) * config.pageSize);
 
         $scope.edit = function (person) {
-            $location.path('/people/edit/' + person.Id);
+            $location.path('/people/edit/' + person.Id).search("curPage", $scope.currentPage);
         };
 
         $scope.delete = function (person) {
             peopleData.remove({ id: person.Id },
                 function () {
-                    setPeopleOnPage(($rootScope.currentPage - 1) * config.pageSize);
+                    setPeopleOnPage(($scope.currentPage - 1) * config.pageSize);
                 }, errorHandler);
         };
 
         $scope.addNew = function () {
-            $location.path('/people/new');
+            $location.path('/people/new').search("curPage", $scope.currentPage);
         };
 
         function errorHandler(e) {
@@ -79,7 +84,8 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
         };
         
         $scope.onPageChange = function (newPageNumber) {
-            $rootScope.currentPage = newPageNumber;
+            $scope.currentPage = newPageNumber;
+            $location.search("curPage", newPageNumber);
             setPeopleOnPage((newPageNumber - 1) * config.pageSize);
         };
         
@@ -94,6 +100,7 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
         };
         
         function successHandler(data) {
+            $rootScope.errorMsg = '';
             $scope.loading = false;
             $scope.filtering = false;
             $scope.people = data.value;
@@ -197,11 +204,8 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
 
 peopleControllers.controller('editPersonController', ['$timeout', '$filter', '$rootScope', '$scope', '$location', '$routeParams', 'peopleData', 'serviceUtil', 'precinctData', 'precinctAddressesData', 'additionalPropsData', 'cityData', 'streetData', 'propertyTypes',
     function ($timeout, $filter, $rootScope, $scope, $location, $routeParams, peopleData, serviceUtil, precinctData, precinctAddressesData, additionalPropsData, cityData, streetData, propertyTypes) {
-        var addMode, editInd, propValues = [],
-            DATE_FORMAT = 'yyyy-MM-ddT00:00:00+00:00';
-        $rootScope.errorMsg = '';
-        $rootScope.successMsg = '';
-        addMode = true;
+        var addMode = true, editInd, propValues = [], DATE_FORMAT = 'yyyy-MM-ddT00:00:00+00:00';
+
         $scope.tableHead = ['№', 'Назва', 'Значення'];
         $scope.selected = { property: {} };
         
@@ -340,7 +344,7 @@ peopleControllers.controller('editPersonController', ['$timeout', '$filter', '$r
                 $rootScope.errorMsg = "Вулицю '" + $scope.person.Street + "' не знайдено";
                 return;
             };
-
+            $rootScope.errorMsg = '';
             $scope.saving = true;
             // todo: factory method
             var person = {
@@ -409,22 +413,10 @@ peopleControllers.controller('editPersonController', ['$timeout', '$filter', '$r
                 }
             };
         };
-    
-        function closeAlertAtTimeout() {
-            $timeout(function () {
-                $rootScope.successMsg = '';
-                $rootScope.errorMsg = '';
-            }, 2000);
-        };
-
-        $scope.$watch('successMsg + errorMsg', function (newValue) {
-            if (newValue.length > 0) {
-                closeAlertAtTimeout();
-            }
-        });
 
         $scope.backToList = function () {
-            $location.path('/people/list');
+            $rootScope.errorMsg = '';
+            $location.path('/people/list').search("curPage", $location.search().curPage);
         };
 
         $scope.onSelectStreet = function ($item, $model, $label) {
@@ -500,7 +492,7 @@ peopleControllers.controller('editPersonController', ['$timeout', '$filter', '$r
             $scope.isPrimitive = true;
         };
 
-        $scope.saveProperty = function (paramProp) {
+        $scope.saveProperty = function () {
             var propType, newProperty, newPropValue;
             if (!$scope.person) {
                 $rootScope.errorMsg = 'Спочатку необхідно зберегти фіз. особу';
@@ -520,7 +512,7 @@ peopleControllers.controller('editPersonController', ['$timeout', '$filter', '$r
                 $rootScope.errorMsg = "Значення '" + $scope.selected.property.Value + "' для характеристики '" + $scope.selected.property.Key.Name + "' не знайдено";
                 return;
             }
-            
+            $rootScope.errorMsg = '';
             $scope.savingProp = true;
             // todo: factory method
             newProperty = {

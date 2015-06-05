@@ -116,7 +116,7 @@
                typeahead="s.Id as s.StreetType.Name +' '+ s.Name for s in streets | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control">
     </td>
     <td>
-        <button ng-click="saveProperty(prop)" class="btn btn-sm btn-success" title="Зберегти зміни">
+        <button ng-click="saveProperty()" class="btn btn-sm btn-success" title="Зберегти зміни">
             <span class="glyphicon glyphicon-save"></span>
             <i ng-show="savingProp" class="fa fa-refresh fa-spin"></i>
         </button>

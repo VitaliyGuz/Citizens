@@ -83,8 +83,7 @@ app.run(["$rootScope", "$timeout", function ($rootScope, $timeout) {
         if (newValue && newValue.length > 0) {
             $timeout(function () {
                 $rootScope.successMsg = "";
-                $rootScope.errorMsg = "";
-            }, 1000);
+            }, 700);
         }
     });
 }]);
