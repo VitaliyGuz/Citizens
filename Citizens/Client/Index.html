@@ -1,9 +1,74 @@
 ﻿<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html ng-app="citizens">
 <head>
-    <title></title>
+    <!--<meta name="viewport" content="width=device-width" />-->
+    <script src="Scripts/jQuery/jquery-1.9.1.min.js"></script>
+    <!--<script src="~/Scripts/knockout-3.3.0.js"></script>-->
+    <link href="Content/css/bootstrap.min.css" rel="stylesheet" />
+    <!--<link href="~/Content/bootstrap-theme.css" rel="stylesheet" />-->
+    <link href="Content/css/font-awesome.min.css" rel="stylesheet" />
+    <script src="Scripts/AngularJS/angular.min.js"></script>
+    <script src="Scripts/AngularJS/angular-resource.min.js"></script>
+    <script src="Scripts/AngularJS/angular-route.min.js"></script>
+    <script src="Scripts/Citizens/app.js"></script>
+    <script src="Scripts/AngularUtils/directives/dirPagination.js"></script>
+    <script src="Scripts/AngularUtils/directives/ui-bootstrap-typeahead-tpls-0.12.1.min.js"></script>
+    <!-- SERVICES  -->
+    <script src="Scripts/Citizens/Services/peopleServices.js"></script>
+    <script src="Scripts/Citizens/Services/streetServices.js"></script>
+    <script src="Scripts/Citizens/Services/cityServices.js"></script>
+    <script src="Scripts/Citizens/Services/precinctServises.js"></script>
+    <script src="Scripts/Citizens/Services/regionPartServices.js"></script>
+    <script src="Scripts/Citizens/Services/userServices.js"></script>
+    <script src="Scripts/Citizens/Services/authServices.js"></script>
+    <!-- CONTROLLERS  -->
+    <script src="Scripts/Citizens/Controllers/peopleControllers.js"></script>
+    <script src="Scripts/Citizens/Controllers/authControllers.js"></script>
+    <script src="Scripts/Citizens/Controllers/cityControllers.js"></script>
+    <script src="Scripts/Citizens/Controllers/precinctControllers.js"></script>
+    <script src="Scripts/Citizens/Controllers/regionPartControllers.js"></script>
+    <script src="Scripts/Citizens/Controllers/streetControllers.js"></script>
+    <script src="Scripts/Citizens/Controllers/userControllers.js"></script>    
+    <title>Citizens</title>
 </head>
 <body>
-    1
+    <div class="navbar navbar-inverse navbar-static-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand">Фізичні особи</a>
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li><a>Дільниці</a></li>
+                    <li><a>Вулиці</a></li>
+                    <li><a>Населені</a></li>
+                    <li><a>Райони</a></li>
+                    <li><a>Завантаження з Excel</a></li>
+                </ul>
+                <ul class="list-inline navbar-text navbar-right">
+                    <!--<li><a href="javascript:sessionStorage.removeItem('accessToken');$('#logoutForm').submit();">Log off</a></li>-->
+                    <li><a>Реєстрація</a></li>
+                    <li><a>Ввійти</a></li>
+                    <li><button style="background: url(https://lh5.googleusercontent.com/-2r7nkB71SpM/AAAAAAAAAAI/AAAAAAAA4U8/OAQYVuzPXCs/photo.jpg?sz=48); width: 40px; height: 35px;" type="submit" class="btn btn-default" title="Log in using your Google account"></button></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="container body-content">
+        <div class="alert alert-danger" ng-show="errorMsg.length>0">
+            <a class="close" data-ng-click="errorMsg=''">&times;</a>
+            <strong>Помилка!</strong> {{errorMsg}}
+        </div>
+        <div class="alert alert-success" ng-show="successMsg.length>0">
+            <a class="close" data-ng-click="successMsg=''">&times;</a>
+            {{successMsg}}
+        </div>
+        <div ng-view></div>
+    </div>
 </body>
 </html>

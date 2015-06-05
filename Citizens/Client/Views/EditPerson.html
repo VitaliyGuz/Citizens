@@ -1,0 +1,129 @@
+﻿<h3>Фізична особа</h3>
+<h5 ng-show="loading">Завантаження... <i class="fa fa-refresh fa-spin"></i></h5>
+<hr />
+<form ng-submit="save()">
+    <div class="form-horizontal">
+        <div class="form-group col-lg-3">
+            <label>Прізвище</label>
+            <input ng-model="person.LastName" type="text" class="form-control" required>
+        </div>
+        <div class="form-group col-lg-3">
+            <label>Ім'я</label>
+            <input ng-model="person.FirstName" type="text" class="form-control" required>
+        </div>
+        <div class="form-group col-lg-4">
+            <label>По-батькові</label>
+            <input ng-model="person.MidleName" type="text" class="form-control" required>
+        </div>
+        <div class="form-group col-lg-2">
+            <label>Дата народження</label>
+            <input ng-model="dateOfBirth" type="date" class="form-control" required>
+        </div>
+        <div class="form-group col-lg-1">
+            <label>Стать</label>
+            <select class="form-control" ng-model="person.Gender" required>
+                <option value='' disabled>-Вибрати-</option>
+                <option value="ж">ж.</option>
+                <option value="ч">ч.</option>
+            </select>
+        </div>
+    </div>
+    <div class="form-horizontal">
+        <div class="form-group col-lg-4">
+            <label>Населений пункт</label>
+            <input type="text" ng-change="person.CityId=0" typeahead-on-select="onSelectCity($item, $model, $label)" ng-model="person.City"
+                   typeahead="c.Id as c.CityType.Name +' '+c.Name + ' (' + c.RegionPart.Name + ' р-н)' for c in cities | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control" required>
+        </div>
+        <div class="form-group col-lg-4">
+            <label>Вулиця</label>
+            <input type="text" ng-change="person.StreetId=0" typeahead-on-select="onSelectStreet($item, $model, $label)" ng-model="person.Street"
+                   typeahead="s.Id as s.StreetType.Name +' '+ s.Name for s in streets | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control" required>
+        </div>
+        <div class="form-group col-lg-2">
+            <label>Будинок</label>
+            <input ng-model="person.House" type="text" class="form-control" required>
+        </div>
+        <div class="form-group col-lg-1">
+            <label>Кв.</label>
+            <input ng-model="person.Apartment" type="text" class="form-control">
+        </div>
+        <div class="form-group col-lg-2">
+            <label>Дільниця</label>
+            <input type="text" typeahead-on-select="onSelectPrecinctNumber($item, $model, $label)" ng-model="person.PrecinctId"
+                   typeahead="p.Id as p.Id for p in precincts | filter: {Id:$viewValue} | orderByStartsWith:{Id:$viewValue} | limitTo:10" class="form-control" required>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <button type="submit" class="btn btn-sm btn-success" title="Зберегти зміни">
+                <span class="glyphicon glyphicon-save"></span> Зберегти
+                <i ng-show="saving" class="fa fa-refresh fa-spin"></i>
+            </button>
+            <button type="button" class="btn btn-sm btn-success" ng-click="backToList()" title="Повернутися до списку фізичних осіб">
+                <span class="glyphicon glyphicon-backward"></span> Завершити
+            </button>
+        </div>
+    </div>
+</form>
+<hr />
+<table class="table table-striped table-bordered">
+    <thead>
+        Додаткові характеристики:
+        <tr>
+            <th ng-repeat="thName in tableHead">{{thName}}</th>
+            <th>
+                <button ng-click="addNewProperty()" class="btn btn-sm btn-success">
+                    <span class="glyphicon glyphicon-plus"></span> Додати
+                </button>
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr ng-show="addPropertyMode" ng-include="'edit'"></tr>
+        <tr ng-repeat="prop in additionalProperties" ng-include="getTemplate(prop)"></tr>
+    </tbody>
+</table>
+<script type="text/ng-template" id="display">
+    <td>{{ $index + 1 }}</td>
+    <td>{{ prop.key.Name }}</td>
+    <td ng-show="isDate">{{ prop.value.desc | date:'dd.MM.yyyy' }}</td>
+    <td ng-show="!isDate">{{ prop.value.desc }}</td>
+    <td>
+        <button class="btn btn-xs" ng-click="editProperty(prop.key.Id,$index)" title="Редагувати">
+            <span class="glyphicon glyphicon-edit"></span>
+        </button>
+        <button class="btn btn-xs" ng-click="deleteProperty(prop,$index)" title="Видалити">
+            <span class="glyphicon glyphicon-trash"></span>
+        </button>
+    </td>
+</script>
+<script type="text/ng-template" id="edit">
+    <td>{{ $index + 1 }}</td>
+    <td ng-show="addPropertyMode">
+        <select ng-change="onChangePropertyKey()" class="form-control" ng-options="p as p.Name for p in propKeys"
+                ng-model="selected.property.Key" required>
+            <option value='' disabled>-Вибрати-</option>
+        </select>
+    </td>
+    <td ng-show="!addPropertyMode">{{ prop.key.Name }}</td>
+    <td>
+        <input ng-show="isPrimitive" class="form-control" type="{{ selected.property.Key.PropertyType.html }}" ng-model="selected.property.Value" />
+        <input ng-show="selected.property.Key.PropertyType.html === 'ref'" type="text" ng-change="selected.property.ValueId=0" typeahead-on-select="onSelectProperty($item, $model, $label)" ng-model="selected.property.Value"
+               typeahead="p.Id as p.Value for p in propFilteredValues | filter: {Value:$viewValue} | orderByStartsWith:{Value:$viewValue} | limitTo:10" class="form-control">
+        <input ng-show="selected.property.Key.PropertyType.html === 'refCity'" type="text" ng-change="selected.property.ValueId=0" typeahead-on-select="onSelectProperty($item, $model, $label)" ng-model="selected.property.Value"
+               typeahead="c.Id as c.CityType.Name +' '+c.Name + ' (' + c.RegionPart.Name + ' р-н)' for c in cities | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control">
+        <input ng-show="selected.property.Key.PropertyType.html === 'refStreet'" type="text" ng-change="selected.property.ValueId=0" typeahead-on-select="onSelectProperty($item, $model, $label)" ng-model="selected.property.Value"
+               typeahead="s.Id as s.StreetType.Name +' '+ s.Name for s in streets | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control">
+    </td>
+    <td>
+        <button ng-click="saveProperty(prop)" class="btn btn-sm btn-success" title="Зберегти зміни">
+            <span class="glyphicon glyphicon-save"></span>
+            <i ng-show="savingProp" class="fa fa-refresh fa-spin"></i>
+        </button>
+        <button class="btn btn-sm btn-success" ng-click="reset()" title="Відмінити зміни">
+            <span class="glyphicon glyphicon-remove"></span>
+        </button>
+    </td>
+</script>
+
+
