@@ -80,6 +80,7 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
 
         function errorHandler(e) {
             $scope.loading = false;
+            $scope.filtering = false;
             $rootScope.errorMsg = serviceUtil.getErrorMessage(e);
         };
         
@@ -148,15 +149,15 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
                     } else if ((propKeyType === 'date' || propKeyType === 'number') && propKey.input.from && propKey.input.to) {
                         //console.log(propKey.input.from.toISOString());
                         filterStr = concatIfExist(filterStr, " and ") + filterPatternPropInterval
-                            .replace(/:from/g, propKeyType === 'date' ? serviceUtil.formatDate(propKey.input.from,DATE_FORMAT)+'Z' : propKey.input.from)
-                            .replace(/:to/g, propKeyType === 'date' ? serviceUtil.formatDate(propKey.input.to, DATE_FORMAT)+'Z' : propKey.input.to)
+                            .replace(/:from/g, propKeyType === 'date' ? serviceUtil.formatDate(propKey.input.from, DATE_FORMAT) + 'Z' : propKey.input.from)
+                            .replace(/:to/g, propKeyType === 'date' ? serviceUtil.formatDate(propKey.input.to, DATE_FORMAT) + 'Z' : propKey.input.to);
                     } else if (propKeyType === 'text' && propKey.input.length > 0) {
                         filterStr = concatIfExist(filterStr, " and ") + filterPatternProp
                             .replace(/:val/g, "'" + propKey.input + "'");
-                    } else if (propKeyType === 'refCity' && propKey.input.City) {
+                    } else if (propKeyType === 'refCity' && propKey.input.City.Id) {
                         filterStr = concatIfExist(filterStr, " and ") + filterPatternProp
                             .replace(/:val/g, propKey.input.City.Id);
-                    } else if (propKeyType === 'refStreet' && propKey.input.Street) {
+                    } else if (propKeyType === 'refStreet' && propKey.input.Street.Id) {
                         filterStr = concatIfExist(filterStr, " and ") + filterPatternProp
                             .replace(/:val/g, propKey.input.Street.Id);
                     }
