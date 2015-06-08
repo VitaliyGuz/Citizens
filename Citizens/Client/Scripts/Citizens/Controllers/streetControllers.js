@@ -14,10 +14,8 @@ streetControllers.controller("listStreetsController", ['$location', '$rootScope'
         $rootScope.errorMsg = '';
         $rootScope.successMsg = '';
 
-        $scope.currentPage = serviceUtil.getRouteParam("currPage");
-        if (!$scope.currentPage) {
-            $scope.currentPage = 1;
-        }
+        $scope.currentPage = serviceUtil.getRouteParam("currPage") || 1;
+
         $scope.pageSize = config.pageSize;
         $scope.streets = [];
         $scope.selected = { street: {}};
@@ -113,6 +111,7 @@ streetControllers.controller("listStreetsController", ['$location', '$rootScope'
         };
 
         $scope.onPageChange = function (newPageNumber) {
-            $location.path("/streets/" + newPageNumber);
+            //todo: change location path without reload page
+            //$location.path("/streets/" + newPageNumber);
         };
 }]);

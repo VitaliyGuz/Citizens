@@ -1,6 +1,6 @@
 ﻿"use strict";
 
-var app = angular.module("citizens", ["ngRoute", 'angularUtils.directives.dirPagination', 'peopleControllers', 'streetControllers']);
+var app = angular.module("citizens", ["ngRoute", 'angularUtils.directives.dirPagination', 'peopleControllers', 'streetControllers', 'regionPartControllers']);
 
 app.config(['$routeProvider', 'paginationTemplateProvider', function ($routeProvider, paginationTemplateProvider) {
     $routeProvider.
@@ -31,6 +31,15 @@ app.config(['$routeProvider', 'paginationTemplateProvider', function ($routeProv
         when('/streets/:currPage', {
             templateUrl: 'Views/Streets.html',
             controller: 'listStreetsController'
+        }).
+        when('/region-parts', {
+            templateUrl: 'Views/RegionParts.html',
+            controller: 'listRegionPartsController'
+        }).
+        when('/region-parts/:currPage', {
+            templateUrl: 'Views/RegionParts.html',
+            controller: 'listRegionPartsController',
+            reloadOnSearch: false // do not work
         }).
         otherwise({
             redirectTo: '/' //login

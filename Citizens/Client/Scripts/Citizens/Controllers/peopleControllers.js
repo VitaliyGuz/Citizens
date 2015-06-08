@@ -10,10 +10,8 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
         $scope.saving = false;
         $scope.filterQuery = {};
 
-        $scope.currentPage = serviceUtil.getRouteParam("currPage");
-        if (!$scope.currentPage) {
-            $scope.currentPage = 1;
-        }
+        $scope.currentPage = serviceUtil.getRouteParam("currPage") || 1;
+        
         $scope.pageSize = config.pageSize;
         $scope.totalItems = 0;
 
@@ -80,7 +78,7 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
         
         $scope.onPageChange = function (newPageNumber) {
             $location.path("/people/list/" + newPageNumber);
-            setPeopleOnPage((newPageNumber - 1) * config.pageSize);
+            //setPeopleOnPage((newPageNumber - 1) * config.pageSize);
         };
         
         function setPeopleOnPage(skipItems) {
