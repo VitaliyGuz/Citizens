@@ -10,14 +10,8 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
         $scope.saving = false;
         $scope.filterQuery = {};
 
-        if ($location.search().curPage) {
-            var intCurPage = parseInt($location.search().curPage);
-            if (intCurPage <= 0) {
-                $scope.currentPage = 1;
-            } else {
-                $scope.currentPage = intCurPage;
-            }
-        } else {
+        $scope.currentPage = serviceUtil.getRouteParam("currPage");
+        if (!$scope.currentPage) {
             $scope.currentPage = 1;
         }
         $scope.pageSize = config.pageSize;
@@ -64,7 +58,7 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
         setPeopleOnPage(($scope.currentPage - 1) * config.pageSize);
 
         $scope.edit = function (person) {
-            $location.path('/people/edit/' + person.Id).search("curPage", $scope.currentPage);
+            $location.path('/people/edit/' + person.Id + '/' + $scope.currentPage);
         };
 
         $scope.delete = function (person) {
@@ -75,7 +69,7 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
         };
 
         $scope.addNew = function () {
-            $location.path('/people/new').search("curPage", $scope.currentPage);
+            $location.path('/people/new/' + $scope.currentPage);
         };
 
         function errorHandler(e) {
@@ -85,8 +79,7 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
         };
         
         $scope.onPageChange = function (newPageNumber) {
-            $scope.currentPage = newPageNumber;
-            $location.search("curPage", newPageNumber);
+            $location.path("/people/list/" + newPageNumber);
             setPeopleOnPage((newPageNumber - 1) * config.pageSize);
         };
         
@@ -135,7 +128,6 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
             // filter by additional properties
             angular.forEach($scope.propKeys, function (propKey) {
                 filterInnerStr = '';
-                var pattern;
                 if (propKey.input) {
                     propKeyType = propKey.PropertyType.html;
                     if (propKeyType === 'ref' && propKey.input.length > 0) {
@@ -203,8 +195,8 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
         };
     }]);
 
-peopleControllers.controller('editPersonController', ['$timeout', '$filter', '$rootScope', '$scope', '$location', '$routeParams', 'peopleData', 'serviceUtil', 'precinctData', 'precinctAddressesData', 'additionalPropsData', 'cityData', 'streetData', 'propertyTypes',
-    function ($timeout, $filter, $rootScope, $scope, $location, $routeParams, peopleData, serviceUtil, precinctData, precinctAddressesData, additionalPropsData, cityData, streetData, propertyTypes) {
+peopleControllers.controller('editPersonController', ['$timeout', '$filter', '$rootScope', '$scope', '$location', 'peopleData', 'serviceUtil', 'precinctData', 'precinctAddressesData', 'additionalPropsData', 'cityData', 'streetData', 'propertyTypes',
+    function ($timeout, $filter, $rootScope, $scope, $location, peopleData, serviceUtil, precinctData, precinctAddressesData, additionalPropsData, cityData, streetData, propertyTypes) {
         var addMode = true, editInd, propValues = [], DATE_FORMAT = 'yyyy-MM-ddT00:00:00+00:00';
 
         $scope.tableHead = ['№', 'Назва', 'Значення'];
@@ -236,9 +228,10 @@ peopleControllers.controller('editPersonController', ['$timeout', '$filter', '$r
             streetData.query(function (res) {
                 //$scope.loading = false;
                 $scope.streets = res.value;
-                if ($routeParams.id != undefined) {
+                var routeId = serviceUtil.getRouteParam('id');
+                if (routeId) {
                     //$scope.loading = true;
-                    peopleData.getById({ id: $routeParams.id }, function (res) {
+                    peopleData.getById({ id: routeId }, function (res) {
                         $scope.loading = false;
                         addMode = false;
                         $scope.person = res;
@@ -417,7 +410,9 @@ peopleControllers.controller('editPersonController', ['$timeout', '$filter', '$r
 
         $scope.backToList = function () {
             $rootScope.errorMsg = '';
-            $location.path('/people/list').search("curPage", $location.search().curPage);
+            var currPage = serviceUtil.getRouteParam("currPage");
+            if (!currPage) currPage = 1;
+            $location.path('/people/list/' + currPage);
         };
 
         $scope.onSelectStreet = function ($item, $model, $label) {

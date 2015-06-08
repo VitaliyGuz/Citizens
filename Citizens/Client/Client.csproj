@@ -163,6 +163,7 @@
     <None Include="Scripts\_references.js" />
     <Content Include="Views\EditPerson.html" />
     <Content Include="Views\ListPeople.html" />
+    <Content Include="Views\Streets.html" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>

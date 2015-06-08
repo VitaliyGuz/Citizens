@@ -83,22 +83,22 @@
     </tr>
     </thead>
     <tbody>
-    <tr dir-paginate="person in people | itemsPerPage: pageSize" current-page="currentPage" total-items="totalItems">
-        <td>{{ getIndex($index) }}</td>
-        <td>{{ person.LastName }} {{ person.FirstName }} {{ person.MidleName }}</td>
-        <td>{{ person.DateOfBirth | date:'dd.MM.yyyy' }}</td>
-        <td>{{ person.City.CityType.Name}}{{person.City.Name}}, {{ person.Street.StreetType.Name }} {{ person.Street.Name }} {{ person.House }}{{ person.Apartment | checkApartment}}</td>
-        <td>{{ person.PrecinctAddress.PrecinctId }}</td>
-        <td>
-            <button class="btn btn-xs" ng-click="edit(person)" title="Редагувати">
-                <span class="glyphicon glyphicon-edit"></span>
-            </button>
-            <button class="btn btn-xs" ng-click="delete(person)" title="Видалити">
-                <span class="glyphicon glyphicon-trash"></span>
-            </button>
-        </td>
-    </tr>
+        <tr dir-paginate="person in people | itemsPerPage: pageSize" current-page="currentPage" total-items="totalItems" pagination-id="peoplePagination">
+            <td>{{ getIndex($index) }}</td>
+            <td>{{ person.LastName }} {{ person.FirstName }} {{ person.MidleName }}</td>
+            <td>{{ person.DateOfBirth | date:'dd.MM.yyyy' }}</td>
+            <td>{{ person.City.CityType.Name}}{{person.City.Name}}, {{ person.Street.StreetType.Name }} {{ person.Street.Name }} {{ person.House }}{{ person.Apartment | checkApartment}}</td>
+            <td>{{ person.PrecinctAddress.PrecinctId }}</td>
+            <td>
+                <button class="btn btn-xs" ng-click="edit(person)" title="Редагувати">
+                    <span class="glyphicon glyphicon-edit"></span>
+                </button>
+                <button class="btn btn-xs" ng-click="delete(person)" title="Видалити">
+                    <span class="glyphicon glyphicon-trash"></span>
+                </button>
+            </td>
+        </tr>
     </tbody>
 </table>
 <hr/>
-<dir-pagination-controls on-page-change="onPageChange(newPageNumber)"></dir-pagination-controls>
+<dir-pagination-controls boundary-links="true" on-page-change="onPageChange(newPageNumber)" pagination-id="peoplePagination"></dir-pagination-controls>

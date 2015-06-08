@@ -1,9 +1,9 @@
 ﻿'use strict';
 
-var streetControllers = angular.module('streetControllers', ['streetServices', 'angularUtils.directives.dirPagination', 'app']);
+var streetControllers = angular.module('streetControllers', ['streetServices']);
 
-streetControllers.controller("listController", ['$scope', 'streetData', 'typeStreetData', 'config','serviceUtil',
-    function ($scope, streetData, typeStreetData, config, serviceUtil) {
+streetControllers.controller("listStreetsController", ['$location', '$rootScope', '$scope', 'streetData', 'typeStreetData', 'config', 'serviceUtil',
+    function ($location, $rootScope, $scope, streetData, typeStreetData, config, serviceUtil) {
         var editInd;
         $scope.loading = true;
         $scope.saving = false;
@@ -11,10 +11,13 @@ streetControllers.controller("listController", ['$scope', 'streetData', 'typeStr
         $scope.query = {};
         $scope.queryBy = 'Name';
 
-        $scope.errorMsg = '';
-        $scope.successMsg = '';
+        $rootScope.errorMsg = '';
+        $rootScope.successMsg = '';
 
-        $scope.currentPage = 1;
+        $scope.currentPage = serviceUtil.getRouteParam("currPage");
+        if (!$scope.currentPage) {
+            $scope.currentPage = 1;
+        }
         $scope.pageSize = config.pageSize;
         $scope.streets = [];
         $scope.selected = { street: {}};
@@ -37,7 +40,7 @@ streetControllers.controller("listController", ['$scope', 'streetData', 'typeStr
         },errorHandler);
 
         $scope.edit = function (street) {
-            $scope.errorMsg = '';
+            $rootScope.errorMsg = '';
             $scope.addMode = false;
             $scope.reset();
             editInd = $scope.getIndex(street);
@@ -47,7 +50,7 @@ streetControllers.controller("listController", ['$scope', 'streetData', 'typeStr
         };
 
         $scope.delete = function (street) {
-            $scope.errorMsg = '';
+            $rootScope.errorMsg = '';
             streetData.remove({ id: street.Id },
                 function () {
                     $scope.streets.splice($scope.getIndex(street), 1);
@@ -55,7 +58,7 @@ streetControllers.controller("listController", ['$scope', 'streetData', 'typeStr
         };
 
         $scope.save = function () {
-            $scope.errorMsg = '';
+            $rootScope.errorMsg = '';
             $scope.saving = true;
             var street = {
                 "Id": 0,
@@ -87,7 +90,7 @@ streetControllers.controller("listController", ['$scope', 'streetData', 'typeStr
         };
 
         $scope.addNew = function () {
-            $scope.errorMsg = '';
+            $rootScope.errorMsg = '';
             $scope.reset();
             $scope.addMode = true;
         };
@@ -106,7 +109,10 @@ streetControllers.controller("listController", ['$scope', 'streetData', 'typeStr
             $scope.saving = false;
             $scope.loading = false;
             $scope.reset();
-            $scope.errorMsg = serviceUtil.getErrorMessage(e);
+            $rootScope.errorMsg = serviceUtil.getErrorMessage(e);
         };
 
+        $scope.onPageChange = function (newPageNumber) {
+            $location.path("/streets/" + newPageNumber);
+        };
 }]);

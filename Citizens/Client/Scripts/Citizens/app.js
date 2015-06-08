@@ -1,6 +1,6 @@
 ﻿"use strict";
 
-var app = angular.module("citizens", ["ngRoute", 'angularUtils.directives.dirPagination', 'peopleControllers']);
+var app = angular.module("citizens", ["ngRoute", 'angularUtils.directives.dirPagination', 'peopleControllers', 'streetControllers']);
 
 app.config(['$routeProvider', 'paginationTemplateProvider', function ($routeProvider, paginationTemplateProvider) {
     $routeProvider.
@@ -8,13 +8,29 @@ app.config(['$routeProvider', 'paginationTemplateProvider', function ($routeProv
             templateUrl: 'Views/ListPeople.html',
             controller: 'listPeopleController'
         }).
-        when('/people/new', {
+        when('/people/list/:currPage', {
+            templateUrl: 'Views/ListPeople.html',
+            controller: 'listPeopleController'
+        }).
+        when('/people/new/:currPage', {
+            templateUrl: 'Views/EditPerson.html',
+            controller: 'editPersonController'
+        }).
+        when('/people/edit/:id/:currPage', {
             templateUrl: 'Views/EditPerson.html',
             controller: 'editPersonController'
         }).
         when('/people/edit/:id', {
             templateUrl: 'Views/EditPerson.html',
             controller: 'editPersonController'
+        }).
+        when('/streets', {
+            templateUrl: 'Views/Streets.html',
+            controller: 'listStreetsController'
+        }).
+        when('/streets/:currPage', {
+            templateUrl: 'Views/Streets.html',
+            controller: 'listStreetsController'
         }).
         otherwise({
             redirectTo: '/' //login
@@ -34,7 +50,7 @@ app.filter('checkApartment', function () {
     };
 });
 
-app.factory("serviceUtil", ["$filter", function ($filter) {
+app.factory("serviceUtil", ["$filter", '$routeParams', function ($filter, $routeParams) {
     return {
         getErrorMessage: function (error) {
             var errMsg;
@@ -74,6 +90,16 @@ app.factory("serviceUtil", ["$filter", function ($filter) {
         },
         formatDate: function (date,pattern) {
             return $filter("date")(date, pattern);
+        },
+        getRouteParam: function (paramName) {
+            var param = $routeParams[paramName], intParam;
+            if (param) {
+                intParam = parseInt(param);
+                if (intParam > 0) {
+                    return intParam;
+                }
+            }
+            return undefined;
         }
     };
 }]);
