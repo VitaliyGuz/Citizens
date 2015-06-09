@@ -56,10 +56,15 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
         setPeopleOnPage(($scope.currentPage - 1) * config.pageSize);
 
         $scope.edit = function (person) {
-            $location.path('/people/edit/' + person.Id + '/' + $scope.currentPage);
+            $location.path('/person/' + person.Id + '/' + $scope.currentPage);
         };
 
         $scope.delete = function (person) {
+            if (config.checkDeleteItem) {
+                var ok = confirm("Увага! Фізичну особу буде видалено, продовжити?");
+                if (!ok) return;
+            }
+            $rootScope.errorMsg = '';
             peopleData.remove({ id: person.Id },
                 function () {
                     setPeopleOnPage(($scope.currentPage - 1) * config.pageSize);
@@ -67,7 +72,7 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
         };
 
         $scope.addNew = function () {
-            $location.path('/people/new/' + $scope.currentPage);
+            $location.path('/person/new/' + $scope.currentPage);
         };
 
         function errorHandler(e) {
@@ -77,7 +82,7 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
         };
         
         $scope.onPageChange = function (newPageNumber) {
-            $location.path("/people/list/" + newPageNumber);
+            $location.path("/people/" + newPageNumber);
             //setPeopleOnPage((newPageNumber - 1) * config.pageSize);
         };
         
@@ -193,8 +198,8 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
         };
     }]);
 
-peopleControllers.controller('editPersonController', ['$timeout', '$filter', '$rootScope', '$scope', '$location', 'peopleData', 'serviceUtil', 'precinctData', 'precinctAddressesData', 'additionalPropsData', 'cityData', 'streetData', 'propertyTypes',
-    function ($timeout, $filter, $rootScope, $scope, $location, peopleData, serviceUtil, precinctData, precinctAddressesData, additionalPropsData, cityData, streetData, propertyTypes) {
+peopleControllers.controller('editPersonController', ['$timeout', '$filter', '$rootScope', '$scope', '$location', 'peopleData', 'serviceUtil', 'precinctData', 'precinctAddressesData', 'additionalPropsData', 'cityData', 'streetData', 'propertyTypes','config',
+    function ($timeout, $filter, $rootScope, $scope, $location, peopleData, serviceUtil, precinctData, precinctAddressesData, additionalPropsData, cityData, streetData, propertyTypes, config) {
         var addMode = true, editInd, propValues = [], DATE_FORMAT = 'yyyy-MM-ddT00:00:00+00:00';
 
         $scope.tableHead = ['№', 'Назва', 'Значення'];
@@ -410,7 +415,7 @@ peopleControllers.controller('editPersonController', ['$timeout', '$filter', '$r
             $rootScope.errorMsg = '';
             var currPage = serviceUtil.getRouteParam("currPage");
             if (!currPage) currPage = 1;
-            $location.path('/people/list/' + currPage);
+            $location.path('/people/' + currPage);
         };
 
         $scope.onSelectStreet = function ($item, $model, $label) {
@@ -545,7 +550,11 @@ peopleControllers.controller('editPersonController', ['$timeout', '$filter', '$r
             };
         };
         
-        $scope.deleteProperty = function (prop,ind) {
+        $scope.deleteProperty = function (prop, ind) {
+            if (config.checkDeleteItem) {
+                var ok = confirm("Увага! Характеристику фіз. особи буде видалено, продовжити?");
+                if (!ok) return;
+            }
             additionalPropsData.remove({ personId: $scope.person.Id, propertyKeyId: prop.key.Id }, function () {
                 $scope.additionalProperties.splice(ind, 1);
             }, errorHandler);

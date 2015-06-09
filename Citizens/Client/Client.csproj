@@ -161,7 +161,9 @@
     <Content Include="Scripts\AngularJS\angular-mocks.js" />
     <Content Include="Scripts\npm.js" />
     <None Include="Scripts\_references.js" />
+    <Content Include="Views\EditCity.html" />
     <Content Include="Views\EditPerson.html" />
+    <Content Include="Views\ListCities.html" />
     <Content Include="Views\ListPeople.html" />
     <Content Include="Views\RegionParts.html" />
     <Content Include="Views\Streets.html" />

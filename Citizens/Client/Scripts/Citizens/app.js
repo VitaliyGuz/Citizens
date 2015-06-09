@@ -1,26 +1,26 @@
 ﻿"use strict";
 
-var app = angular.module("citizens", ["ngRoute", 'angularUtils.directives.dirPagination', 'peopleControllers', 'streetControllers', 'regionPartControllers']);
+var app = angular.module("citizens", ["ngRoute", 'angularUtils.directives.dirPagination', 'peopleControllers', 'streetControllers', 'regionPartControllers','cityControllers']);
 
 app.config(['$routeProvider', 'paginationTemplateProvider', function ($routeProvider, paginationTemplateProvider) {
     $routeProvider.
-        when('/people/list', {
+        when('/people', {
             templateUrl: 'Views/ListPeople.html',
             controller: 'listPeopleController'
         }).
-        when('/people/list/:currPage', {
+        when('/people/:currPage', {
             templateUrl: 'Views/ListPeople.html',
             controller: 'listPeopleController'
         }).
-        when('/people/new/:currPage', {
+        when('/person/new/:currPage', {
             templateUrl: 'Views/EditPerson.html',
             controller: 'editPersonController'
         }).
-        when('/people/edit/:id/:currPage', {
+        when('/person/:id/:currPage', {
             templateUrl: 'Views/EditPerson.html',
             controller: 'editPersonController'
         }).
-        when('/people/edit/:id', {
+        when('/person/:id', {
             templateUrl: 'Views/EditPerson.html',
             controller: 'editPersonController'
         }).
@@ -41,6 +41,18 @@ app.config(['$routeProvider', 'paginationTemplateProvider', function ($routeProv
             controller: 'listRegionPartsController',
             reloadOnSearch: false // do not work
         }).
+        when('/cities', {
+            templateUrl: 'Views/ListCities.html',
+            controller: 'listCitiesController'
+        }).
+        when('/city/new', {
+            templateUrl: 'Views/EditCity.html',
+            controller: 'editCityController'
+        }).
+        when('/city/:id', {
+            templateUrl: 'Views/EditCity.html',
+            controller: 'editCityController'
+        }).
         otherwise({
             redirectTo: '/' //login
         });
@@ -50,7 +62,8 @@ app.config(['$routeProvider', 'paginationTemplateProvider', function ($routeProv
 app.value("config", {
     baseUrl: 'http://localhost:6600',
     pageSize: 5, // by default 20
-    pageSizeTabularSection: 10
+    pageSizeTabularSection: 10,
+    checkDeleteItem: true
 });
 
 app.filter('checkApartment', function () {
@@ -79,13 +92,7 @@ app.factory("serviceUtil", ["$filter", '$routeParams', function ($filter, $route
             return errMsg;
         },
         compareByName: function (a,b) {
-            if (a.Name > b.Name) {
-                return 1;
-            } else if (a.Name < b.Name) {
-                return -1;
-            } else {
-                return 0;
-            }
+            return a.Name.localeCompare(b.Name);
         },
         copyProperties: function (source, destination) {
             for (var prop in destination) {
@@ -146,13 +153,7 @@ app.filter("orderByStartsWith", function () {
                 cmpA = a[key];
                 cmpB = b[key];
             }
-            if (cmpA > cmpB) {
-                return 1;
-            } else if (cmpA < cmpB) {
-                return -1;
-            } else {
-                return 0;
-            }
+            return cmpA.localeCompare(cmpB);
         };
         return items.sort(function (a, b) {
             if (startsWith(a)) {

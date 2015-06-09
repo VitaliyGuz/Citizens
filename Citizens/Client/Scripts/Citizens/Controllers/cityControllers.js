@@ -1,28 +1,9 @@
 ﻿'use strict';
 
-var cityModule = angular.module('cityModule', ['cityServices', 'regionPartServices', 'angularUtils.directives.dirPagination', 'app','ngRoute']);
+var cityModule = angular.module('cityControllers', ['cityServices', 'regionPartServices']);
 
-cityModule.config(['$routeProvider', function ($routeProvider) {
-    $routeProvider.
-        when('/list', {
-            templateUrl: '/City/ListCities',
-            controller: 'listController'
-        }).
-        when('/new', {
-            templateUrl: '/City/EditCity',
-            controller: 'editController'
-        }).
-        when('/edit/:id', {
-            templateUrl: '/City/EditCity',
-            controller: 'editController'
-        }).
-        otherwise({
-            redirectTo: 'list'
-        });
-}]);
-
-cityModule.controller("listController", ['$rootScope', '$location', '$timeout', '$scope', 'config', 'serviceUtil', 'cityTypesData', 'cityData', 'cityRegionPartsData',
-    function ($rootScope, $location, $timeout, $scope, config, serviceUtil, cityTypesData, cityData, cityRegionPartsData) {
+cityModule.controller("listCitiesController", ['$rootScope', '$location', '$timeout', '$scope', 'config', 'serviceUtil', 'cityTypesData', 'cityData', 'cityRegionPartsData',
+    function ($rootScope, $location, $timeout, $scope, config, serviceUtil, cityTypesData, cityData) {
 
         $scope.query = {};
         $scope.queryBy = 'Name';
@@ -30,30 +11,35 @@ cityModule.controller("listController", ['$rootScope', '$location', '$timeout', 
         $rootScope.errorMsg = '';
         $rootScope.successMsg = '';
 
-        $scope.currentPage = 1;
+        $scope.currentPage = serviceUtil.getRouteParam("currPage") || 1;
         $scope.pageSize = config.pageSize;
 
         $scope.tableHead = ['№', 'Населений пункт', 'Район', 'Дії'];
         
         $scope.getIndex = function (city) {
-            return $scope.cities.indexOf(city);
+            return $rootScope.cities.indexOf(city);
         };
 
         if ($rootScope.cities == undefined || $rootScope.cities.length === 0) {
             $scope.loading = true;
             cityData.getAll(function (res) {
-                $rootScope.cities = res.value;
+                $rootScope.errorMsg = '';
                 $scope.loading = false;
-                //$rootScope.cities.sort(serviceUtil.compareByName);
+                $rootScope.cities = res.value;
             }, errorHandler);
         };
 
         $scope.edit = function (city) {
             $rootScope.editInd = $scope.getIndex(city);
-            $location.path('edit/' + city.Id);
+            $location.path('/city/' + city.Id);
         };
 
         $scope.delete = function (city) {
+            if (config.checkDeleteItem) {
+                var ok = confirm("Увага! Населений пункт буде видалено, продовжити?");
+                if (!ok) return;
+            }
+            $rootScope.errorMsg = '';
             cityData.remove({ id: city.Id },
                 function () {
                     $rootScope.cities.splice($scope.getIndex(city), 1);
@@ -61,31 +47,18 @@ cityModule.controller("listController", ['$rootScope', '$location', '$timeout', 
         };
 
         $scope.addNew = function () {
-            $location.path('new');
+            $location.path('/city/new');
         };
 
         function errorHandler(e) {
             $scope.loading = false;
             $scope.errorMsg = serviceUtil.getErrorMessage(e);
         };
-
-        //$scope.$watch('successMsg + errorMsg', function (newValue) {
-        //    if (newValue.length > 0) {
-        //        closeAlertAtTimeout();
-        //    }
-        //});
-
-        //function closeAlertAtTimeout() {
-        //    $timeout(function () {
-        //        $rootScope.successMsg = '';
-        //        $rootScope.errorMsg = '';
-        //    }, 2000);
-        //};
     }]);
 
-cityModule.controller('editController', ['$timeout', '$rootScope', '$scope', '$location', '$routeParams', 'cityData', 'cityTypesData', 'serviceUtil', 'regionPartTypes', 'regionPartData', 'cityRegionPartsData',
-    function ($timeout, $rootScope, $scope, $location, $routeParams, cityData, cityTypesData, serviceUtil, regionPartTypes, regionPartData, cityRegionPartsData) {
-        var editInd, editableCityDistrict, addMode;
+cityModule.controller('editCityController', ['$timeout', '$rootScope', '$scope', '$location', '$routeParams', 'cityData', 'cityTypesData', 'serviceUtil', 'regionPartTypes', 'regionPartData', 'cityRegionPartsData','config',
+    function ($timeout, $rootScope, $scope, $location, $routeParams, cityData, cityTypesData, serviceUtil, regionPartTypes, regionPartData, cityRegionPartsData, config) {
+        var editInd, editableCityDistrict, addMode, routeId;
         $scope.loading = true;
         $scope.saving = false;
         addMode = true;
@@ -94,9 +67,9 @@ cityModule.controller('editController', ['$timeout', '$rootScope', '$scope', '$l
         $scope.tableHead = ['№', 'Район'];
         $scope.selected = { cityDistrict: {} };
         $scope.cityDistricts = [];
-
-        if ($routeParams.id != undefined) {
-            cityData.getById({ id: $routeParams.id }, function (res) {
+        routeId = serviceUtil.getRouteParam("id");
+        if (routeId) {
+            cityData.getById({ id: routeId }, function (res) {
                 $scope.loading = false;
                 addMode = false;
                 $scope.city = res;
@@ -127,6 +100,7 @@ cityModule.controller('editController', ['$timeout', '$rootScope', '$scope', '$l
 
         $scope.save = function () {
             $scope.saving = true;
+            $rootScope.errorMsg = '';
             // todo: factory method
             var city = {
                 "Id": 0,
@@ -160,15 +134,21 @@ cityModule.controller('editController', ['$timeout', '$rootScope', '$scope', '$l
                     } else {
                         $rootScope.cities[$rootScope.editInd] = res;
                     }
-                    $rootScope.cities.sort(serviceUtil.compareByName);
+                    $rootScope.cities.sort(compareCities);
                 }
                 $rootScope.successMsg = msg;
                 
             };
         };
 
+        function compareCities(a, b) {
+            var cmpType = a.CityTypeId > b.CityTypeId ? 1 : a.CityTypeId < b.CityTypeId ? -1 : 0;
+            return cmpType === 0 ? serviceUtil.compareByName(a, b) : cmpType;
+        };
+
         $scope.editCityDistrict = function (cityDistrict) {
             $scope.reset();
+            $rootScope.errorMsg = '';
             editableCityDistrict = cityDistrict;
             $scope.addCityDistrictMode = false;
             editInd = $scope.getIndex(cityDistrict);
@@ -178,6 +158,11 @@ cityModule.controller('editController', ['$timeout', '$rootScope', '$scope', '$l
         };
 
         $scope.deleteCityDistrict = function (cityDistrict) {
+            if (config.checkDeleteItem) {
+                var ok = confirm("Увага! Район міста буде видалено, продовжити?");
+                if (!ok) return;
+            }
+            $rootScope.errorMsg = '';
             cityRegionPartsData.remove(getKey(cityDistrict),
                 function () {
                     $scope.cityDistricts.splice($scope.getIndex(cityDistrict), 1);
@@ -185,6 +170,7 @@ cityModule.controller('editController', ['$timeout', '$rootScope', '$scope', '$l
         };
 
         $scope.addNewCityDistrict = function () {
+            $rootScope.errorMsg = '';
             $scope.addCityDistrictMode = true;
         };
 
@@ -193,6 +179,7 @@ cityModule.controller('editController', ['$timeout', '$rootScope', '$scope', '$l
                 $rootScope.errorMsg = "Спочатку необхідно зберегти населений пункт";
                 return;
             }
+            $rootScope.errorMsg = '';
             $scope.savingCityDistrict = true;
             var cityDistrict = {
                 "CityId": $scope.city.Id,
@@ -226,7 +213,8 @@ cityModule.controller('editController', ['$timeout', '$rootScope', '$scope', '$l
 
         $scope.backToList = function () {
             $scope.reset();
-            $location.path('list');
+            $rootScope.errorMsg = '';
+            $location.path('cities');
         };
 
         function errorHandler(e) {
@@ -247,19 +235,6 @@ cityModule.controller('editController', ['$timeout', '$rootScope', '$scope', '$l
             if ($scope.cityDistricts == undefined) return undefined;
             return $scope.cityDistricts.indexOf(cityDistrict);
         };
-
-        //$scope.$watch('successMsg + errorMsg', function (newValue) {
-        //    if (newValue.length > 0) {
-        //        closeAlertAtTimeout();
-        //    }
-        //});
-
-        //function closeAlertAtTimeout() {
-        //    $timeout(function () {
-        //        $rootScope.successMsg = '';
-        //        $rootScope.errorMsg = '';
-        //    }, 2000);
-        //};
 
         $scope.getTemplate = function (cityDistrict) {
             if (cityDistrict === editableCityDistrict) return 'edit';

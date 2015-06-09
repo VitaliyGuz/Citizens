@@ -49,7 +49,11 @@ regionPartControllers.controller("listRegionPartsController", ['$rootScope', '$l
             }, errorHandler);
         };
 
-        $scope.delete = function(regionPart) {
+        $scope.delete = function (regionPart) {
+            if (config.checkDeleteItem) {
+                var ok = confirm("Увага! Район буде видалено, продовжити?");
+                if (!ok) return;
+            }
             $rootScope.errorMsg = '';
             regionPartData.remove({ id: regionPart.Id },
                 function() {
