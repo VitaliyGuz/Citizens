@@ -2,8 +2,8 @@
 
 var precinctControllers = angular.module('precinctControllers', ['streetServices', 'precinctServices', 'cityServices', 'regionPartServices', 'angularUtils.directives.dirPagination', 'appCitizen', 'scrollable-table', 'ui.bootstrap']);
 
-precinctControllers.filter('optionsForAddresses', function () {
-    return function (input, useFilter) {
+precinctControllers.filter('optionsForAddresses', function() {
+    return function(input, useFilter) {
         var out = [];
         if (!useFilter) return input;
         for (var i = 0; i < input.length; i++) {
@@ -13,11 +13,11 @@ precinctControllers.filter('optionsForAddresses', function () {
         }
         return out;
     }
-})
+});
 
 precinctControllers.controller("listController", ['$scope', 'streetData', 'typeStreetData', 'config', 'serviceUtil', 'precinctData', 'cityData', 'districtData', 'precinctAddressesData', '$timeout', 'regionPartData',
     function ($scope, streetData, typeStreetData, config, serviceUtil, precinctData, cityData, districtData, precinctAddressesData, $timeout, regionPartData) {
-        var editInd, selectAddressInd,editableAddress;
+        var editInd, copyAddressMode, editableAddress;
         $scope.loading = true;
         $scope.saving = false;
         $scope.savingAddress = false;
@@ -213,7 +213,7 @@ precinctControllers.controller("listController", ['$scope', 'streetData', 'typeS
             };
             serviceUtil.copyProperties($scope.selected.address, address);
             address.PrecinctId = $scope.selected.precinct.Id;
-            if ($scope.addAddressMode) {
+            if ($scope.addAddressMode || copyAddressMode) {
                 saveAddressData(address);
             } else {
                 precinctAddressesData.remove(serviceUtil.getAddressKey(oldValue),
@@ -248,6 +248,8 @@ precinctControllers.controller("listController", ['$scope', 'streetData', 'typeS
         $scope.addNewAddress = function () {
             $scope.resetAddress();
             $scope.addAddressMode = true;
+            $scope.selected.address.City = $scope.selected.precinct.City;
+            $scope.selected.address.CityId = $scope.selected.precinct.City.Id;
         };
 
         $scope.getTemplate = function (address) {
@@ -262,6 +264,10 @@ precinctControllers.controller("listController", ['$scope', 'streetData', 'typeS
             $scope.selected.address = {};
             $scope.selected.newPrecinct = '';
             $scope.selected.newPrecinctId = 0;
+            if (copyAddressMode) {
+                $scope.precinctAddresses.splice($scope.precinctAddresses.indexOf(editableAddress), 1);
+            }
+            copyAddressMode = false;
             editableAddress = {};
         };
 
@@ -317,7 +323,7 @@ precinctControllers.controller("listController", ['$scope', 'streetData', 'typeS
                 this.CityId = $scope.autocomplete.CityId,
                 this.StreetId = $scope.autocomplete.StreetId,
                 this.House = house.toString(),
-                this.PrecinctId = $scope.selected.precinct.Id
+                this.PrecinctId = $scope.selected.precinct.Id;
             };
 
             function getArrayAddresses() {
@@ -428,4 +434,17 @@ precinctControllers.controller("listController", ['$scope', 'streetData', 'typeS
             },errorHandler);
         };
 
+        $scope.copyAddress = function(address, ind) {
+            copyAddressMode = true;
+            var copiedAddress = {
+                CityId  : address.City.Id,
+                City    : address.City,
+                StreetId : address.Street.Id,
+                Street  : address.Street,
+                House   : address.House,
+                PrecinctId : address.PrecinctId
+            };
+            $scope.precinctAddresses.splice(ind + 1, 0, copiedAddress);
+            $scope.editAddress(copiedAddress);
+        };
     }]);

@@ -62,7 +62,7 @@
     <div ng-show="precinctEditing" ng-include="'PrecinctAddresses'"></div>
     <div ng-hide="precinctEditing">@Html.Partial("Pagination")</div>
 
-    <script type="text/ng-template" id="PrecinctAddresses">
+<script type="text/ng-template" id="PrecinctAddresses">
         <div class="container">
             <form ng-submit="save()">
                 <div class="row form-horizontal">
@@ -146,7 +146,7 @@
                         <th>Буд.</th>
                         <th ng-hide="!changingPresinct">Нова дільниця</th>
                         <th>
-                            <button ng-click="addNewAddress()" class="btn btn-sm btn-success">
+                            <button ng-click="addNewAddress()" class="btn btn-sm btn-success" title="Створити нову адресу">
                                 <span class="glyphicon glyphicon-plus"></span> Додати адресу
                             </button>
                         </th>
@@ -165,8 +165,11 @@
             <td>{{address.House}}</td>
             <td ng-hide="!changingPresinct"></td>
             <td>
-                <button class="btn btn-xs" ng-click="editAddress(address)" title="Редагувати">
+                @*<button class="btn btn-xs" ng-click="editAddress(address)" title="Редагувати">
                     <span class="glyphicon glyphicon-edit"></span>
+                </button>*@
+                <button class="btn btn-xs" ng-click="copyAddress(address,$index)" title="Копіювати рядок">
+                    <span class="glyphicon glyphicon-copy"></span>
                 </button>
                 <button class="btn btn-xs" ng-click="changePrecinct(address)" title="Змінити дільницю">
                     <span class="glyphicon glyphicon-retweet"></span>
