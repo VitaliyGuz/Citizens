@@ -95,6 +95,10 @@ precinctControllers.controller("listController", ['$scope', 'streetData', 'typeS
         };
 
         $scope.delete = function (precinct) {
+            if (config.checkDeleteItem) {
+                var ok = confirm("Увага! Дільницю буде видалено, продовжити?");
+                if (!ok) return;
+            }
             precinctData.remove({ id: precinct.Id },
                 function () {
                     $scope.precincts.splice($scope.getIndex(precinct), 1);
@@ -109,14 +113,11 @@ precinctControllers.controller("listController", ['$scope', 'streetData', 'typeS
             }, errorHandler);
         };
 
-        $scope.delete = function (precinct) {
-            precinctData.remove({ id: precinct.Id },
-                function () {
-                    $scope.precincts.splice($scope.getIndex(precinct), 1);
-                }, errorHandler);
-        };
-
         $scope.deleteAddress = function (address, ind) {
+            if (config.checkDeleteItem) {
+                var ok = confirm("Увага! Адресу дільниці буде видалено, продовжити?");
+                if (!ok) return;
+            }
             precinctAddressesData.remove(serviceUtil.getAddressKey(address),
                 function () {
                     $scope.precinctAddresses.splice(ind, 1);

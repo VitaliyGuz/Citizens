@@ -22,7 +22,7 @@ cityModule.config(['$routeProvider', function ($routeProvider) {
 }]);
 
 cityModule.controller("listController", ['$rootScope', '$location', '$timeout', '$scope', 'config', 'serviceUtil', 'cityTypesData', 'cityData', 'cityRegionPartsData',
-    function ($rootScope, $location, $timeout, $scope, config, serviceUtil, cityTypesData, cityData, cityRegionPartsData) {
+    function ($rootScope, $location, $timeout, $scope, config, serviceUtil, cityTypesData, cityData) {
 
         $scope.query = {};
         $scope.queryBy = 'Name';
@@ -54,6 +54,10 @@ cityModule.controller("listController", ['$rootScope', '$location', '$timeout', 
         };
 
         $scope.delete = function (city) {
+            if (config.checkDeleteItem) {
+                var ok = confirm("Увага! Населений пункт буде видалено, продовжити?");
+                if (!ok) return;
+            }
             cityData.remove({ id: city.Id },
                 function () {
                     $rootScope.cities.splice($scope.getIndex(city), 1);
@@ -83,8 +87,8 @@ cityModule.controller("listController", ['$rootScope', '$location', '$timeout', 
         //};
     }]);
 
-cityModule.controller('editController', ['$timeout', '$rootScope', '$scope', '$location', '$routeParams', 'cityData', 'cityTypesData', 'serviceUtil', 'regionPartTypes', 'regionPartData', 'cityRegionPartsData',
-    function ($timeout, $rootScope, $scope, $location, $routeParams, cityData, cityTypesData, serviceUtil, regionPartTypes, regionPartData, cityRegionPartsData) {
+cityModule.controller('editController', ['$timeout', '$rootScope', '$scope', '$location', '$routeParams', 'cityData', 'cityTypesData', 'serviceUtil', 'regionPartTypes', 'regionPartData', 'cityRegionPartsData','config',
+    function ($timeout, $rootScope, $scope, $location, $routeParams, cityData, cityTypesData, serviceUtil, regionPartTypes, regionPartData, cityRegionPartsData, config) {
         var editInd, editableCityDistrict, addMode;
         $scope.loading = true;
         $scope.saving = false;
@@ -160,11 +164,16 @@ cityModule.controller('editController', ['$timeout', '$rootScope', '$scope', '$l
                     } else {
                         $rootScope.cities[$rootScope.editInd] = res;
                     }
-                    $rootScope.cities.sort(serviceUtil.compareByName);
+                    $rootScope.cities.sort(compareCities);
                 }
                 $rootScope.successMsg = msg;
                 
             };
+        };
+
+        function compareCities(a, b) {
+            var cmpType = a.CityTypeId > b.CityTypeId ? 1 : a.CityTypeId < b.CityTypeId ? -1 : 0;
+            return cmpType === 0 ? serviceUtil.compareByName(a, b) : cmpType;
         };
 
         $scope.editCityDistrict = function (cityDistrict) {
@@ -178,6 +187,10 @@ cityModule.controller('editController', ['$timeout', '$rootScope', '$scope', '$l
         };
 
         $scope.deleteCityDistrict = function (cityDistrict) {
+            if (config.checkDeleteItem) {
+                var ok = confirm("Увага! Район міста буде видалено, продовжити?");
+                if (!ok) return;
+            }
             cityRegionPartsData.remove(getKey(cityDistrict),
                 function () {
                     $scope.cityDistricts.splice($scope.getIndex(cityDistrict), 1);

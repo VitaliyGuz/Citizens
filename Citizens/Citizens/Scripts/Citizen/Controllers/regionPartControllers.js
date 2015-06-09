@@ -49,6 +49,10 @@ regionPartControllers.controller("listController", ['$timeout','$scope', 'config
         }
 
         $scope.delete = function (regionPart) {
+            if (config.checkDeleteItem) {
+                var ok = confirm("Увага! Район буде видалено, продовжити?");
+                if (!ok) return;
+            }
             $scope.errorMsg = '';
             regionPartData.remove({ id: regionPart.Id },
                 function () {

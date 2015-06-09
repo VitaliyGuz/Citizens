@@ -4,7 +4,8 @@ var app = angular.module('appCitizen', []);
 
 app.value('config', {
     pageSize: 20, // by default 20
-    pageSizeTabularSection: 10
+    pageSizeTabularSection: 10,
+    checkDeleteItem: true
 });
 
 app.factory('serviceUtil', ['$filter', function ($filter) {
@@ -14,7 +15,7 @@ app.factory('serviceUtil', ['$filter', function ($filter) {
             if (error.status === 401) {
                 return 'Недостатньо прав для здійснення операції';
             }
-            if (error.data !='') {
+            if (error.data !=='') {
                 if (angular.isObject(error.data)) {
                     errMsg = error.data.error.innererror.message;
                 } else {
@@ -26,14 +27,15 @@ app.factory('serviceUtil', ['$filter', function ($filter) {
             }
             return errMsg;
         },
-        compareByName: function (a,b) {
-            if (a.Name > b.Name) {
-                return 1;
-            } else if (a.Name < b.Name) {
-                return -1;
-            } else {
-                return 0;
-            }
+        compareByName: function (a, b) {
+            return  a.Name.localeCompare(b.Name);
+            //if (a.Name > b.Name) {
+            //    return 1;
+            //} else if (a.Name < b.Name) {
+            //    return -1;
+            //} else {
+            //    return 0;
+            //}
         },
         copyProperties: function (source, destination) {
             for (var prop in destination) {
@@ -108,7 +110,7 @@ app.filter('orderByStartsWith', function () {
             if (key) {
                 str = obj[key];
             }
-            return str.toString().substr(0, value.length).toLowerCase() == value.toLowerCase();
+            return str.toString().substr(0, value.length).toLowerCase() === value.toLowerCase();
         };
         function compareByDefault(a, b) {
             var cmpA = a, cmpB = b;
@@ -116,13 +118,14 @@ app.filter('orderByStartsWith', function () {
                 cmpA = a[key];
                 cmpB = b[key];
             }
-            if (cmpA > cmpB) {
-                return 1;
-            } else if (cmpA < cmpB) {
-                return -1;
-            } else {
-                return 0;
-            }
+            return cmpA.localeCompare(cmpB);
+            //if (cmpA > cmpB) {
+            //    return 1;
+            //} else if (cmpA < cmpB) {
+            //    return -1;
+            //} else {
+            //    return 0;
+            //}
         };
         return items.sort(function (a, b) {
             if (startsWith(a)) {

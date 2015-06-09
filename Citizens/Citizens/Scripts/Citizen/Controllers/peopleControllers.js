@@ -81,6 +81,10 @@ peopleModule.controller("listController", ['$rootScope', '$scope', '$location', 
         };
 
         $scope.delete = function (person) {
+            if (config.checkDeleteItem) {
+                var ok = confirm("Увага! Фізичну особу буде видалено, продовжити?");
+                if (!ok) return;
+            }
             peopleData.remove({ id: person.Id },
                 function () {
                     setPeopleOnPage(($rootScope.currentPage - 1) * config.pageSize);
@@ -226,8 +230,8 @@ peopleModule.controller("listController", ['$rootScope', '$scope', '$location', 
         };
     }]);
 
-peopleModule.controller('editController', ['$timeout', '$filter', '$rootScope', '$scope', '$location', '$routeParams', 'peopleData', 'serviceUtil', 'precinctData', 'precinctAddressesData', 'additionalPropsData', 'cityData', 'streetData', 'propertyTypes',
-    function ($timeout, $filter, $rootScope, $scope, $location, $routeParams, peopleData, serviceUtil, precinctData, precinctAddressesData, additionalPropsData, cityData, streetData, propertyTypes) {
+peopleModule.controller('editController', ['$timeout', '$filter', '$rootScope', '$scope', '$location', '$routeParams', 'peopleData', 'serviceUtil', 'precinctData', 'precinctAddressesData', 'additionalPropsData', 'cityData', 'streetData', 'propertyTypes', 'config',
+    function ($timeout, $filter, $rootScope, $scope, $location, $routeParams, peopleData, serviceUtil, precinctData, precinctAddressesData, additionalPropsData, cityData, streetData, propertyTypes, config) {
         var addMode, editInd, propValues = [],
             DATE_FORMAT = 'yyyy-MM-ddT00:00:00+00:00';
         $rootScope.errorMsg = '';
@@ -590,7 +594,11 @@ peopleModule.controller('editController', ['$timeout', '$filter', '$rootScope', 
             };
         };
         
-        $scope.deleteProperty = function (prop,ind) {
+        $scope.deleteProperty = function (prop, ind) {
+            if (config.checkDeleteItem) {
+                var ok = confirm("Увага! Характеристику фіз. особи буде видалено, продовжити?");
+                if (!ok) return;
+            }
             additionalPropsData.remove({ personId: $scope.person.Id, propertyKeyId: prop.key.Id }, function () {
                 $scope.additionalProperties.splice(ind, 1);
             }, errorHandler);

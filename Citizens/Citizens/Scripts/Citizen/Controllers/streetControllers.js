@@ -47,6 +47,10 @@ streetControllers.controller("listController", ['$scope', 'streetData', 'typeStr
         };
 
         $scope.delete = function (street) {
+            if (config.checkDeleteItem) {
+                var ok = confirm("Увага! Вулицю буде видалено, продовжити?");
+                if (!ok) return;
+            }
             $scope.errorMsg = '';
             streetData.remove({ id: street.Id },
                 function () {
