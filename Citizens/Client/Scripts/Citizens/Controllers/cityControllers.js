@@ -20,14 +20,14 @@ cityModule.controller("listCitiesController", ['$rootScope', '$location', '$time
             return $rootScope.cities.indexOf(city);
         };
 
-        if ($rootScope.cities == undefined || $rootScope.cities.length === 0) {
-            $scope.loading = true;
-            cityData.getAll(function (res) {
-                $rootScope.errorMsg = '';
-                $scope.loading = false;
-                $rootScope.cities = res.value;
-            }, errorHandler);
-        };
+        //if ($rootScope.cities == undefined || $rootScope.cities.length === 0) {
+        //    $scope.loading = true;
+        //    cityData.getAll(function (res) {
+        //        $rootScope.errorMsg = '';
+        //        $scope.loading = false;
+        //        $rootScope.cities = res.value;
+        //    }, errorHandler);
+        //};
 
         $scope.edit = function (city) {
             $rootScope.editInd = $scope.getIndex(city);

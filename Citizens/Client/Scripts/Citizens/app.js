@@ -43,7 +43,8 @@ app.config(['$routeProvider', 'paginationTemplateProvider', function ($routeProv
         }).
         when('/cities', {
             templateUrl: 'Views/ListCities.html',
-            controller: 'listCitiesController'
+            controller: 'listCitiesController',
+            resolve: { async: function (asyncData) { asyncData.load() }}
         }).
         when('/city/new', {
             templateUrl: 'Views/EditCity.html',
@@ -214,6 +215,21 @@ app.filter("filterByFirstChar", function () {
         return result;
     }
 });
+
+app.factory('asyncData', ['cityData', '$q', '$rootScope', function (cityData, $q, $rootScope) {
+    return {
+        load: function () {
+             //$scope.loading = true;
+            //var deferred = $q.defer();
+            console.log("call asyncLoad");
+            cityData.getAll(function (res) {
+                $rootScope.errorMsg = '';
+                //$scope.loading = false;
+                $rootScope.cities = res.value;
+            });
+        }
+    };
+}]);
 
 //app.factory('cachedAddressData', ['streetData', 'cityData', '$q', function (streetData, cityData, $q) {
 //    var citiesCache = [], streetsCache = [];
