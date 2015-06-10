@@ -7,7 +7,7 @@ angular.module("regionPartServices", ['ngResource'])
         return $resource('', {},
 		{
 		    'query': { method: 'GET', params: { id: "@id" }, url: urlOdata + "(:id)?$expand=Region", cache: true },
-		    'getAllByType': { method: 'GET', params: { type: "@type" }, url: urlOdata + "?$expand=Region" + "&" + filterByType },
+		    'getAllByType': { method: 'GET', params: { type: "@type" }, url: urlOdata + "?$expand=Region" + "&" + filterByType, cache: true },
 		    'update': { method: 'PUT', params: { id: "@id" }, url: urlOdata + "(:id)" },
 		    'save': { method: "POST", url: urlOdata },
 		    'remove': { method: 'DELETE', params: { id: "@id" }, url: urlOdata + "(:id)" }
@@ -18,7 +18,7 @@ angular.module("regionPartServices", ['ngResource'])
             params = { id: "@id" };
         return $resource('', {},
 		{
-		    'query': { method: 'GET', params: params, url: urlOdata + "(:id)" },
+		    'query': { method: 'GET', params: params, url: urlOdata + "(:id)", cache: true },
 		    'update': { method: 'PUT', params: params, url: urlOdata + "(:id)" },
 		    'save': { method: "POST", url: urlOdata },
 		    'remove': { method: 'DELETE', params: params, url: urlOdata + "(:id)" }
