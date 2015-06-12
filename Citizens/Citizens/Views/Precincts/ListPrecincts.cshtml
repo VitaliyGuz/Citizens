@@ -1,0 +1,44 @@
+﻿<h3>Дільниці</h3>
+<h5 ng-show="loading">Завантаження... <i class="fa fa-refresh fa-spin"></i></h5>
+<hr>
+<div class="row form-inline">
+    <div class="col-md-6">
+        <label>Пошук:</label>
+        <input ng-model="query[queryBy]" type="text" class="form-control" placeholder="Введіть слово">
+        <label>по:</label>
+        <select ng-model="queryBy" ng-change="query={}" class="form-control">
+            <option ng-repeat="option in options" value="{{option.value}}">{{option.desc}}</option>
+        </select>
+    </div>
+    <div class="col-md-6">
+        <button ng-click="addNewPrecinct()" class="btn btn-success">
+            <span class="glyphicon glyphicon-plus"></span> Створити нову дільницю
+        </button>
+    </div>
+</div>
+<hr>
+<table class="table table-striped table-condensed">
+    <thead>
+        <tr>
+            <th ng-repeat="thName in tableHead">{{thName}}</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr dir-paginate="precinct in precincts | filterByFirstChar: query | itemsPerPage: pageSize" current-page="currentPage">
+            <td>{{ getIndex(precinct) + 1 }}</td>
+            <td>{{ precinct.Id }}</td>
+            <td>{{ precinct.Street.StreetType.Name }}{{ precinct.Street.Name }}, {{ precinct.House }}, {{ precinct.City.CityType.Name }}{{ precinct.City.Name }}, {{ precinct.City.RegionPart.Name }} р-н.</td>
+            <td>{{ precinct.District.Id }}</td>
+            <td>
+                <button class="btn btn-xs" ng-click="edit(precinct)" title="Редагувати">
+                    <span class="glyphicon glyphicon-edit"></span>
+                </button>
+                <button class="btn btn-xs" ng-click="delete(precinct)" title="Видалити">
+                    <span class="glyphicon glyphicon-trash"></span>
+                </button>
+            </td>
+        </tr>
+    </tbody>
+</table>
+<hr>
+@Html.Partial("Pagination")

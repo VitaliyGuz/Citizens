@@ -369,6 +369,8 @@
     <Content Include="Views\Account\SendCode.cshtml" />
     <Content Include="Views\Shared\Error.cshtml" />
     <Content Include="Views\Account\VerifyCode.cshtml" />
+    <Content Include="Views\Precincts\EditPrecinct.cshtml" />
+    <Content Include="Views\Precincts\ListPrecincts.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

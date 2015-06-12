@@ -17,7 +17,7 @@ app.factory('serviceUtil', ['$filter', function ($filter) {
             }
             if (error.data !=='') {
                 if (angular.isObject(error.data)) {
-                    errMsg = error.data.error.innererror.message;
+                    errMsg = error.data.error.message;
                 } else {
                     errMsg = error.data;
                 }
@@ -118,7 +118,12 @@ app.filter('orderByStartsWith', function () {
                 cmpA = a[key];
                 cmpB = b[key];
             }
-            return cmpA.localeCompare(cmpB);
+            if (angular.isString(cmpA)) {
+                return cmpA.localeCompare(cmpB);
+            } else {
+                return cmpA > cmpB ? 1 : cmpA < cmpB ? -1 : 0;
+            }
+            
             //if (cmpA > cmpB) {
             //    return 1;
             //} else if (cmpA < cmpB) {

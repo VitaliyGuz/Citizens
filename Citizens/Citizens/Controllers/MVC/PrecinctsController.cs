@@ -16,5 +16,14 @@ namespace Citizens.Controllers.MVC
         {
             return View();
         }
+        public ActionResult ListPrecincts()
+        {
+            return PartialView();
+        }
+
+        public ActionResult EditPrecinct()
+        {
+            return PartialView();
+        }
     }
 }
