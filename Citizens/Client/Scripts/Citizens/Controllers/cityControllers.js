@@ -1,15 +1,13 @@
 ﻿'use strict';
 
-var cityModule = angular.module('cityControllers', ['cityServices', 'regionPartServices']);
+var cityControllers = angular.module('cityControllers', ['cityServices', 'regionPartServices']);
 
-cityModule.controller("listCitiesController", ['$rootScope', '$location', '$timeout', '$scope', 'config', 'serviceUtil', 'cityTypesData', 'cityData', 'cityRegionPartsData',
+cityControllers.controller("listCitiesController", ['$rootScope', '$location', '$timeout', '$scope', 'config', 'serviceUtil', 'cityTypesData', 'cityData',
     function ($rootScope, $location, $timeout, $scope, config, serviceUtil, cityTypesData, cityData) {
 
+        $rootScope.pageTitle = 'Населені пункти';
         $scope.query = {};
         $scope.queryBy = 'Name';
-
-        $rootScope.errorMsg = '';
-        $rootScope.successMsg = '';
 
         $scope.currentPage = serviceUtil.getRouteParam("currPage") || 1;
         $scope.pageSize = config.pageSize;
@@ -19,15 +17,6 @@ cityModule.controller("listCitiesController", ['$rootScope', '$location', '$time
         $scope.getIndex = function (city) {
             return $rootScope.cities.indexOf(city);
         };
-
-        //if ($rootScope.cities == undefined || $rootScope.cities.length === 0) {
-        //    $scope.loading = true;
-        //    cityData.getAll(function (res) {
-        //        $rootScope.errorMsg = '';
-        //        $scope.loading = false;
-        //        $rootScope.cities = res.value;
-        //    }, errorHandler);
-        //};
 
         $scope.edit = function (city) {
             $rootScope.editInd = $scope.getIndex(city);
@@ -43,60 +32,76 @@ cityModule.controller("listCitiesController", ['$rootScope', '$location', '$time
             cityData.remove({ id: city.Id },
                 function () {
                     $rootScope.cities.splice($scope.getIndex(city), 1);
-                }, errorHandler);
+                }, function(e) {
+                    $rootScope.errorMsg = serviceUtil.getErrorMessage(e);
+                });
         };
 
         $scope.addNew = function () {
             $location.path('/city/new');
         };
 
-        function errorHandler(e) {
-            $scope.loading = false;
-            $scope.errorMsg = serviceUtil.getErrorMessage(e);
-        };
     }]);
 
-cityModule.controller('editCityController', ['$timeout', '$rootScope', '$scope', '$location', '$routeParams', 'cityData', 'cityTypesData', 'serviceUtil', 'regionPartTypes', 'regionPartData', 'cityRegionPartsData','config',
-    function ($timeout, $rootScope, $scope, $location, $routeParams, cityData, cityTypesData, serviceUtil, regionPartTypes, regionPartData, cityRegionPartsData, config) {
+cityControllers.controller('editCityController', ['$timeout', '$rootScope', '$scope', '$location', '$routeParams', 'cityData', 'cityTypesData', 'serviceUtil', 'regionPartTypes', 'regionPartData', 'cityRegionPartsData', 'config', 'resolvedData',
+    function ($timeout, $rootScope, $scope, $location, $routeParams, cityData, cityTypesData, serviceUtil, regionPartTypes, regionPartData, cityRegionPartsData, config, resolvedData) {
         var editInd, editableCityDistrict, addMode, routeId;
-        $scope.loading = true;
+        $rootScope.pageTitle = 'Населений пункт';
+        //$scope.loading = true;
         $scope.saving = false;
         addMode = true;
-        $rootScope.errorMsg = '';
-        $rootScope.successMsg = '';
+        //$rootScope.errorMsg = '';
+        //$rootScope.successMsg = '';
         $scope.tableHead = ['№', 'Район'];
         $scope.selected = { cityDistrict: {} };
         $scope.cityDistricts = [];
-        routeId = serviceUtil.getRouteParam("id");
-        if (routeId) {
-            cityData.getById({ id: routeId }, function (res) {
-                $scope.loading = false;
+        if (resolvedData) {
+            if (resolvedData.city) {
                 addMode = false;
-                $scope.city = res;
-                $scope.cityDistricts = res.CityRegionParts;
-            }, errorHandler);
+                $scope.city = resolvedData.city;
+                $scope.cityDistricts = resolvedData.city.CityRegionParts;
+            }
+            $scope.cityTypes = resolvedData.cityTypes;
+            $scope.regionParts = resolvedData.regionParts;
+            $scope.cityRegionParts = resolvedData.cityRegionParts;
+            if ($scope.cityRegionParts) {
+                $scope.cityRegionParts.sort(serviceUtil.compareByName);
+            }
+            if ($scope.regionParts) {
+                $scope.regionParts.sort(serviceUtil.compareByName);
+            }
         }
+        
+        //routeId = serviceUtil.getRouteParam("id");
+        //if (routeId) {
+        //    cityData.getById({ id: routeId }, function (res) {
+        //        $scope.loading = false;
+        //        addMode = false;
+        //        $scope.city = res;
+        //        $scope.cityDistricts = res.CityRegionParts;
+        //    }, errorHandler);
+        //}
 
-        $scope.loading = true;
-        cityTypesData.query(function (res) {
-            $scope.cityTypes = res.value;
-            $scope.loading = false;
-            //$scope.cityTypes.sort(serviceUtil.compareByName);
-        }, errorHandler);
+        //$scope.loading = true;
+        //cityTypesData.query(function (res) {
+        //    $scope.cityTypes = res.value;
+        //    $scope.loading = false;
+        //    //$scope.cityTypes.sort(serviceUtil.compareByName);
+        //}, errorHandler);
 
-        $scope.loading = true;
-        regionPartData.getAllByType({ type: regionPartTypes.REGION.val }, function (res) {
-            $scope.regionParts = res.value;
-            $scope.loading = false;
-            $scope.regionParts.sort(serviceUtil.compareByName);
-        }, errorHandler);
+        //$scope.loading = true;
+        //regionPartData.getAllByType({ type: regionPartTypes.REGION.val }, function (res) {
+        //    $scope.regionParts = res.value;
+        //    $scope.loading = false;
+        //    $scope.regionParts.sort(serviceUtil.compareByName);
+        //}, errorHandler);
 
-        $scope.loading = true;
-        regionPartData.getAllByType({ type: regionPartTypes.CITY.val }, function (res) {
-            $scope.cityRegionParts = res.value;
-            $scope.loading = false;
-            $scope.cityRegionParts.sort(serviceUtil.compareByName);
-        }, errorHandler);
+        //$scope.loading = true;
+        //regionPartData.getAllByType({ type: regionPartTypes.CITY.val }, function (res) {
+        //    $scope.cityRegionParts = res.value;
+        //    $scope.loading = false;
+        //    $scope.cityRegionParts.sort(serviceUtil.compareByName);
+        //}, errorHandler);
 
         $scope.save = function () {
             $scope.saving = true;
@@ -132,7 +137,11 @@ cityModule.controller('editCityController', ['$timeout', '$rootScope', '$scope',
                     if (addMode) {
                         $rootScope.cities.push(res);
                     } else {
-                        $rootScope.cities[$rootScope.editInd] = res;
+                        //todo: resolve problem with update cities
+                        //$rootScope.cities[$rootScope.editInd] = res;
+                        $rootScope.$watch('cities', function (newValue, oldValue) {
+                            $rootScope.cities[$rootScope.editInd] = res;
+                        });
                     }
                     $rootScope.cities.sort(compareCities);
                 }

@@ -1,6 +1,6 @@
 ﻿'use strict';
 
-angular.module("cityServices", ['ngResource']).
+angular.module("cityServices", ['ngResource', 'regionPartServices']).
     factory("cityData", ['$resource', 'config', function ($resource, config) {
         var urlOdata = config.baseUrl + '/odata/Cities',
             params = { id: "@id" };
@@ -40,3 +40,72 @@ angular.module("cityServices", ['ngResource']).
 		    'remove': { method: 'DELETE', params: { cityId: "@cityId", regionPartId: "@regionPartId" }, url: urlOdata + key }
 		});
     }])
+    .factory("dataForEditPage", ['$q', 'cityData', 'cityTypesData', 'regionPartData', 'regionPartTypes', 'serviceUtil',
+        function ($q, cityData, cityTypesData, regionPartData, regionPartTypes, serviceUtil) {
+        
+        function getCityPromise(routeParam) {
+            var deferred = $q.defer();
+            if (routeParam) {
+                cityData.getById({ id: routeParam }, function (res) {
+                    deferred.resolve(res);
+                }, function (err) {
+                    deferred.reject('Населений пункт не знайдено (' + serviceUtil.getErrorMessage(err) + ')');
+                });
+            } else {
+                deferred.resolve();
+            }
+            return deferred.promise;
+        };
+
+        function getCityTypesPromise() {
+            var deferred = $q.defer();
+            cityTypesData.query(function (res) {
+                deferred.resolve(res.value);
+            }, function (err) {
+                deferred.reject('Типи населених пунктів не завантажено (' + serviceUtil.getErrorMessage(err) + ')');
+            });
+            return deferred.promise;
+        };
+
+        function getRegionPartByTypePromise(type) {
+            var deferred = $q.defer();
+            regionPartData.getAllByType({ type: type.val }, function (res) {
+                deferred.resolve(res.value);
+            }, function (err) {
+                deferred.reject("Райони з типом '" + type.desc + "' не завантажено (" + serviceUtil.getErrorMessage(err) + ")");
+            });
+            return deferred.promise;
+        };
+
+        return {
+            asyncLoad: function (routeParam) {
+                // v.1: resolve without chain promises
+                //return $q.all({
+                //    city: getCityPromise(routeParam),
+                //    cityTypes: getCityTypesPromise(),
+                //    regionParts: getRegionPartByTypePromise(regionPartTypes.REGION),
+                //    cityRegionParts: getRegionPartByTypePromise(regionPartTypes.CITY)
+                //});
+
+                // v.2: resolve with chain promises
+                var resolved = {}, deferred = $q.defer();
+                function errorHandler(err) {
+                    deferred.reject(err);
+                };
+                getRegionPartByTypePromise(regionPartTypes.REGION).then(function(regionParts) {
+                    resolved.regionParts = regionParts;
+                    return getRegionPartByTypePromise(regionPartTypes.CITY);
+                }, errorHandler).then(function (cityRegionParts) {
+                    resolved.cityRegionParts = cityRegionParts;
+                    return getCityTypesPromise();
+                },errorHandler).then(function (cityTypes) {
+                    resolved.cityTypes = cityTypes;
+                    return getCityPromise(routeParam);
+                }, errorHandler).then(function (city) {
+                    resolved.city = city;
+                    deferred.resolve(resolved);// deferred.resolve must be in last iteration
+                }, errorHandler);
+                return deferred.promise;
+            }
+        };
+    }]);

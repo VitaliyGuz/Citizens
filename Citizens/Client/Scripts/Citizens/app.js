@@ -1,6 +1,6 @@
 ﻿"use strict";
 
-var app = angular.module("citizens", ["ngRoute", 'angularUtils.directives.dirPagination', 'peopleControllers', 'streetControllers', 'regionPartControllers','cityControllers']);
+var app = angular.module("citizens", ["ngRoute", 'ngCookies', 'angularUtils.directives.dirPagination', 'peopleControllers', 'streetControllers', 'regionPartControllers', 'cityControllers', 'authControllers']);
 
 app.config(['$routeProvider', 'paginationTemplateProvider', function ($routeProvider, paginationTemplateProvider) {
     $routeProvider.
@@ -38,30 +38,52 @@ app.config(['$routeProvider', 'paginationTemplateProvider', function ($routeProv
         }).
         when('/region-parts/:currPage', {
             templateUrl: 'Views/RegionParts.html',
-            controller: 'listRegionPartsController',
-            reloadOnSearch: false // do not work
+            controller: 'listRegionPartsController'
         }).
         when('/cities', {
             templateUrl: 'Views/ListCities.html',
             controller: 'listCitiesController',
-            resolve: { async: function (asyncData) { asyncData.load() }}
+            resolve: {genlData: function (genlData) { return genlData.asyncLoad() }}
         }).
         when('/city/new', {
             templateUrl: 'Views/EditCity.html',
-            controller: 'editCityController'
+            controller: 'editCityController',
+            resolve: {
+                //genlData: function(genlData) {
+                //    return genlData.asyncLoad();
+                //},
+                resolvedData: function ($route, dataForEditPage) {
+                    //todo: use serviceUtil.getRouteParam()
+                    return dataForEditPage.asyncLoad($route.current.params.id);
+                }
+            }
         }).
         when('/city/:id', {
             templateUrl: 'Views/EditCity.html',
-            controller: 'editCityController'
+            controller: 'editCityController',
+            resolve: {
+                 //genlData: function(genlData) {
+                 //    return genlData.asyncLoad();
+                 //},
+                resolvedData: function ($route, dataForEditPage) {
+                    //todo: use serviceUtil.getRouteParam()
+                    return dataForEditPage.asyncLoad($route.current.params.id);
+                 }
+            }
+        }).
+        when('/login', {
+            templateUrl: 'Views/Login.html',
+            controller: 'loginController',
+            controllerAs: 'vm'
         }).
         otherwise({
-            redirectTo: '/' //login
+            redirectTo: '/'
         });
     paginationTemplateProvider.setPath('Scripts/AngularUtils/directives/dirPagination.tpl.html');
 }]);
 
 app.value("config", {
-    baseUrl: 'http://localhost:6600',
+    baseUrl: 'http://poltava2015.azurewebsites.net', //http://localhost:6600',
     pageSize: 5, // by default 20
     pageSizeTabularSection: 10,
     checkDeleteItem: true
@@ -73,16 +95,18 @@ app.filter('checkApartment', function () {
     };
 });
 
-app.factory("serviceUtil", ["$filter", '$routeParams', function ($filter, $routeParams) {
+app.factory("serviceUtil", ["$filter", '$routeParams', '$location', function ($filter, $routeParams, $location) {
     return {
         getErrorMessage: function (error) {
             var errMsg;
             if (error.status === 401) {
-                return "Недостатньо прав для здійснення операції";
+                $location.path('/login');
+                //return "Недостатньо прав для здійснення операції";
+                return '';
             }
             if (error.data !== "") {
                 if (angular.isObject(error.data)) {
-                    errMsg = error.data.error.innererror.message;
+                    errMsg = error.data.error.message;
                 } else {
                     errMsg = error.data;
                 }
@@ -121,13 +145,41 @@ app.factory("serviceUtil", ["$filter", '$routeParams', function ($filter, $route
     };
 }]);
 
-app.run(["$rootScope", "$timeout", function ($rootScope, $timeout) {
+app.run(["$rootScope", "$timeout", '$location', '$cookieStore', '$http', function ($rootScope, $timeout, $location, $cookieStore, $http) {
+    var accessToken = $cookieStore.get('access_token') || undefined;
+    if (accessToken) {
+        $rootScope.loggedIn = true;
+        $http.defaults.headers.common['Authorization'] = accessToken;
+    }
+
     $rootScope.$watch("successMsg", function (newValue) {
         if (newValue && newValue.length > 0) {
             $timeout(function () {
                 $rootScope.successMsg = "";
             }, 700);
         }
+    });
+
+    $rootScope.$on('$routeChangeStart', function (event, current, previous) {
+        var backUrl = $location.path(),
+            restrictedPage = $.inArray(backUrl, ['/login', '/register']) === -1;
+        if (restrictedPage && !$rootScope.loggedIn) {
+            if (!backUrl) backUrl = '/';
+            $location.path('/login').search('backUrl', backUrl);
+            return;
+        };
+        if (current.$$route && current.$$route.resolve) {
+            $rootScope.loading = true;
+        }
+    });
+
+    $rootScope.$on('$routeChangeSuccess', function (event, current, previous) {
+        $rootScope.loading = false;
+    });
+
+    $rootScope.$on('$routeChangeError', function (event, current, previous, rejection) {
+        $rootScope.errorMsg = rejection;
+        $rootScope.loading = false;
     });
 }]);
 
@@ -154,7 +206,11 @@ app.filter("orderByStartsWith", function () {
                 cmpA = a[key];
                 cmpB = b[key];
             }
-            return cmpA.localeCompare(cmpB);
+            if (angular.isString(cmpA)) {
+                return cmpA.localeCompare(cmpB);
+            } else {
+                return cmpA > cmpB ? 1 : cmpA < cmpB ? -1 : 0;
+            }
         };
         return items.sort(function (a, b) {
             if (startsWith(a)) {
@@ -216,51 +272,66 @@ app.filter("filterByFirstChar", function () {
     }
 });
 
-app.factory('asyncData', ['cityData', '$q', '$rootScope', function (cityData, $q, $rootScope) {
+app.factory('genlData', ['$q', '$rootScope', 'cityData', 'streetData', 'regionPartData', 'serviceUtil', function ($q, $rootScope, cityData, streetData, regionPartData, serviceUtil) {
+
+    function getCitiesPromise() {
+        var deferred = $q.defer();
+        cityData.getAll(function (res) {
+            $rootScope.cities = res.value;
+            deferred.resolve(res.value);
+        }, function (err) {
+            deferred.reject('Населені пункти не завантажено (' + serviceUtil.getErrorMessage(err) + ')');
+        });
+        return deferred.promise;
+    };
+
+    function getStreetsPromise() {
+        var deferred = $q.defer();
+        streetData.query(function (res) {
+            $rootScope.streets = res.value;
+            deferred.resolve(res.value);
+        }, function (err) {
+            deferred.reject('Вулиці не завантажено (' + serviceUtil.getErrorMessage(err) + ')');
+        });
+        return deferred.promise;
+    };
+
+    function getRegionPartsPromise() {
+        var deferred = $q.defer();
+        regionPartData.query(function (res) {
+            $rootScope.regionParts = res.value;
+            deferred.resolve(res.value);
+        }, function (err) {
+            deferred.reject('Райони не завантажено (' + serviceUtil.getErrorMessage(err) + ')');
+        });
+        return deferred.promise;
+    };
     return {
-        load: function () {
-             //$scope.loading = true;
-            //var deferred = $q.defer();
-            console.log("call asyncLoad");
-            cityData.getAll(function (res) {
-                $rootScope.errorMsg = '';
-                //$scope.loading = false;
-                $rootScope.cities = res.value;
-            });
+        asyncLoad: function () {
+            return getCitiesPromise()
+                .then(function () {
+                    return getStreetsPromise();
+                })
+                .then(function () {
+                    return getRegionPartsPromise();
+                }
+            );
+            //return $q.all({
+            //    cities: getCitiesPromise(),
+            //    streets: getStreetsPromise(),
+            //    regionParts: getRegionPartsPromise()
+            //});
+            //var d = {};
+            //getCitiesPromise().then(function(cities) {
+            //    d.cities = cities;
+            //});
+            //getStreetsPromise().then(function (streets) {
+            //    d.streets = streets;
+            //});
+            //getRegionPartsPromise().then(function (regionParts) {
+            //    d.regionParts = regionParts;
+            //});
+            //return d;
         }
     };
 }]);
-
-//app.factory('cachedAddressData', ['streetData', 'cityData', '$q', function (streetData, cityData, $q) {
-//    var citiesCache = [], streetsCache = [];
-//    return {
-//        asyncGetCities: function () {
-//            var deferred = $q.defer();
-//            if (citiesCache.length === 0) {
-//                cityData.getAll(function (successData) {
-//                    citiesCache = successData.value;
-//                    deferred.resolve(citiesCache);
-//                }, function (error) {
-//                    deferred.reject(error);
-//                });
-//            } else {
-//                deferred.resolve(citiesCache);
-//            }
-//            return deferred.promise;
-//        },
-//        asyncGetStreets: function () {
-//            var deferred = $q.defer();
-//            if(streetsCache.length === 0) {
-//                streetData.query(function (successData) {
-//                    streetsCache = successData.value;
-//                    deferred.resolve(streetsCache);
-//                }, function (error) {
-//                    deferred.reject(error);
-//                });
-//            } else {
-//                deferred.resolve(streetsCache);
-//            }
-//            return deferred.promise;
-//        }
-//    };
-//}]);

@@ -165,6 +165,7 @@
     <Content Include="Views\EditPerson.html" />
     <Content Include="Views\ListCities.html" />
     <Content Include="Views\ListPeople.html" />
+    <Content Include="Views\Login.html" />
     <Content Include="Views\RegionParts.html" />
     <Content Include="Views\Streets.html" />
     <Content Include="Web.config" />
