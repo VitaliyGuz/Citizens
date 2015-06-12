@@ -21,12 +21,12 @@ angular.module("precinctServices", ['ngResource'])
         var urlOdata = '/odata/Districts',
             params = { id: "@id" };
         return $resource('', {},
-		{
-		    'query': { method: 'GET', params: params, url: urlOdata + "(:id)" },
-		    'update': { method: 'PUT', params: params, url: urlOdata + "(:id)" },
-		    'save': { method: "POST", url: urlOdata },
-		    'remove': { method: 'DELETE', params: params, url: urlOdata + "(:id)" }
-		})
+        {
+            'query': { method: 'GET', params: params, url: urlOdata + "(:id)", cache: true },
+            'update': { method: 'PUT', params: params, url: urlOdata + "(:id)" },
+            'save': { method: "POST", url: urlOdata },
+            'remove': { method: 'DELETE', params: params, url: urlOdata + "(:id)" }
+        });
     }])
     .factory("precinctAddressesData", ['$resource', 'config', function ($resource, config) {
         var urlOdata = '/odata/PrecinctAddresses',
