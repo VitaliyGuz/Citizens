@@ -263,7 +263,7 @@
     <None Include="Scripts\_references.js" />
     <Content Include="Scripts\Citizen\Services\streetServices.js" />
     <Content Include="Scripts\Sql\createPersonType.sql" />
-    <Content Include="Views\AuthComplete.html" />
+    <Content Include="Static\AuthComplete.html" />
     <Content Include="Views\Home\import.cshtml" />
     <Content Include="Views\Account\Login.cshtml" />
     <Content Include="Views\Account\Register.cshtml" />
