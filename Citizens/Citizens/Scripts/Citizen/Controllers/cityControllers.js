@@ -160,6 +160,7 @@ cityModule.controller('editController', ['$timeout', '$rootScope', '$scope', '$l
                 $scope.saving = false;
                 if ($rootScope.cities) {
                     if (addMode) {
+                        $scope.city = res;
                         $rootScope.cities.push(res);
                     } else {
                         $rootScope.cities[$rootScope.editInd] = res;
@@ -167,7 +168,7 @@ cityModule.controller('editController', ['$timeout', '$rootScope', '$scope', '$l
                     $rootScope.cities.sort(compareCities);
                 }
                 $rootScope.successMsg = msg;
-                
+                addMode = false;
             };
         };
 
@@ -202,7 +203,7 @@ cityModule.controller('editController', ['$timeout', '$rootScope', '$scope', '$l
         };
 
         $scope.saveCityDistrict = function () {
-            if ($scope.city.Id == null) {
+            if (!$scope.city.Id) {
                 $rootScope.errorMsg = "Спочатку необхідно зберегти населений пункт";
                 return;
             }

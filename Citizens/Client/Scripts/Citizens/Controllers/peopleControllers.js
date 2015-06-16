@@ -397,6 +397,7 @@ peopleControllers.controller('editPersonController', ['$timeout', '$filter', '$r
             function savePerson() {
                 if (addMode) {
                     peopleData.save(person, function (res) {
+                        addMode = false;
                         $scope.saving = false;
                         $scope.person.Id = res.Id;
                         $scope.additionalProperties = [];

@@ -135,6 +135,7 @@ cityControllers.controller('editCityController', ['$timeout', '$rootScope', '$sc
                 $scope.saving = false;
                 if ($rootScope.cities) {
                     if (addMode) {
+                        $scope.city = res;
                         $rootScope.cities.push(res);
                     } else {
                         //todo: resolve problem with update cities
@@ -146,7 +147,7 @@ cityControllers.controller('editCityController', ['$timeout', '$rootScope', '$sc
                     $rootScope.cities.sort(compareCities);
                 }
                 $rootScope.successMsg = msg;
-                
+                addMode = false;
             };
         };
 
@@ -184,7 +185,7 @@ cityControllers.controller('editCityController', ['$timeout', '$rootScope', '$sc
         };
 
         $scope.saveCityDistrict = function () {
-            if ($scope.city.Id == null) {
+            if (!$scope.city.Id) {
                 $rootScope.errorMsg = "Спочатку необхідно зберегти населений пункт";
                 return;
             }

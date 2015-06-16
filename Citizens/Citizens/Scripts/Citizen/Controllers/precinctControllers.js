@@ -216,7 +216,7 @@ precinctControllers.controller("editController", ['$timeout', '$location', '$roo
                     successHandler({ id: newItem.Id });
                 }, errorHandler);
             } else {
-                precinctData.update({ id: $rootScope.precincts[$rootScope.editInd].Id }, precinct, function () {
+                precinctData.update({ id: $scope.precinct.Id }, precinct, function () {
                     successHandler({ id: $scope.precinct.Id });
                 }, errorHandler);
             }

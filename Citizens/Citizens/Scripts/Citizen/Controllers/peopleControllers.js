@@ -172,7 +172,7 @@ peopleModule.controller("listController", ['$rootScope', '$scope', '$location', 
                                 .replace(/:val/g, propVal.Id);
                         });
                         filterStr = concatIfExist(filterStr, " and ") + filterBasePatternProp
-                            .replace(/:innerPattern/g, filterInnerStr)
+                            .replace(/:innerPattern/g, filterInnerStr);
                     } else if ((propKeyType === 'date' || propKeyType === 'number') && propKey.input.from && propKey.input.to) {
                         //console.log(propKey.input.from.toISOString());
                         filterStr = concatIfExist(filterStr, " and ") + filterPatternPropInterval
@@ -180,13 +180,13 @@ peopleModule.controller("listController", ['$rootScope', '$scope', '$location', 
                             .replace(/:to/g, propKeyType === 'date' ? serviceUtil.formatDate(propKey.input.to, DATE_FORMAT)+'Z' : propKey.input.to)
                     } else if (propKeyType === 'text' && propKey.input.length > 0) {
                         filterStr = concatIfExist(filterStr, " and ") + filterPatternProp
-                            .replace(/:val/g, "'"+propKey.input+"'")
+                            .replace(/:val/g, "'" + propKey.input + "'");
                     } else if (propKeyType === 'refCity' && propKey.input.City) {
                         filterStr = concatIfExist(filterStr, " and ") + filterPatternProp
-                            .replace(/:val/g, propKey.input.City.Id)
+                            .replace(/:val/g, propKey.input.City.Id);
                     } else if (propKeyType === 'refStreet' && propKey.input.Street) {
                         filterStr = concatIfExist(filterStr, " and ") + filterPatternProp
-                            .replace(/:val/g, propKey.input.Street.Id)
+                            .replace(/:val/g, propKey.input.Street.Id);
                     }
                     filterStr = filterStr.replace(/:fieldName/g, propKey.PropertyType.field).replace(/:propKeyId/g, propKey.Id);
                 }
@@ -431,6 +431,7 @@ peopleModule.controller('editController', ['$timeout', '$filter', '$rootScope', 
             function savePerson() {
                 if (addMode) {
                     peopleData.save(person, function (res) {
+                        addMode = false;
                         $scope.saving = false;
                         $scope.person.Id = res.Id;
                         $scope.additionalProperties = [];
