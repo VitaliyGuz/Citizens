@@ -26,3 +26,4 @@
 /// <reference path="citizens/services/streetservices.js" />
 /// <reference path="citizens/services/userservices.js" />
 /// <reference path="citizens/services/authservices.js" />
+/// <reference path="citizens/authcomplete.js" />

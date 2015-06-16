@@ -73,8 +73,11 @@ app.config(['$routeProvider', 'paginationTemplateProvider', function ($routeProv
         }).
         when('/login', {
             templateUrl: 'Views/Login.html',
-            controller: 'loginController',
-            controllerAs: 'vm'
+            controller: 'loginController'
+        }).
+        when('/register', {
+            templateUrl: 'Views/Register.html',
+            controller: 'registerController'
         }).
         otherwise({
             redirectTo: '/'
@@ -146,10 +149,10 @@ app.factory("serviceUtil", ["$filter", '$routeParams', '$location', function ($f
 }]);
 
 app.run(["$rootScope", "$timeout", '$location', '$cookieStore', '$http', function ($rootScope, $timeout, $location, $cookieStore, $http) {
-    var accessToken = $cookieStore.get('access_token') || undefined;
-    if (accessToken) {
-        $rootScope.loggedIn = true;
-        $http.defaults.headers.common['Authorization'] = accessToken;
+    var authData = $cookieStore.get('auth_data') || undefined;
+    if (authData) {
+        $rootScope.UserInfo = authData.userInfo;
+        $http.defaults.headers.common['Authorization'] = authData.accessToken;
     }
 
     $rootScope.$watch("successMsg", function (newValue) {
@@ -163,9 +166,12 @@ app.run(["$rootScope", "$timeout", '$location', '$cookieStore', '$http', functio
     $rootScope.$on('$routeChangeStart', function (event, current, previous) {
         var backUrl = $location.path(),
             restrictedPage = $.inArray(backUrl, ['/login', '/register']) === -1;
-        if (restrictedPage && !$rootScope.loggedIn) {
-            if (!backUrl) backUrl = '/';
-            $location.path('/login').search('backUrl', backUrl);
+        if (restrictedPage && !$rootScope.UserInfo) {
+            if (backUrl) {
+                $location.path('/login').search('backUrl', backUrl);
+            } else {
+                $location.path('/login');
+            }
             return;
         };
         if (current.$$route && current.$$route.resolve) {
