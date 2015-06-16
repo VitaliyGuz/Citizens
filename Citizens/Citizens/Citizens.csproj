@@ -240,6 +240,7 @@
     <Content Include="Scripts\Citizen\appCitizen.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
+    <Content Include="Scripts\Citizen\authComplete.js" />
     <Content Include="Scripts\Citizen\Controllers\authControllers.js" />
     <Content Include="Scripts\Citizen\Controllers\cityControllers.js" />
     <Content Include="Scripts\Citizen\Controllers\peopleControllers.js" />
@@ -262,6 +263,7 @@
     <None Include="Scripts\_references.js" />
     <Content Include="Scripts\Citizen\Services\streetServices.js" />
     <Content Include="Scripts\Sql\createPersonType.sql" />
+    <Content Include="Views\AuthComplete.html" />
     <Content Include="Views\Home\import.cshtml" />
     <Content Include="Views\Account\Login.cshtml" />
     <Content Include="Views\Account\Register.cshtml" />
