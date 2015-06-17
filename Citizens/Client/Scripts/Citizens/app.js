@@ -2,7 +2,7 @@
 
 var app = angular.module("citizens", ["ngRoute", 'ngCookies', 'angularUtils.directives.dirPagination', 'peopleControllers', 'streetControllers', 'regionPartControllers', 'cityControllers', 'authControllers']);
 
-app.config(['$routeProvider', 'paginationTemplateProvider', function ($routeProvider, paginationTemplateProvider) {
+app.config(['$routeProvider', '$httpProvider', 'paginationTemplateProvider', function ($routeProvider, $httpProvider, paginationTemplateProvider) {
     $routeProvider.
         when('/people', {
             templateUrl: 'Views/ListPeople.html',
@@ -164,13 +164,25 @@ app.run(["$rootScope", "$timeout", '$location', '$cookieStore', '$http', functio
     });
 
     $rootScope.$on('$routeChangeStart', function (event, current, previous) {
-        var backUrl = $location.path(),
-            restrictedPage = $.inArray(backUrl, ['/login', '/register']) === -1;
+        var changeUrl = $location.path(),
+            restrictedPage = $.inArray(changeUrl, ['/login', '/register']) === -1;
         if (restrictedPage && !$rootScope.UserInfo) {
-            if (backUrl) {
-                $location.path('/login').search('backUrl', backUrl);
+            if (changeUrl) {
+                $location.path('/login').search('backUrl', changeUrl);
             } else {
                 $location.path('/login');
+            }
+            return;
+        };
+        if (changeUrl === '/register') {
+            var backUrl;
+            if (previous) {
+                backUrl = previous.params.backUrl;
+            }
+            if (backUrl) {
+                $location.path(changeUrl).search('backUrl', backUrl);
+            } else {
+                $location.path(changeUrl);
             }
             return;
         };

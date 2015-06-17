@@ -2,9 +2,8 @@
 //todo: add login/logout, register controllers
 var authControllers = angular.module('authControllers', ['authServices','ngRoute']);
 
-authControllers.controller('loginController', ['$scope', '$location', 'serviceUtil', 'Login', 'ExternalLogin', function ($scope, $location, serviceUtil, Login, ExternalLogin) {
-    //var vm = this;
-    //$scope.error = '';
+authControllers.controller('loginController', ['$scope', '$location', 'Login', 'ExternalLogin', function ($scope, $location, Login, ExternalLogin) {
+    
     $scope.loadingData = {};
 
     function responseHandler(resp) {
@@ -12,7 +11,7 @@ authControllers.controller('loginController', ['$scope', '$location', 'serviceUt
             $scope.loadingData = {};
             if (resp.externalProviderUrl) {
                 window.$windowScope = $scope;
-                window.open(resp.externalProviderUrl, "Authenticate Account", "location=0,status=0,width=600,height=750");
+                window.open(resp.externalProviderUrl, "Authenticate Account", "location=0,status=0,width=500,height=650");
             } else {
                 var backUrl = $location.search().backUrl;
                 if (!backUrl) backUrl = '/';
@@ -20,8 +19,13 @@ authControllers.controller('loginController', ['$scope', '$location', 'serviceUt
             }
         } else {
             $scope.loadingData = {};
-            $scope.error = serviceUtil.getErrorMessage(resp.error);
-            if (!$scope.error) $scope.error = 'Authorization failed';
+            $scope.error = 'Авторизація не виконана';
+            if (resp.error.error_description) {
+                $scope.error = $scope.error + ' ('+resp.error.error_description+')';
+            }
+            if (resp.error.Message) {
+                $scope.error = $scope.error + ' (' + resp.error.Message + ')';
+            }
         }
     };
 
@@ -42,4 +46,62 @@ authControllers.controller('loginController', ['$scope', '$location', 'serviceUt
     };
 }]);
 
-authControllers.controller('registerController',[function() {}]);
+authControllers.controller('registerController', ['$scope', '$location', 'Registration', 'ExternalLogin', function ($scope, $location, Registration, ExternalLogin) {
+    $scope.loadingData = {};
+
+    function responseHandler(resp) {
+        if (resp.success) {
+             successHandler();
+        } else {
+            errorHandler(resp.error);
+        }
+    };
+
+    function successHandler() {
+        $scope.loadingData = {};
+        var backUrl = $location.search().backUrl;
+        if (!backUrl) backUrl = '/';
+        $location.url(backUrl);
+    };
+
+    function errorHandler(err) {
+        $scope.loadingData = {};
+        $scope.error = 'Реєстрація не виконана. ';
+        if (err) {
+            $scope.error = err.Message;
+            if (err.Message && err.ModelState) {
+                for (var prop in err.ModelState) {
+                    if (err.ModelState.hasOwnProperty(prop)) {
+                        var arrMsg = err.ModelState[prop];
+                        if (arrMsg && angular.isArray(arrMsg)) {
+                            arrMsg.forEach(function(item) {
+                                $scope.error = $scope.error + ' ' + item;
+                            });
+                        }
+                    }
+                }
+            }
+        }      
+    };
+
+    $scope.register = function() {
+        $scope.loadingData.reg = true;
+        Registration.internal($scope.user.firstName + ' ' + $scope.user.lastName, $scope.user.email, $scope.user.password, $scope.user.confirmPassword, responseHandler);
+    };
+
+    $scope.registerExternal = function (providerName) {
+        $scope.loadingData.regExt = true;
+        var redirectUri = location.protocol + '//' + location.host + '/Views/AuthComplete.html';
+        ExternalLogin.getProviderUrl(redirectUri, providerName, function(resp) {
+            if (resp.success) {
+                window.$windowScope = $scope;
+                window.open(resp.externalProviderUrl, "Authenticate Account", "location=0,status=0,width=500,height=650");
+            } else {
+                errorHandler(resp.error);
+            }
+        });
+        $scope.authCompleted = function (fragment) {
+            Registration.external(providerName, responseHandler);
+        };
+    };
+}]);

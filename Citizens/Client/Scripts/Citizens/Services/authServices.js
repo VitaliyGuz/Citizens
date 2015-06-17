@@ -76,3 +76,30 @@ authServices.factory('ExternalLogin', ['$http', 'Credentials', 'config', functio
         }
     }
 }]);
+
+authServices.service('Registration', ['$http', 'Login', 'Credentials', 'config', function ($http, Login, Credentials, config) {
+    this.internal = function (firstName, email, pass, confirmPass, callback) {
+        var req = {
+            method: 'POST',
+            url: config.baseUrl + '/api/Account/Register',
+            data: $.param({ FirstName: firstName, Email: email, Password: pass, ConfirmPassword: confirmPass }),
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+        };
+        register(req, callback);
+    };
+
+    this.external = function (providerName, callback) {
+        //todo: withCredentials=true is temp
+        register({ method: 'POST', url: config.baseUrl + '/api/Account/RegisterExternal', withCredentials: true }, callback);
+    };
+
+    function register(request, callback) {
+        Credentials.clear();
+        $http(request).success(function (response) {
+            Credentials.set(response.token_type + ' ' + response.access_token, callback);
+        }).error(function (e) {
+            callback({ success: false, error: e });
+        });
+    };
+
+}]);

@@ -51,10 +51,10 @@
                     <li><a href="#/region-parts">Райони</a></li>
                     <li><a >Завантаження з Excel</a></li>
                 </ul>
-                <ul class="list-inline navbar-brand navbar-right">
+                <ul class="list-inline navbar-text navbar-right">
                     <li ng-if="UserInfo">{{UserInfo.UserName}}</li>
                     <li ng-if="UserInfo"><a href="#/logout">Вийти</a></li>
-                    <li ng-if ="!UserInfo"><a>Реєстрація</a></li>
+                    <li ng-if ="!UserInfo"><a href="#/register">Реєстрація</a></li>
                     <li ng-if="!UserInfo"><a href="#/login">Ввійти</a></li>
                 </ul>
             </div>
@@ -70,7 +70,7 @@
             {{successMsg}}
         </div>
         <h3 ng-hide="loading">{{pageTitle}}</h3>
-        <h5 ng-show="loading" class="help-block">Завантаження cторінки, будь-ласка зачекайте... <i class="fa fa-refresh fa-spin"></i></h5>
+        <h5 ng-show="loading" class="help-block">Завантаження, будь-ласка зачекайте... <i class="fa fa-refresh fa-spin"></i></h5>
         <div ng-hide="loading" ng-view></div>
     </div>
 </body>
