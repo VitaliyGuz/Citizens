@@ -324,10 +324,13 @@ precinctControllers.controller("editController", ['$timeout', '$location', '$roo
             $scope.selected.newPrecinct = '';
             $scope.selected.newPrecinctId = 0;
             if (copyAddressMode) {
-                $scope.precinctAddresses.splice($scope.precinctAddresses.indexOf(editableAddress), 1);
+                var findInd = $scope.precinctAddresses.indexOf(editableAddress);
+                if (findInd >= 0) {
+                    $scope.precinctAddresses.splice(findInd, 1);
+                }
             }
             copyAddressMode = false;
-            editableAddress = {};
+            editableAddress = undefined;
         };
 
         function errorHandler(e) {
@@ -484,6 +487,12 @@ precinctControllers.controller("editController", ['$timeout', '$location', '$roo
 
         $scope.copyAddress = function (address, ind) {
             copyAddressMode = true;
+            var countDeleted = 0,
+                findInd = $scope.precinctAddresses.indexOf(editableAddress);
+            if (findInd >= 0) {
+                var deleted = $scope.precinctAddresses.splice(findInd, 1);
+                if (findInd < ind) countDeleted = deleted.length;
+            }
             var copiedAddress = {
                 CityId: address.City.Id,
                 City: address.City,
@@ -492,7 +501,7 @@ precinctControllers.controller("editController", ['$timeout', '$location', '$roo
                 House: address.House,
                 PrecinctId: address.PrecinctId
             };
-            $scope.precinctAddresses.splice(ind + 1, 0, copiedAddress);
+            $scope.precinctAddresses.splice(ind - countDeleted + 1, 0, copiedAddress);
             $scope.editAddress(copiedAddress);
         };
     }]);
