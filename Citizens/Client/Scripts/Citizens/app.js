@@ -79,9 +79,27 @@ app.config(['$routeProvider', '$httpProvider', 'paginationTemplateProvider', fun
             templateUrl: 'Views/Register.html',
             controller: 'registerController'
         }).
+        when('/logout', {
+            resolve: {
+                logout: function ($q, $location, $http, Credentials,config) {
+                    var deferred = $q.defer();
+                    $http.post(config.baseUrl + '/api/Account/Logout')
+                        .success(function () {
+                            Credentials.clear();
+                            deferred.reject();
+                            $location.path('/login');
+                        })
+                        .error(function (error) {
+                            deferred.reject(error);
+                        });
+                    return deferred.promise;
+                }
+            }
+        }).
         otherwise({
             redirectTo: '/'
         });
+
     paginationTemplateProvider.setPath('Scripts/AngularUtils/directives/dirPagination.tpl.html');
 }]);
 

@@ -1,5 +1,5 @@
 ﻿'use strict';
-//todo: add login/logout, register controllers
+
 var authControllers = angular.module('authControllers', ['authServices','ngRoute']);
 
 authControllers.controller('loginController', ['$scope', '$location', 'Login', 'ExternalLogin', function ($scope, $location, Login, ExternalLogin) {

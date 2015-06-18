@@ -1,5 +1,5 @@
 ﻿'use strict';
-//todo: add login/logout, set/clearCredentials functions
+
 var authServices = angular.module('authServices', []);
 
 authServices.service('Login', ['$http', 'Credentials', 'config', function ($http, Credentials, config) {
