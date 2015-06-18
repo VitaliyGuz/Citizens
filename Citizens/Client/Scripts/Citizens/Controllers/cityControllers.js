@@ -1,14 +1,14 @@
 ﻿'use strict';
 
-var cityControllers = angular.module('cityControllers', ['cityServices', 'regionPartServices']);
+var cityControllers = angular.module('cityControllers', ['cityServices']);
 
-cityControllers.controller("listCitiesController", ['$rootScope', '$location', '$timeout', '$scope', 'config', 'serviceUtil', 'cityTypesData', 'cityData',
-    function ($rootScope, $location, $timeout, $scope, config, serviceUtil, cityTypesData, cityData) {
+cityControllers.controller("listCitiesController", ['$rootScope', '$location', '$timeout', '$scope', 'config', 'serviceUtil', 'cityData',
+    function ($rootScope, $location, $timeout, $scope, config, serviceUtil, cityData) {
 
         $rootScope.pageTitle = 'Населені пункти';
         $scope.query = {};
         $scope.queryBy = 'Name';
-
+        $rootScope.editInd = -1;
         $scope.currentPage = serviceUtil.getRouteParam("currPage") || 1;
         $scope.pageSize = config.pageSize;
 
@@ -43,15 +43,12 @@ cityControllers.controller("listCitiesController", ['$rootScope', '$location', '
 
     }]);
 
-cityControllers.controller('editCityController', ['$timeout', '$rootScope', '$scope', '$location', '$routeParams', 'cityData', 'cityTypesData', 'serviceUtil', 'regionPartTypes', 'regionPartData', 'cityRegionPartsData', 'config', 'resolvedData',
-    function ($timeout, $rootScope, $scope, $location, $routeParams, cityData, cityTypesData, serviceUtil, regionPartTypes, regionPartData, cityRegionPartsData, config, resolvedData) {
-        var editInd, editableCityDistrict, addMode, routeId;
+cityControllers.controller('editCityController', ['$timeout', '$rootScope', '$scope', '$location', 'cityData', 'serviceUtil', 'cityRegionPartsData', 'config', 'resolvedData',
+    function ($timeout, $rootScope, $scope, $location, cityData, serviceUtil, cityRegionPartsData, config, resolvedData) {
+        var editInd, editableCityDistrict, addMode;
         $rootScope.pageTitle = 'Населений пункт';
-        //$scope.loading = true;
         $scope.saving = false;
         addMode = true;
-        //$rootScope.errorMsg = '';
-        //$rootScope.successMsg = '';
         $scope.tableHead = ['№', 'Район'];
         $scope.selected = { cityDistrict: {} };
         $scope.cityDistricts = [];
@@ -71,37 +68,6 @@ cityControllers.controller('editCityController', ['$timeout', '$rootScope', '$sc
                 $scope.regionParts.sort(serviceUtil.compareByName);
             }
         }
-        
-        //routeId = serviceUtil.getRouteParam("id");
-        //if (routeId) {
-        //    cityData.getById({ id: routeId }, function (res) {
-        //        $scope.loading = false;
-        //        addMode = false;
-        //        $scope.city = res;
-        //        $scope.cityDistricts = res.CityRegionParts;
-        //    }, errorHandler);
-        //}
-
-        //$scope.loading = true;
-        //cityTypesData.query(function (res) {
-        //    $scope.cityTypes = res.value;
-        //    $scope.loading = false;
-        //    //$scope.cityTypes.sort(serviceUtil.compareByName);
-        //}, errorHandler);
-
-        //$scope.loading = true;
-        //regionPartData.getAllByType({ type: regionPartTypes.REGION.val }, function (res) {
-        //    $scope.regionParts = res.value;
-        //    $scope.loading = false;
-        //    $scope.regionParts.sort(serviceUtil.compareByName);
-        //}, errorHandler);
-
-        //$scope.loading = true;
-        //regionPartData.getAllByType({ type: regionPartTypes.CITY.val }, function (res) {
-        //    $scope.cityRegionParts = res.value;
-        //    $scope.loading = false;
-        //    $scope.cityRegionParts.sort(serviceUtil.compareByName);
-        //}, errorHandler);
 
         $scope.save = function () {
             $scope.saving = true;
@@ -138,11 +104,7 @@ cityControllers.controller('editCityController', ['$timeout', '$rootScope', '$sc
                         $scope.city = res;
                         $rootScope.cities.push(res);
                     } else {
-                        //todo: resolve problem with update cities
-                        //$rootScope.cities[$rootScope.editInd] = res;
-                        $rootScope.$watch('cities', function (newValue, oldValue) {
-                            $rootScope.cities[$rootScope.editInd] = res;
-                        });
+                        $rootScope.cities[$rootScope.editInd] = res;
                     }
                     $rootScope.cities.sort(compareCities);
                 }

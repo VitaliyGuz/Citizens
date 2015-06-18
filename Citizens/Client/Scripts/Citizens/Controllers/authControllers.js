@@ -8,11 +8,11 @@ authControllers.controller('loginController', ['$scope', '$location', 'Login', '
 
     function responseHandler(resp) {
         if (resp.success) {
-            $scope.loadingData = {};
             if (resp.externalProviderUrl) {
                 window.$windowScope = $scope;
                 window.open(resp.externalProviderUrl, "Authenticate Account", "location=0,status=0,width=500,height=650");
             } else {
+                $scope.loadingData = {};
                 var backUrl = $location.search().backUrl;
                 if (!backUrl) backUrl = '/';
                 $location.url(backUrl);

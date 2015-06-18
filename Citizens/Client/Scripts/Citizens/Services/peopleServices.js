@@ -1,6 +1,6 @@
 ﻿'use strict';
 
-angular.module("peopleServices", ['ngResource']).
+angular.module("peopleServices", ['ngResource', 'precinctServices']).
     factory("peopleData", ['$resource', 'config', function ($resource, config) {
         var urlOdata = config.baseUrl + '/odata/People',
             order = '&$orderby=LastName,FirstName,MidleName',
@@ -63,4 +63,80 @@ angular.module("peopleServices", ['ngResource']).
                 });
             }
         }
+    }])
+    .factory('dataForEditPersonPage', ['$q', 'serviceUtil', 'peopleData', 'precinctData', function ($q, serviceUtil, peopleData, precinctData) {
+
+        function getPersonPromise(routeParam) {
+            var deferred = $q.defer();
+            if (routeParam) {
+                peopleData.getById({ id: routeParam }, function (res) {
+                    deferred.resolve(res);
+                }, function (err) {
+                    deferred.reject('Фізичну особу не знайдено (' + serviceUtil.getErrorMessage(err) + ')');
+                });
+            } else {
+                deferred.resolve();
+            }
+            return deferred.promise;
+        };
+
+        function getPrecinctsPromise() {
+            var deferred = $q.defer();
+            precinctData.getAll(function (res) {
+                deferred.resolve(res.value);
+            }, function (err) {
+                deferred.reject('Дільниці не завантажено (' + serviceUtil.getErrorMessage(err) + ')');
+            });
+            return deferred.promise;
+        };
+
+        return {
+            asyncLoad: function (routeParam) {
+                var resolved = {}, deferred = $q.defer();
+                function errorHandler(err) {
+                    deferred.reject(err);
+                };
+                getPersonPromise(routeParam).then(function(person) {
+                    resolved.person = person;
+                    return getPrecinctsPromise();
+                }, errorHandler).then(function (precincts) {
+                    resolved.precincts = precincts;
+                    deferred.resolve(resolved);
+                }, errorHandler);
+
+                return deferred.promise;
+            }
+        };
+    }])
+    .factory('genlPeopleData', ['$q', 'additionalPropsData', 'propertyTypes', 'serviceUtil', function ($q, additionalPropsData, propertyTypes, serviceUtil) {
+        function getAdditionalPropertiesPromise(method) {
+            var deferred = $q.defer();
+            
+            additionalPropsData[method](function (res) {
+                deferred.resolve(res.value);
+            }, function (err) {
+                deferred.reject('Фізичну особу не знайдено (' + serviceUtil.getErrorMessage(err) + ')');
+            });
+            
+            return deferred.promise;
+        };
+
+        return {
+            asyncLoad: function () {
+                var resolved = {}, deferred = $q.defer();
+                function errorHandler(err) {
+                    deferred.reject(err);
+                };
+                getAdditionalPropertiesPromise('getKeys').then(function (propKeys) {
+                    propertyTypes.castToObject(propKeys);
+                    resolved.propKeys = propKeys;
+                    return getAdditionalPropertiesPromise('getValues');
+                }, errorHandler).then(function (propValues) {
+                    resolved.propValues = propValues;
+                    deferred.resolve(resolved);
+                }, errorHandler);
+
+                return deferred.promise;
+            }
+        };
     }])

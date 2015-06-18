@@ -3,10 +3,11 @@
 var peopleControllers = angular.module('peopleControllers', ['peopleServices', 'streetServices', 'cityServices', 'precinctServices', 'ui.bootstrap']);
 
 //todo: add initData service for cities, streets, propKeys/Values
-peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$location', 'peopleData', 'config', 'serviceUtil', '$timeout', 'additionalPropsData', 'cityData', 'streetData', 'propertyTypes',
-    function ($rootScope, $scope, $location, peopleData, config, serviceUtil, $timeout, additionalPropsData, cityData, streetData, propertyTypes) {
+peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$location', 'peopleData', 'config', 'serviceUtil', 'genlPeopleData',
+    function ($rootScope, $scope, $location, peopleData, config, serviceUtil, genlPeopleData) {
         var propValues = [], DATE_FORMAT = 'yyyy-MM-ddT00:00:00';
-        $scope.loading = true;
+        
+        $rootScope.pageTitle = 'Фізичні особи';
         $scope.saving = false;
         $scope.filterQuery = {};
 
@@ -17,19 +18,9 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
 
         $scope.people = [];
         $scope.tableHead = ['№', 'П.І.Б.', 'Дата народження', 'Адреса','Дільниця', 'Дії'];
-        
-        $scope.loading = true;
-        additionalPropsData.getKeys(function (res) {
-            $scope.loading = false;
-            $scope.propKeys = res.value;
-            propertyTypes.castToObject($scope.propKeys);
-        }, errorHandler);
 
-        $scope.loading = true;
-        additionalPropsData.getValues(function (res) {
-            $scope.loading = false;
-            propValues = res.value;
-        }, errorHandler);
+        $scope.propKeys = genlPeopleData.propKeys;
+        propValues = genlPeopleData.propValues;
 
         $scope.getPropertyValuesByKeyId = function (keyId) {
             return propValues.filter(function (item) {
@@ -37,22 +28,11 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
             });
         };
 
-        $scope.loading = true;
-        cityData.getAll(function (res) {
-            $scope.loading = false;
-            $scope.cities = res.value;
-        }, errorHandler);
-
-        $scope.loading = true;
-        streetData.query(function (res) {
-            $scope.loading = false;
-            $scope.streets = res.value;
-        }, errorHandler);
-
-        $scope.getIndex = function (ind) {
+        $scope.getIndex = function(ind) {
             return ($scope.currentPage - 1) * config.pageSize + ind + 1;
-        }
-        
+        };
+
+        $scope.loadingPeople = true;
         setPeopleOnPage(($scope.currentPage - 1) * config.pageSize);
 
         $scope.edit = function (person) {
@@ -65,8 +45,7 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
                 if (!ok) return;
             }
             $rootScope.errorMsg = '';
-            peopleData.remove({ id: person.Id },
-                function () {
+            peopleData.remove({ id: person.Id },function () {
                     setPeopleOnPage(($scope.currentPage - 1) * config.pageSize);
                 }, errorHandler);
         };
@@ -76,7 +55,7 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
         };
 
         function errorHandler(e) {
-            $scope.loading = false;
+            $scope.loadingPeople = false;
             $scope.filtering = false;
             $rootScope.errorMsg = serviceUtil.getErrorMessage(e);
         };
@@ -98,7 +77,7 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
         
         function successHandler(data) {
             $rootScope.errorMsg = '';
-            $scope.loading = false;
+            $scope.loadingPeople = false;
             $scope.filtering = false;
             $scope.people = data.value;
             $scope.totalItems = data['@odata.count'];
@@ -198,25 +177,15 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
         };
     }]);
 
-peopleControllers.controller('editPersonController', ['$timeout', '$filter', '$rootScope', '$scope', '$location', 'peopleData', 'serviceUtil', 'precinctData', 'precinctAddressesData', 'additionalPropsData', 'cityData', 'streetData', 'propertyTypes','config',
-    function ($timeout, $filter, $rootScope, $scope, $location, peopleData, serviceUtil, precinctData, precinctAddressesData, additionalPropsData, cityData, streetData, propertyTypes, config) {
+peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$location', 'peopleData', 'serviceUtil', 'precinctData', 'precinctAddressesData', 'additionalPropsData', 'propertyTypes', 'config', 'resolvedData', 'genlPeopleData',
+    function ($rootScope, $scope, $location, peopleData, serviceUtil, precinctData, precinctAddressesData, additionalPropsData, propertyTypes, config, resolvedData, genlPeopleData) {
         var addMode = true, editInd, propValues = [], DATE_FORMAT = 'yyyy-MM-ddT00:00:00+00:00';
-
+        $rootScope.pageTitle = 'Фізична особа';
         $scope.tableHead = ['№', 'Назва', 'Значення'];
         $scope.selected = { property: {} };
         
-        $scope.loading = true;
-        additionalPropsData.getKeys(function (res) {
-            $scope.loading = false;
-            $scope.propKeys = res.value;
-            propertyTypes.castToObject($scope.propKeys);
-        }, errorHandler);
-
-        $scope.loading = true;
-        additionalPropsData.getValues(function (res) {
-            $scope.loading = false;
-            propValues = res.value;
-        }, errorHandler);
+        $scope.propKeys = genlPeopleData.propKeys;
+        propValues = genlPeopleData.propValues;
 
         function getPropertyValuesByKeyId (keyId) {
             return propValues.filter(function (item) {
@@ -224,51 +193,16 @@ peopleControllers.controller('editPersonController', ['$timeout', '$filter', '$r
             });
         };
 
-        $scope.loading = true;
-        cityData.getAll(function (res) {
-            //$scope.loading = false;
-            $scope.cities = res.value;
-            streetData.query(function (res) {
-                //$scope.loading = false;
-                $scope.streets = res.value;
-                var routeId = serviceUtil.getRouteParam('id');
-                if (routeId) {
-                    //$scope.loading = true;
-                    peopleData.getById({ id: routeId }, function (res) {
-                        $scope.loading = false;
-                        addMode = false;
-                        $scope.person = res;
-                        $scope.dateOfBirth = new Date(res.DateOfBirth);
-                        $scope.person.PrecinctId = res.PrecinctAddress.PrecinctId;
-                        $scope.additionalProperties = getPropertyPairs(res.PersonAdditionalProperties);
-                    }, errorHandler);
-                }
-            }, errorHandler);
-        }, errorHandler);
-
-        //$scope.loading = true;
-        //streetData.query(function (res) {
-        //    $scope.loading = false;
-        //    $scope.streets = res.value;
-        //}, errorHandler);
-
-        $scope.loading = true;
-        precinctData.getAll(function (precincts) {
-            $scope.loading = false;
-            $scope.precincts = precincts.value;
-        }, errorHandler);
-
-        //if ($routeParams.id != undefined) {
-        //    $scope.loading = true;
-        //    peopleData.getById({ id: $routeParams.id }, function (res) {
-        //        $scope.loading = false;
-        //        addMode = false;
-        //        $scope.person = res;
-        //        $scope.dateOfBirth = new Date(res.DateOfBirth);
-        //        $scope.person.PrecinctId = res.PrecinctAddress.PrecinctId;
-        //        $scope.additionalProperties = getPropertyPairs(res.PersonAdditionalProperties);
-        //    }, errorHandler);
-        //}
+        if (resolvedData) {
+            if (resolvedData.person) {
+                addMode = false;
+                $scope.person = resolvedData.person;
+                $scope.dateOfBirth = new Date(resolvedData.person.DateOfBirth);
+                $scope.person.PrecinctId = resolvedData.person.PrecinctAddress.PrecinctId;
+                $scope.additionalProperties = getPropertyPairs(resolvedData.person.PersonAdditionalProperties);
+            }
+            $scope.precincts = resolvedData.precincts;
+        }
 
         function getPropertyPairs(properties) {
             var result, types = propertyTypes.getAll();
@@ -320,7 +254,6 @@ peopleControllers.controller('editPersonController', ['$timeout', '$filter', '$r
         };
 
         function errorHandler(e) {
-            $scope.loading = false;
             $scope.saving = false;
             $scope.savingProp = false;
             $rootScope.errorMsg = serviceUtil.getErrorMessage(e);
@@ -494,7 +427,7 @@ peopleControllers.controller('editPersonController', ['$timeout', '$filter', '$r
 
         $scope.saveProperty = function () {
             var propType, newProperty, newPropValue;
-            if (!$scope.person) {
+            if (!$scope.person.Id) {
                 $rootScope.errorMsg = 'Спочатку необхідно зберегти фіз. особу';
                 return;
             }

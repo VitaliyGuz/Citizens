@@ -5,37 +5,27 @@ var regionPartControllers = angular.module('regionPartControllers', ['regionPart
 regionPartControllers.controller("listRegionPartsController", ['$rootScope', '$location','$timeout', '$scope', 'config', 'serviceUtil', 'regionPartData', 'regionData', 'regionPartTypes',
     function ($rootScope, $location, $timeout, $scope, config, serviceUtil, regionPartData, regionData, regionPartTypes) {
         var editInd;
-        $scope.loading = true;
+        $rootScope.pageTitle = 'Райони';
         $scope.saving = false;
 
         $scope.query = {};
         $scope.queryBy = 'Name';
 
-        $rootScope.errorMsg = '';
-        $rootScope.successMsg = '';
-
         $scope.currentPage = serviceUtil.getRouteParam("currPage") || 1;
         
         $scope.pageSize = config.pageSize;
-        $scope.regionParts = [];
         $scope.selected = { regionPart: {} };
         $scope.tableHead = ['№', 'Назва', 'Область', 'Тип', 'Дії'];
         $scope.regionPartTypes = regionPartTypes;
 
         $scope.getIndex = function(regionPart) {
-            return $scope.regionParts.indexOf(regionPart);
+            return $rootScope.regionParts.indexOf(regionPart);
         };
 
-        regionPartData.query(function (regionParts) {
-            $scope.regionParts = regionParts.value;
-            $scope.loading = false;
-            $scope.regionParts.sort(serviceUtil.compareByName);
-        }, errorHandler);
-
-        $scope.loading = true;
+        //$scope.loading = true;
         regionData.query(function (regions) {
             $scope.regions = regions.value;
-            $scope.loading = false;
+            //$scope.loading = false;
             $scope.regions.sort(serviceUtil.compareByName);
         }, errorHandler);
 
@@ -57,7 +47,7 @@ regionPartControllers.controller("listRegionPartsController", ['$rootScope', '$l
             $rootScope.errorMsg = '';
             regionPartData.remove({ id: regionPart.Id },
                 function() {
-                    $scope.regionParts.splice($scope.getIndex(regionPart), 1);
+                    $rootScope.regionParts.splice($scope.getIndex(regionPart), 1);
                 }, errorHandler);
         };
 
@@ -118,11 +108,11 @@ regionPartControllers.controller("listRegionPartsController", ['$rootScope', '$l
         function querySuccessHandler(res,ind) {
             $scope.saving = false;
             if (ind == undefined) {
-                $scope.regionParts.push(res);
+                $rootScope.regionParts.push(res);
             } else {
-                $scope.regionParts[ind] = res;
+                $rootScope.regionParts[ind] = res;
             }           
-            $scope.regionParts.sort(serviceUtil.compareByName);
+            $rootScope.regionParts.sort(serviceUtil.compareByName);
             $scope.reset();
         };
 

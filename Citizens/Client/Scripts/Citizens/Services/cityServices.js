@@ -6,7 +6,7 @@ angular.module("cityServices", ['ngResource', 'regionPartServices']).
             params = { id: "@id" };
         return $resource('', {},
 		{
-		    'getAll': { method: 'GET', url: urlOdata + "?$expand=CityType,RegionPart&$orderby=CityTypeId,Name asc", cache: true },
+		    'getAll': { method: 'GET', url: urlOdata + "?$expand=CityType,RegionPart&$orderby=CityTypeId,Name asc", cache: false },
 		    'getById': { method: 'GET', params: params, url: urlOdata + "(:id)?$expand=CityType,RegionPart,CityRegionParts($expand=RegionPart)" },
 		    'update': { method: 'PUT', params: params, url: urlOdata + "(:id)" },
 		    'save': { method: "POST", url: urlOdata },
@@ -40,7 +40,7 @@ angular.module("cityServices", ['ngResource', 'regionPartServices']).
 		    'remove': { method: 'DELETE', params: { cityId: "@cityId", regionPartId: "@regionPartId" }, url: urlOdata + key }
 		});
     }])
-    .factory("dataForEditPage", ['$q', 'cityData', 'cityTypesData', 'regionPartData', 'regionPartTypes', 'serviceUtil',
+    .factory("dataForEditCityPage", ['$q', 'cityData', 'cityTypesData', 'regionPartData', 'regionPartTypes', 'serviceUtil',
         function ($q, cityData, cityTypesData, regionPartData, regionPartTypes, serviceUtil) {
         
         function getCityPromise(routeParam) {

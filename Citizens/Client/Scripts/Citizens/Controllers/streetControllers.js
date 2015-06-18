@@ -5,36 +5,27 @@ var streetControllers = angular.module('streetControllers', ['streetServices']);
 streetControllers.controller("listStreetsController", ['$location', '$rootScope', '$scope', 'streetData', 'typeStreetData', 'config', 'serviceUtil',
     function ($location, $rootScope, $scope, streetData, typeStreetData, config, serviceUtil) {
         var editInd;
-        $scope.loading = true;
+        $rootScope.pageTitle = 'Вулиці';
+        
         $scope.saving = false;
 
         $scope.query = {};
         $scope.queryBy = 'Name';
 
-        $rootScope.errorMsg = '';
-        $rootScope.successMsg = '';
-
         $scope.currentPage = serviceUtil.getRouteParam("currPage") || 1;
 
         $scope.pageSize = config.pageSize;
-        $scope.streets = [];
         $scope.selected = { street: {}};
         $scope.tableHead = ['№', 'Назва', 'Тип', 'Дії'];
 
         $scope.getIndex = function (street) {
-            return $scope.streets.indexOf(street);
+            return $rootScope.streets.indexOf(street);
         };
 
-        streetData.query(function (streets) {
-            $scope.streets = streets.value;
-            $scope.loading = false;
-            //$scope.streets.sort(serviceUtil.compareByName);
-        }, errorHandler);
-
-        $scope.loading = true;
+        //$scope.loading = true;
         typeStreetData.query(function (types) {
             $scope.typesStreet = types.value;
-            $scope.loading = false;
+            //$scope.loading = false;
         },errorHandler);
 
         $scope.edit = function (street) {
@@ -55,7 +46,7 @@ streetControllers.controller("listStreetsController", ['$location', '$rootScope'
             $rootScope.errorMsg = '';
             streetData.remove({ id: street.Id },
                 function () {
-                    $scope.streets.splice($scope.getIndex(street), 1);
+                    $rootScope.streets.splice($scope.getIndex(street), 1);
                 }, errorHandler);
         };
 
@@ -73,8 +64,8 @@ streetControllers.controller("listStreetsController", ['$location', '$rootScope'
                     function (newItem) {
                         streetData.getById({ id: newItem.Id }, function (res) {
                             $scope.saving = false;
-                            $scope.streets.push(res);
-                            $scope.streets.sort(serviceUtil.compareByName);
+                            $rootScope.streets.push(res);
+                            $rootScope.streets.sort(serviceUtil.compareByName);
                             $scope.reset();
                         }, errorHandler);
                     }, errorHandler);
@@ -83,8 +74,8 @@ streetControllers.controller("listStreetsController", ['$location', '$rootScope'
                     function () {
                         streetData.getById({ id: $scope.selected.street.Id }, function (res) {
                             $scope.saving = false;
-                            $scope.streets[editInd] = res;
-                            $scope.streets.sort(serviceUtil.compareByName);
+                            $rootScope.streets[editInd] = res;
+                            $rootScope.streets.sort(serviceUtil.compareByName);
                             $scope.reset();
                         }, errorHandler);
                     }, errorHandler);
@@ -109,7 +100,6 @@ streetControllers.controller("listStreetsController", ['$location', '$rootScope'
 
         function errorHandler(e) {
             $scope.saving = false;
-            $scope.loading = false;
             $scope.reset();
             $rootScope.errorMsg = serviceUtil.getErrorMessage(e);
         };

@@ -6,7 +6,7 @@ angular.module("streetServices", ['ngResource'])
             params = { id: "@id" };
         return $resource('', {},
 		{
-		    'query': { method: 'GET', url: urlOdata + "(:id)?$expand=StreetType&$orderby=Name asc", cache: true },
+		    'query': { method: 'GET', url: urlOdata + "(:id)?$expand=StreetType&$orderby=Name asc", cache: false },
 		    'getById': { method: 'GET', params: params, url: urlOdata + "(:id)?$expand=StreetType" },
 			'update': {method: 'PUT', params: { id: "@id" }, url: urlOdata + "(:id)"},
 			'save': { method: "POST", url: urlOdata },

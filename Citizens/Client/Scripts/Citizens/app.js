@@ -1,60 +1,101 @@
 ﻿"use strict";
 
-var app = angular.module("citizens", ["ngRoute", 'ngCookies', 'angularUtils.directives.dirPagination', 'peopleControllers', 'streetControllers', 'regionPartControllers', 'cityControllers', 'authControllers']);
+var app = angular.module("citizens",
+    [
+        'ngRoute', 'ngCookies',
+        'angularUtils.directives.dirPagination',
+        'peopleControllers', 'streetControllers', 'regionPartControllers', 'cityControllers', 'authControllers',
+        'cityServices'
+    ]
+);
 
 app.config(['$routeProvider', '$httpProvider', 'paginationTemplateProvider', function ($routeProvider, $httpProvider, paginationTemplateProvider) {
     $routeProvider.
         when('/people', {
             templateUrl: 'Views/ListPeople.html',
-            controller: 'listPeopleController'
+            controller: 'listPeopleController',
+            resolve: {
+                genlData: function (genlData) { genlData.asyncLoad() },
+                genlPeopleData: function (genlPeopleData) { return genlPeopleData.asyncLoad() }
+            }
         }).
         when('/people/:currPage', {
             templateUrl: 'Views/ListPeople.html',
-            controller: 'listPeopleController'
+            controller: 'listPeopleController',
+            resolve: {
+                genlData: function (genlData) { genlData.asyncLoad() },
+                genlPeopleData: function (genlPeopleData) { return genlPeopleData.asyncLoad() }
+            }
         }).
         when('/person/new/:currPage', {
             templateUrl: 'Views/EditPerson.html',
-            controller: 'editPersonController'
+            controller: 'editPersonController',
+            resolve: {
+                genlData: function (genlData) { genlData.asyncLoad() },
+                genlPeopleData: function (genlPeopleData) { return genlPeopleData.asyncLoad() },
+                resolvedData: function ($route, dataForEditPersonPage) {
+                    //todo: use serviceUtil.getRouteParam()
+                    return dataForEditPersonPage.asyncLoad($route.current.params.id);
+                }
+            }
         }).
         when('/person/:id/:currPage', {
             templateUrl: 'Views/EditPerson.html',
-            controller: 'editPersonController'
+            controller: 'editPersonController',
+            resolve: {
+                genlData: function (genlData) { genlData.asyncLoad() },
+                genlPeopleData: function (genlPeopleData) { return genlPeopleData.asyncLoad() },
+                resolvedData: function ($route, dataForEditPersonPage) {
+                    //todo: use serviceUtil.getRouteParam()
+                    return dataForEditPersonPage.asyncLoad($route.current.params.id);
+                }
+            }
         }).
         when('/person/:id', {
             templateUrl: 'Views/EditPerson.html',
-            controller: 'editPersonController'
+            controller: 'editPersonController',
+            resolve: {
+                genlData: function (genlData) { return genlData.asyncLoad() },
+                genlPeopleData: function (genlPeopleData) { return genlPeopleData.asyncLoad() },
+                resolvedData: function ($route, dataForEditPersonPage) {
+                    //todo: use serviceUtil.getRouteParam()
+                    return dataForEditPersonPage.asyncLoad($route.current.params.id);
+                }
+            }
         }).
         when('/streets', {
             templateUrl: 'Views/Streets.html',
-            controller: 'listStreetsController'
+            controller: 'listStreetsController',
+            resolve: { genlData: function (genlData) { genlData.asyncLoad() } }
         }).
         when('/streets/:currPage', {
             templateUrl: 'Views/Streets.html',
-            controller: 'listStreetsController'
+            controller: 'listStreetsController',
+            resolve: { genlData: function (genlData) { genlData.asyncLoad() } }
         }).
         when('/region-parts', {
             templateUrl: 'Views/RegionParts.html',
-            controller: 'listRegionPartsController'
+            controller: 'listRegionPartsController',
+            resolve: { genlData: function (genlData) { genlData.asyncLoad() } }
         }).
         when('/region-parts/:currPage', {
             templateUrl: 'Views/RegionParts.html',
-            controller: 'listRegionPartsController'
+            controller: 'listRegionPartsController',
+            resolve: { genlData: function (genlData) { genlData.asyncLoad() } }
         }).
         when('/cities', {
             templateUrl: 'Views/ListCities.html',
             controller: 'listCitiesController',
-            resolve: {genlData: function (genlData) { return genlData.asyncLoad() }}
+            resolve: {genlData: function (genlData) { genlData.asyncLoad() }}
         }).
         when('/city/new', {
             templateUrl: 'Views/EditCity.html',
             controller: 'editCityController',
             resolve: {
-                //genlData: function(genlData) {
-                //    return genlData.asyncLoad();
-                //},
-                resolvedData: function ($route, dataForEditPage) {
+                genlData: function(genlData) { genlData.asyncLoad() },
+                resolvedData: function ($route, dataForEditCityPage) {
                     //todo: use serviceUtil.getRouteParam()
-                    return dataForEditPage.asyncLoad($route.current.params.id);
+                    return dataForEditCityPage.asyncLoad($route.current.params.id);
                 }
             }
         }).
@@ -62,12 +103,10 @@ app.config(['$routeProvider', '$httpProvider', 'paginationTemplateProvider', fun
             templateUrl: 'Views/EditCity.html',
             controller: 'editCityController',
             resolve: {
-                 //genlData: function(genlData) {
-                 //    return genlData.asyncLoad();
-                 //},
-                resolvedData: function ($route, dataForEditPage) {
+                genlData: function(genlData) { genlData.asyncLoad() },
+                resolvedData: function ($route, dataForEditCityPage) {
                     //todo: use serviceUtil.getRouteParam()
-                    return dataForEditPage.asyncLoad($route.current.params.id);
+                    return dataForEditCityPage.asyncLoad($route.current.params.id);
                  }
             }
         }).
@@ -312,9 +351,14 @@ app.factory('genlData', ['$q', '$rootScope', 'cityData', 'streetData', 'regionPa
 
     function getCitiesPromise() {
         var deferred = $q.defer();
+        //todo: add 'query' method in cityData
+        if ($rootScope.cities && $rootScope.cities.length > 0) {
+            deferred.resolve();
+            return deferred.promise;
+        }
         cityData.getAll(function (res) {
             $rootScope.cities = res.value;
-            deferred.resolve(res.value);
+            deferred.resolve();
         }, function (err) {
             deferred.reject('Населені пункти не завантажено (' + serviceUtil.getErrorMessage(err) + ')');
         });
@@ -323,9 +367,13 @@ app.factory('genlData', ['$q', '$rootScope', 'cityData', 'streetData', 'regionPa
 
     function getStreetsPromise() {
         var deferred = $q.defer();
+        if ($rootScope.streets && $rootScope.streets.length > 0) {
+            deferred.resolve();
+            return deferred.promise;
+        }
         streetData.query(function (res) {
             $rootScope.streets = res.value;
-            deferred.resolve(res.value);
+            deferred.resolve();
         }, function (err) {
             deferred.reject('Вулиці не завантажено (' + serviceUtil.getErrorMessage(err) + ')');
         });
@@ -334,9 +382,13 @@ app.factory('genlData', ['$q', '$rootScope', 'cityData', 'streetData', 'regionPa
 
     function getRegionPartsPromise() {
         var deferred = $q.defer();
+        if ($rootScope.regionParts && $rootScope.regionParts.length > 0) {
+            deferred.resolve();
+            return deferred.promise;
+        }
         regionPartData.query(function (res) {
             $rootScope.regionParts = res.value;
-            deferred.resolve(res.value);
+            deferred.resolve();
         }, function (err) {
             deferred.reject('Райони не завантажено (' + serviceUtil.getErrorMessage(err) + ')');
         });
