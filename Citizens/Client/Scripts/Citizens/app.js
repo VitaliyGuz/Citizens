@@ -8,7 +8,25 @@ var app = angular.module("citizens",
     ]
 );
 
-app.config(['$routeProvider', '$httpProvider', 'paginationTemplateProvider', function ($routeProvider, $httpProvider, paginationTemplateProvider) {
+app.config(['$routeProvider', 'paginationTemplateProvider', function ($routeProvider, paginationTemplateProvider) {
+    //todo: create route obj to anoter pages
+    var routeListCities = {
+        templateUrl: 'Views/ListCities.html',
+        controller: 'listCitiesController',
+        resolve: { genlData: function (genlData) { genlData.asyncLoad() } },
+        reloadOnSearch: true
+    },
+    routeEditCity = {
+        templateUrl: 'Views/EditCity.html',
+        controller: 'editCityController',
+        resolve: {
+            genlData: function (genlData) { genlData.asyncLoad() },
+            resolvedData: function ($route, dataForEditCityPage) {
+                return dataForEditCityPage.asyncLoad($route.current.params.id);
+            }
+        }
+    }
+
     $routeProvider.
         when('/people', {
             templateUrl: 'Views/ListPeople.html',
@@ -139,56 +157,12 @@ app.config(['$routeProvider', '$httpProvider', 'paginationTemplateProvider', fun
                 }
             }
         }).
-        when('/cities', {
-            templateUrl: 'Views/ListCities.html',
-            controller: 'listCitiesController',
-            resolve: {genlData: function (genlData) { genlData.asyncLoad() }}
-        }).
-        when('/cities/:currPage', {
-            templateUrl: 'Views/ListCities.html',
-            controller: 'listCitiesController',
-            resolve: { genlData: function (genlData) { genlData.asyncLoad() } }
-        }).
-        when('/city/new', {
-            templateUrl: 'Views/EditCity.html',
-            controller: 'editCityController',
-            resolve: {
-                genlData: function(genlData) { genlData.asyncLoad() },
-                resolvedData: function ($route, dataForEditCityPage) {
-                    return dataForEditCityPage.asyncLoad($route.current.params.id);
-                }
-            }
-        }).
-        when('/city/new/:currPage', {
-            templateUrl: 'Views/EditCity.html',
-            controller: 'editCityController',
-            resolve: {
-                genlData: function (genlData) { genlData.asyncLoad() },
-                resolvedData: function ($route, dataForEditCityPage) {
-                    return dataForEditCityPage.asyncLoad($route.current.params.id);
-                }
-            }
-        }).
-        when('/city/:id', {
-            templateUrl: 'Views/EditCity.html',
-            controller: 'editCityController',
-            resolve: {
-                genlData: function(genlData) { genlData.asyncLoad() },
-                resolvedData: function ($route, dataForEditCityPage) {
-                    return dataForEditCityPage.asyncLoad($route.current.params.id);
-                 }
-            }
-        }).
-        when('/city/:id/:currPage', {
-            templateUrl: 'Views/EditCity.html',
-            controller: 'editCityController',
-            resolve: {
-                genlData: function (genlData) { genlData.asyncLoad() },
-                resolvedData: function ($route, dataForEditCityPage) {
-                    return dataForEditCityPage.asyncLoad($route.current.params.id);
-                }
-            }
-        }).
+        when('/cities', routeListCities).
+        when('/cities/:currPage', routeListCities).
+        when('/city/new', routeEditCity).
+        when('/city/new/:currPage', routeEditCity).
+        when('/city/:id', routeEditCity).
+        when('/city/:id/:currPage', routeEditCity).
         when('/login', {
             templateUrl: 'Views/Login.html',
             controller: 'loginController'
@@ -208,7 +182,7 @@ app.config(['$routeProvider', '$httpProvider', 'paginationTemplateProvider', fun
         otherwise({
             redirectTo: '/'
         });
-
+    
     paginationTemplateProvider.setPath('Scripts/AngularUtils/directives/dirPagination.tpl.html');
 }]);
 
