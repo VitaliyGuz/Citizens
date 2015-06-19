@@ -127,7 +127,8 @@ precinctControllers.controller("editController", ['$timeout', '$location', '$roo
                 $scope.precinct = res;
                 $scope.precinct.Number = res.Id;
                 $scope.precinctAddresses = res.PrecinctAddresses;
-                $scope.precinctAddresses.sort(compareAddresses);
+                //$scope.precinctAddresses.sort(compareAddresses);
+                sortAddresses($scope.precinctAddresses);
             }, errorHandler);
         }
 
@@ -295,7 +296,8 @@ precinctControllers.controller("editController", ['$timeout', '$location', '$roo
                             } else {
                                 $scope.precinctAddresses[i] = res;
                             }
-                            $scope.precinctAddresses.sort(compareAddresses);
+                            //$scope.precinctAddresses.sort(compareAddresses);
+                            sortAddresses($scope.precinctAddresses);
                             $scope.resetAddress();
                         }, errorHandler);
                     }, errorHandler);
@@ -408,32 +410,52 @@ precinctControllers.controller("editController", ['$timeout', '$location', '$roo
                 precinctData.getById({ id: $scope.precinct.Id }, function (res) {
                     $scope.savingAddresses = false;
                     $scope.precinctAddresses = res.PrecinctAddresses;
-                    $scope.precinctAddresses.sort(compareAddresses);
+                    //$scope.precinctAddresses.sort(compareAddresses);
+                    sortAddresses($scope.precinctAddresses);
                 }, errorHandler);
             }, errorHandler);
         };
 
-        function compareAddresses(a1, a2) {
-            var compCity, compStreet, compHouse, h1, h2;
-            compCity = serviceUtil.compareByName(a1.City, a2.City);
-            compStreet = serviceUtil.compareByName(a1.Street, a2.Street);
-            h1 = parseInt(a1.House);
-            h2 = parseInt(a2.House);
-            if (h1 > h2) {
-                compHouse = 1;
-            } else if (h1 < h2) {
-                compHouse = -1;
-            } else {
-                compHouse = 0;
-            }
-            if (compCity === 0) {
-                if (compStreet === 0) {
-                    return compHouse;
+        function sortAddresses(addresses) {
+            function compareAddressesWithHouse(a1, a2) {
+                var compCity, compStreet, compHouse, compTypeStreet, h1, h2;
+                compCity = serviceUtil.compareByName(a1.City, a2.City);
+                compStreet = serviceUtil.compareByName(a1.Street, a2.Street);
+                compTypeStreet = serviceUtil.compareByName(a1.Street.StreetType, a2.Street.StreetType);
+                h1 = parseInt(a1.House);
+                h2 = parseInt(a2.House);
+                compHouse = h1 > h2 ? 1 : h1 < h2 ? -1 : 0;
+                if (compCity === 0) {
+                    if (compStreet === 0) {
+                        if (compTypeStreet === 0) {
+                            return compHouse;
+                        } else {
+                            return compTypeStreet;
+                        }
+                    } else {
+                        return compStreet;
+                    }
                 } else {
-                    return compStreet;
+                    return compCity;
                 }
-            } else {
-                return compCity;
+            };
+            if (addresses) {
+                addresses.sort(function (a1, a2) {
+                    var compCity, compStreet, compTypeStreet;
+                    compCity = serviceUtil.compareByName(a1.City, a2.City);
+                    compStreet = serviceUtil.compareByName(a1.Street, a2.Street);
+                    compTypeStreet = serviceUtil.compareByName(a1.Street.StreetType, a2.Street.StreetType);
+                    if (compCity === 0) {
+                        if (compStreet === 0) {
+                            return compTypeStreet;
+                        } else {
+                            return compStreet;
+                        }
+                    } else {
+                        return compCity;
+                    }
+                });
+                addresses.sort(compareAddressesWithHouse);
             }
         };
 
