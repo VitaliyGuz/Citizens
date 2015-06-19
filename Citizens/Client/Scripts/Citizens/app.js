@@ -447,3 +447,18 @@ app.factory('genlData', ['$q', '$rootScope', 'cityData', 'streetData', 'regionPa
         }
     };
 }]);
+
+app.factory('filterSettings', [function() {
+    var settings = {};
+    return {
+        get: function(key) {
+            return settings[key];
+        },
+        set: function (key, queryValue, queryBy) {
+            settings[key] = { query: queryValue, queryBy: queryBy };
+        },
+        remove: function (key) {
+            delete settings[key];
+        }
+    }
+}]);

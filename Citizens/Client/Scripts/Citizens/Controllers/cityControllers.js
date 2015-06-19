@@ -2,18 +2,34 @@
 
 var cityControllers = angular.module('cityControllers', ['cityServices']);
 
-cityControllers.controller("listCitiesController", ['$rootScope', '$location', '$timeout', '$scope', 'config', 'serviceUtil', 'cityData',
-    function ($rootScope, $location, $timeout, $scope, config, serviceUtil, cityData) {
+cityControllers.controller("listCitiesController", ['$rootScope', '$location', '$timeout', '$scope', 'config', 'serviceUtil', 'cityData', 'filterSettings',
+    function ($rootScope, $location, $timeout, $scope, config, serviceUtil, cityData, filterSettings) {
 
         $rootScope.pageTitle = 'Населені пункти';
-        $scope.query = {};
-        $scope.queryBy = 'Name';
         $rootScope.editInd = -1;
         $scope.currentPage = serviceUtil.getRouteParam("currPage") || 1;
         $scope.pageSize = config.pageSize;
 
         $scope.tableHead = ['№', 'Населений пункт', 'Район', 'Дії'];
-        
+
+        var settings = filterSettings.get('cities');
+        if (settings) {
+            $scope.query = settings.query;
+            $scope.queryBy = settings.queryBy;
+        } else {
+            $scope.query = {};
+            $scope.queryBy = 'Name';
+        }
+
+        $scope.onFilterQueryChange = function (isChangeValue) {
+            if (isChangeValue) {
+                filterSettings.set('cities', $scope.query, $scope.queryBy);
+            } else {
+                $scope.query = {};
+                filterSettings.remove('cities');
+            }
+        };
+
         $scope.getIndex = function (city) {
             return $rootScope.cities.indexOf(city);
         };

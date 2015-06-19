@@ -4,9 +4,9 @@
 <div class="row form-inline">
     <div class="col-md-6">
         <label>Пошук:</label>
-        <input ng-model="query[queryBy]" type="text" ng-change="reset()" class="form-control" placeholder="Введіть слово">
+        <input ng-model="query[queryBy]" type="text" ng-change="onFilterQueryChange(true)" class="form-control" placeholder="Введіть слово">
         <label>по:</label>
-        <select ng-model="queryBy" ng-change="query={}" class="form-control">
+        <select ng-model="queryBy" ng-change="onFilterQueryChange(false)" class="form-control">
             <option value="Name">Назва</option>
             <option value="CityType.Name">Тип</option>
             <option value="RegionPart.Name">Район</option>
