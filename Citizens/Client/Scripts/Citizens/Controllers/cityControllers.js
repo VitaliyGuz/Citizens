@@ -12,10 +12,10 @@ cityControllers.controller("listCitiesController", ['$rootScope', '$location', '
 
         $scope.tableHead = ['№', 'Населений пункт', 'Район', 'Дії'];
 
-        var settings = filterSettings.get('cities');
-        if (settings) {
-            $scope.query = settings.query;
-            $scope.queryBy = settings.queryBy;
+        var citiesQuery = filterSettings.get('cities');
+        if (citiesQuery) {
+            $scope.query = citiesQuery;
+            $scope.queryBy = Object.keys(citiesQuery)[0];
         } else {
             $scope.query = {};
             $scope.queryBy = 'Name';
@@ -23,7 +23,7 @@ cityControllers.controller("listCitiesController", ['$rootScope', '$location', '
 
         $scope.onFilterQueryChange = function (isChangeValue) {
             if (isChangeValue) {
-                filterSettings.set('cities', $scope.query, $scope.queryBy);
+                filterSettings.set('cities', $scope.query);
             } else {
                 $scope.query = {};
                 filterSettings.remove('cities');

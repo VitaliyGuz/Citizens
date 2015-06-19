@@ -454,8 +454,8 @@ app.factory('filterSettings', [function() {
         get: function(key) {
             return settings[key];
         },
-        set: function (key, queryValue, queryBy) {
-            settings[key] = { query: queryValue, queryBy: queryBy };
+        set: function (key, value) {
+            settings[key] = value;
         },
         remove: function (key) {
             delete settings[key];
