@@ -2,8 +2,9 @@
 
 var authControllers = angular.module('authControllers', ['authServices','ngRoute']);
 
-authControllers.controller('loginController', ['$scope', '$location', 'Login', 'ExternalLogin', function ($scope, $location, Login, ExternalLogin) {
+authControllers.controller('loginController', ['$rootScope', '$scope', '$location', 'Login', 'ExternalLogin', function ($rootScope, $scope, $location, Login, ExternalLogin) {
     
+    $rootScope.pageTitle = '';
     $scope.loadingData = {};
 
     function responseHandler(resp) {
@@ -46,8 +47,9 @@ authControllers.controller('loginController', ['$scope', '$location', 'Login', '
     };
 }]);
 
-authControllers.controller('registerController', ['$scope', '$location', 'Registration', 'ExternalLogin', function ($scope, $location, Registration, ExternalLogin) {
+authControllers.controller('registerController', ['$rootScope', '$scope', '$location', 'Registration', 'ExternalLogin', function ($rootScope, $scope, $location, Registration, ExternalLogin) {
     $scope.loadingData = {};
+    $rootScope.pageTitle = '';
 
     function responseHandler(resp) {
         if (resp.success) {

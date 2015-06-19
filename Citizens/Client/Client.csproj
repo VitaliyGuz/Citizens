@@ -93,6 +93,7 @@
     <Content Include="Content\css\bootstrap.min.css" />
     <Content Include="Content\css\font-awesome.css" />
     <Content Include="Content\css\font-awesome.min.css" />
+    <Content Include="Content\css\scrollable-table.css" />
     <Content Include="Content\fonts\fontawesome-webfont.svg" />
     <Content Include="Content\fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Icon.png" />
@@ -123,7 +124,10 @@
     <Content Include="Content\fonts\glyphicons-halflings-regular.eot" />
     <Content Include="Content\css\bootstrap-theme.css.map" />
     <Content Include="Content\css\bootstrap.css.map" />
+    <None Include="Properties\PublishProfiles\citizens2015 - FTP.pubxml" />
+    <None Include="Properties\PublishProfiles\citizens2015 - Web Deploy.pubxml" />
     <None Include="Scripts\jQuery\jquery-1.9.1.intellisense.js" />
+    <Content Include="Scripts\AngularUtils\directives\angular-scrollable-table.min.js" />
     <Content Include="Scripts\AngularUtils\directives\dirPagination.js" />
     <Content Include="Scripts\AngularUtils\directives\dirPagination.tpl.html" />
     <Content Include="Scripts\AngularUtils\directives\ui-bootstrap-typeahead-tpls-0.12.1.min.js" />
@@ -165,8 +169,10 @@
     <Content Include="Views\AuthComplete.html" />
     <Content Include="Views\EditCity.html" />
     <Content Include="Views\EditPerson.html" />
+    <Content Include="Views\EditPrecinct.html" />
     <Content Include="Views\ListCities.html" />
     <Content Include="Views\ListPeople.html" />
+    <Content Include="Views\ListPrecincts.html" />
     <Content Include="Views\Login.html" />
     <Content Include="Views\RegionParts.html" />
     <Content Include="Views\Register.html" />

@@ -40,3 +40,73 @@ angular.module("precinctServices", ['ngResource'])
             'remove': { method: 'DELETE', params: params, url: urlOdata + key }
         });
     }])
+    .factory('dataForEditPrecinctPage', ['$q', 'serviceUtil', 'precinctData', 'districtData', function ($q, serviceUtil, precinctData, districtData) {
+
+        function getPrecinctPromise(routeParam) {
+            var deferred = $q.defer();
+            if (routeParam) {
+                precinctData.getById({ id: routeParam }, function (res) {
+                    deferred.resolve(res);
+                }, function (err) {
+                    deferred.reject('Дільницю не знайдено (' + serviceUtil.getErrorMessage(err) + ')');
+                });
+            } else {
+                deferred.resolve();
+            }
+            return deferred.promise;
+        };
+
+        function getDistrictsPromise() {
+            var deferred = $q.defer();
+            districtData.query(function (res) {
+                deferred.resolve(res.value);
+            }, function (err) {
+                deferred.reject('Округи не завантажено (' + serviceUtil.getErrorMessage(err) + ')');
+            });
+            return deferred.promise;
+        };
+
+        return {
+            asyncLoad: function (routeParam) {
+                var resolved = {}, deferred = $q.defer();
+                function errorHandler(err) {
+                    deferred.reject(err);
+                };
+                getPrecinctPromise(routeParam).then(function (precinct) {
+                    resolved.precinct = precinct;
+                    return getDistrictsPromise();
+                }, errorHandler).then(function (districts) {
+                    resolved.districts = districts;
+                    deferred.resolve(resolved);
+                }, errorHandler);
+
+                return deferred.promise;
+            }
+        };
+    }])
+    .factory('genlPrecinctsData', ['$q', 'precinctData', 'serviceUtil', function ($q, precinctData, serviceUtil) {
+        function getPrecinctsPromise() {
+            var deferred = $q.defer();
+            precinctData.getAll(function (res) {
+                deferred.resolve(res.value);
+            }, function (err) {
+                deferred.reject('Дільниці не завантажено (' + serviceUtil.getErrorMessage(err) + ')');
+            });
+            return deferred.promise;
+        };
+
+        return {
+            asyncLoad: function () {
+                var resolved = {}, deferred = $q.defer();
+                function errorHandler(err) {
+                    deferred.reject(err);
+                };
+                getPrecinctsPromise().then(function (precincts) {
+                    resolved.precincts = precincts;
+                    deferred.resolve(resolved);
+                }, errorHandler);
+
+                return deferred.promise;
+            }
+        };
+    }])

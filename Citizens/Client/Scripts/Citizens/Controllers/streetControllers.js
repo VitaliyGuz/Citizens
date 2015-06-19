@@ -22,10 +22,8 @@ streetControllers.controller("listStreetsController", ['$location', '$rootScope'
             return $rootScope.streets.indexOf(street);
         };
 
-        //$scope.loading = true;
         typeStreetData.query(function (types) {
             $scope.typesStreet = types.value;
-            //$scope.loading = false;
         },errorHandler);
 
         $scope.edit = function (street) {
@@ -106,6 +104,6 @@ streetControllers.controller("listStreetsController", ['$location', '$rootScope'
 
         $scope.onPageChange = function (newPageNumber) {
             //todo: change location path without reload page
-            //$location.path("/streets/" + newPageNumber);
+            $location.path("/streets/" + newPageNumber);
         };
 }]);

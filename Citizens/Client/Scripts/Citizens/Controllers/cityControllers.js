@@ -20,7 +20,7 @@ cityControllers.controller("listCitiesController", ['$rootScope', '$location', '
 
         $scope.edit = function (city) {
             $rootScope.editInd = $scope.getIndex(city);
-            $location.path('/city/' + city.Id);
+            $location.path('/city/' + city.Id +'/' + $scope.currentPage);
         };
 
         $scope.delete = function (city) {
@@ -38,9 +38,14 @@ cityControllers.controller("listCitiesController", ['$rootScope', '$location', '
         };
 
         $scope.addNew = function () {
-            $location.path('/city/new');
+            $rootScope.errorMsg = '';
+            $location.path('/city/new' + '/' + $scope.currentPage);
         };
 
+        $scope.onPageChange = function (newPageNumber) {
+            //todo: change location path without reload page
+            $location.path("/cities/" + newPageNumber);
+        };
     }]);
 
 cityControllers.controller('editCityController', ['$timeout', '$rootScope', '$scope', '$location', 'cityData', 'serviceUtil', 'cityRegionPartsData', 'config', 'resolvedData',
@@ -61,12 +66,6 @@ cityControllers.controller('editCityController', ['$timeout', '$rootScope', '$sc
             $scope.cityTypes = resolvedData.cityTypes;
             $scope.regionParts = resolvedData.regionParts;
             $scope.cityRegionParts = resolvedData.cityRegionParts;
-            if ($scope.cityRegionParts) {
-                $scope.cityRegionParts.sort(serviceUtil.compareByName);
-            }
-            if ($scope.regionParts) {
-                $scope.regionParts.sort(serviceUtil.compareByName);
-            }
         }
 
         $scope.save = function () {
@@ -147,11 +146,11 @@ cityControllers.controller('editCityController', ['$timeout', '$rootScope', '$sc
         };
 
         $scope.saveCityDistrict = function () {
+            $rootScope.errorMsg = '';
             if (!$scope.city.Id) {
                 $rootScope.errorMsg = "Спочатку необхідно зберегти населений пункт";
                 return;
             }
-            $rootScope.errorMsg = '';
             $scope.savingCityDistrict = true;
             var cityDistrict = {
                 "CityId": $scope.city.Id,
@@ -186,7 +185,8 @@ cityControllers.controller('editCityController', ['$timeout', '$rootScope', '$sc
         $scope.backToList = function () {
             $scope.reset();
             $rootScope.errorMsg = '';
-            $location.path('cities');
+            var currPage = serviceUtil.getRouteParam("currPage") || 1;
+            $location.path('/cities/'+ currPage);
         };
 
         function errorHandler(e) {

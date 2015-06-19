@@ -27,3 +27,4 @@
 /// <reference path="citizens/services/userservices.js" />
 /// <reference path="citizens/services/authservices.js" />
 /// <reference path="citizens/authcomplete.js" />
+/// <reference path="angularutils/directives/angular-scrollable-table.min.js" />

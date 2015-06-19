@@ -34,7 +34,7 @@ regionPartControllers.controller("listRegionPartsController", ['$rootScope', '$l
             $scope.addMode = false;
             $scope.reset();
             editInd = $scope.getIndex(regionPart);
-            regionPartData.query({ id: regionPart.Id }, function(res) {
+            regionPartData.getById({ id: regionPart.Id }, function (res) {
                 $scope.selected.regionPart = res;
             }, errorHandler);
         };
@@ -69,14 +69,14 @@ regionPartControllers.controller("listRegionPartsController", ['$rootScope', '$l
             if ($scope.addMode) {
                 regionPartData.save(regionPart,
                     function(newItem) {
-                        regionPartData.query({ id: newItem.Id }, function(res) {
+                        regionPartData.getById({ id: newItem.Id }, function (res) {
                             querySuccessHandler(res);
                         }, errorHandler);
                     }, errorHandler);
             } else {
                 regionPartData.update({ id: $scope.selected.regionPart.Id }, regionPart,
                     function() {
-                        regionPartData.query({ id: $scope.selected.regionPart.Id }, function(res) {
+                        regionPartData.getById({ id: $scope.selected.regionPart.Id }, function (res) {
                             querySuccessHandler(res, editInd);
                         }, errorHandler);
                     }, errorHandler);

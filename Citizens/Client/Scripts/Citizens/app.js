@@ -4,8 +4,7 @@ var app = angular.module("citizens",
     [
         'ngRoute', 'ngCookies',
         'angularUtils.directives.dirPagination',
-        'peopleControllers', 'streetControllers', 'regionPartControllers', 'cityControllers', 'authControllers',
-        'cityServices'
+        'peopleControllers', 'streetControllers', 'regionPartControllers', 'cityControllers', 'authControllers','precinctControllers'
     ]
 );
 
@@ -34,7 +33,6 @@ app.config(['$routeProvider', '$httpProvider', 'paginationTemplateProvider', fun
                 genlData: function (genlData) { genlData.asyncLoad() },
                 genlPeopleData: function (genlPeopleData) { return genlPeopleData.asyncLoad() },
                 resolvedData: function ($route, dataForEditPersonPage) {
-                    //todo: use serviceUtil.getRouteParam()
                     return dataForEditPersonPage.asyncLoad($route.current.params.id);
                 }
             }
@@ -46,7 +44,6 @@ app.config(['$routeProvider', '$httpProvider', 'paginationTemplateProvider', fun
                 genlData: function (genlData) { genlData.asyncLoad() },
                 genlPeopleData: function (genlPeopleData) { return genlPeopleData.asyncLoad() },
                 resolvedData: function ($route, dataForEditPersonPage) {
-                    //todo: use serviceUtil.getRouteParam()
                     return dataForEditPersonPage.asyncLoad($route.current.params.id);
                 }
             }
@@ -58,7 +55,6 @@ app.config(['$routeProvider', '$httpProvider', 'paginationTemplateProvider', fun
                 genlData: function (genlData) { return genlData.asyncLoad() },
                 genlPeopleData: function (genlPeopleData) { return genlPeopleData.asyncLoad() },
                 resolvedData: function ($route, dataForEditPersonPage) {
-                    //todo: use serviceUtil.getRouteParam()
                     return dataForEditPersonPage.asyncLoad($route.current.params.id);
                 }
             }
@@ -83,10 +79,75 @@ app.config(['$routeProvider', '$httpProvider', 'paginationTemplateProvider', fun
             controller: 'listRegionPartsController',
             resolve: { genlData: function (genlData) { genlData.asyncLoad() } }
         }).
+        when('/precincts', {
+            templateUrl: 'Views/ListPrecincts.html',
+            controller: 'listPrecinctsController',
+            resolve: {
+                genlData: function (genlData) { genlData.asyncLoad() },
+                genlPrecinctsData: function (genlPrecinctsData) { return genlPrecinctsData.asyncLoad() }
+            }
+        }).
+        when('/precincts/:currPage', {
+            templateUrl: 'Views/ListPrecincts.html',
+            controller: 'listPrecinctsController',
+            resolve: {
+                genlData: function (genlData) { genlData.asyncLoad() },
+                genlPrecinctsData: function (genlPrecinctsData) { return genlPrecinctsData.asyncLoad() }
+            }
+        }).
+        when('/precinct/new', {
+            templateUrl: 'Views/EditPrecinct.html',
+            controller: 'editPrecinctController',
+            resolve: {
+                genlData: function (genlData) { genlData.asyncLoad() },
+                genlPrecinctsData: function (genlPrecinctsData) { return genlPrecinctsData.asyncLoad() },
+                resolvedData: function ($route, dataForEditPrecinctPage) {
+                    return dataForEditPrecinctPage.asyncLoad($route.current.params.id);
+                }
+            }
+        }).
+        when('/precinct/new/:currPage', {
+            templateUrl: 'Views/EditPrecinct.html',
+            controller: 'editPrecinctController',
+            resolve: {
+                genlData: function (genlData) { genlData.asyncLoad() },
+                genlPrecinctsData: function (genlPrecinctsData) { return genlPrecinctsData.asyncLoad() },
+                resolvedData: function ($route, dataForEditPrecinctPage) {
+                    return dataForEditPrecinctPage.asyncLoad($route.current.params.id);
+                }
+            }
+        }).
+        when('/precinct/:id', {
+            templateUrl: 'Views/EditPrecinct.html',
+            controller: 'editPrecinctController',
+            resolve: {
+                genlData: function (genlData) { genlData.asyncLoad() },
+                genlPrecinctsData: function (genlPrecinctsData) { return genlPrecinctsData.asyncLoad() },
+                resolvedData: function ($route, dataForEditPrecinctPage) {
+                    return dataForEditPrecinctPage.asyncLoad($route.current.params.id);
+                 }
+            }
+        }).
+        when('/precinct/:id/:currPage', {
+            templateUrl: 'Views/EditPrecinct.html',
+            controller: 'editPrecinctController',
+            resolve: {
+                genlData: function (genlData) { genlData.asyncLoad() },
+                genlPrecinctsData: function (genlPrecinctsData) { return genlPrecinctsData.asyncLoad() },
+                resolvedData: function ($route, dataForEditPrecinctPage) {
+                    return dataForEditPrecinctPage.asyncLoad($route.current.params.id);
+                }
+            }
+        }).
         when('/cities', {
             templateUrl: 'Views/ListCities.html',
             controller: 'listCitiesController',
             resolve: {genlData: function (genlData) { genlData.asyncLoad() }}
+        }).
+        when('/cities/:currPage', {
+            templateUrl: 'Views/ListCities.html',
+            controller: 'listCitiesController',
+            resolve: { genlData: function (genlData) { genlData.asyncLoad() } }
         }).
         when('/city/new', {
             templateUrl: 'Views/EditCity.html',
@@ -94,7 +155,16 @@ app.config(['$routeProvider', '$httpProvider', 'paginationTemplateProvider', fun
             resolve: {
                 genlData: function(genlData) { genlData.asyncLoad() },
                 resolvedData: function ($route, dataForEditCityPage) {
-                    //todo: use serviceUtil.getRouteParam()
+                    return dataForEditCityPage.asyncLoad($route.current.params.id);
+                }
+            }
+        }).
+        when('/city/new/:currPage', {
+            templateUrl: 'Views/EditCity.html',
+            controller: 'editCityController',
+            resolve: {
+                genlData: function (genlData) { genlData.asyncLoad() },
+                resolvedData: function ($route, dataForEditCityPage) {
                     return dataForEditCityPage.asyncLoad($route.current.params.id);
                 }
             }
@@ -105,9 +175,18 @@ app.config(['$routeProvider', '$httpProvider', 'paginationTemplateProvider', fun
             resolve: {
                 genlData: function(genlData) { genlData.asyncLoad() },
                 resolvedData: function ($route, dataForEditCityPage) {
-                    //todo: use serviceUtil.getRouteParam()
                     return dataForEditCityPage.asyncLoad($route.current.params.id);
                  }
+            }
+        }).
+        when('/city/:id/:currPage', {
+            templateUrl: 'Views/EditCity.html',
+            controller: 'editCityController',
+            resolve: {
+                genlData: function (genlData) { genlData.asyncLoad() },
+                resolvedData: function ($route, dataForEditCityPage) {
+                    return dataForEditCityPage.asyncLoad($route.current.params.id);
+                }
             }
         }).
         when('/login', {
@@ -120,18 +199,9 @@ app.config(['$routeProvider', '$httpProvider', 'paginationTemplateProvider', fun
         }).
         when('/logout', {
             resolve: {
-                logout: function ($q, $location, $http, Credentials,config) {
-                    var deferred = $q.defer();
-                    $http.post(config.baseUrl + '/api/Account/Logout')
-                        .success(function () {
-                            Credentials.clear();
-                            deferred.reject();
-                            $location.path('/login');
-                        })
-                        .error(function (error) {
-                            deferred.reject(error);
-                        });
-                    return deferred.promise;
+                logout: function ($location, Credentials) {
+                    Credentials.clear();
+                    $location.path('/login');
                 }
             }
         }).
@@ -144,7 +214,7 @@ app.config(['$routeProvider', '$httpProvider', 'paginationTemplateProvider', fun
 
 app.value("config", {
     baseUrl: 'http://poltava2015.azurewebsites.net', //http://localhost:6600',
-    pageSize: 5, // by default 20
+    pageSize: 20, // by default 20
     pageSizeTabularSection: 10,
     checkDeleteItem: true
 });
@@ -249,6 +319,7 @@ app.run(["$rootScope", "$timeout", '$location', '$cookieStore', '$http', functio
     });
 
     $rootScope.$on('$routeChangeSuccess', function (event, current, previous) {
+        $rootScope.errorMsg = '';
         $rootScope.loading = false;
     });
 
@@ -349,77 +420,30 @@ app.filter("filterByFirstChar", function () {
 
 app.factory('genlData', ['$q', '$rootScope', 'cityData', 'streetData', 'regionPartData', 'serviceUtil', function ($q, $rootScope, cityData, streetData, regionPartData, serviceUtil) {
 
-    function getCitiesPromise() {
+    function getDataPromise(param) {
         var deferred = $q.defer();
-        //todo: add 'query' method in cityData
-        if ($rootScope.cities && $rootScope.cities.length > 0) {
+        if ($rootScope[param.propName] && $rootScope[param.propName].length > 0) {
             deferred.resolve();
             return deferred.promise;
         }
-        cityData.getAll(function (res) {
-            $rootScope.cities = res.value;
+        param.dataSource[param.method](function (res) {
+            $rootScope[param.propName] = res.value;
             deferred.resolve();
         }, function (err) {
-            deferred.reject('Населені пункти не завантажено (' + serviceUtil.getErrorMessage(err) + ')');
-        });
-        return deferred.promise;
-    };
-
-    function getStreetsPromise() {
-        var deferred = $q.defer();
-        if ($rootScope.streets && $rootScope.streets.length > 0) {
-            deferred.resolve();
-            return deferred.promise;
-        }
-        streetData.query(function (res) {
-            $rootScope.streets = res.value;
-            deferred.resolve();
-        }, function (err) {
-            deferred.reject('Вулиці не завантажено (' + serviceUtil.getErrorMessage(err) + ')');
-        });
-        return deferred.promise;
-    };
-
-    function getRegionPartsPromise() {
-        var deferred = $q.defer();
-        if ($rootScope.regionParts && $rootScope.regionParts.length > 0) {
-            deferred.resolve();
-            return deferred.promise;
-        }
-        regionPartData.query(function (res) {
-            $rootScope.regionParts = res.value;
-            deferred.resolve();
-        }, function (err) {
-            deferred.reject('Райони не завантажено (' + serviceUtil.getErrorMessage(err) + ')');
+            deferred.reject(param.desc+' не завантажено (' + serviceUtil.getErrorMessage(err) + ')');
         });
         return deferred.promise;
     };
     return {
         asyncLoad: function () {
-            return getCitiesPromise()
+            return getDataPromise({ propName: 'cities', dataSource: cityData, method: 'getAll', desc: 'Населені пункти' })
                 .then(function () {
-                    return getStreetsPromise();
+                    return getDataPromise({ propName: 'streets', dataSource: streetData, method: 'query', desc: 'Вулиці' });
                 })
                 .then(function () {
-                    return getRegionPartsPromise();
+                    return getDataPromise({ propName: 'regionParts', dataSource: regionPartData, method: 'getAll', desc: 'Райони' });
                 }
             );
-            //return $q.all({
-            //    cities: getCitiesPromise(),
-            //    streets: getStreetsPromise(),
-            //    regionParts: getRegionPartsPromise()
-            //});
-            //var d = {};
-            //getCitiesPromise().then(function(cities) {
-            //    d.cities = cities;
-            //});
-            //getStreetsPromise().then(function (streets) {
-            //    d.streets = streets;
-            //});
-            //getRegionPartsPromise().then(function (regionParts) {
-            //    d.regionParts = regionParts;
-            //});
-            //return d;
         }
     };
 }]);

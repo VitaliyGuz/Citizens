@@ -1,41 +1,41 @@
 ﻿<div class="col-md-6 col-md-offset-3">
-    <h2>Register</h2>
+    <h2>Реєстрація</h2>
     <div ng-show="error" class="alert alert-danger">{{error}}</div>
     <form name="form" ng-submit="register()" role="form">
         <div class="form-group" ng-class="{ 'has-error': form.firstName.$dirty && form.firstName.$error.required }">
-            <label for="username">First name</label>
+            <label for="username">Ім'я:</label>
             <input type="text" name="firstName" id="firstName" class="form-control" ng-model="user.firstName" required />
-            <span ng-show="form.firstName.$dirty && form.firstName.$error.required" class="help-block">First name is required</span>
+            <span ng-show="form.firstName.$dirty && form.firstName.$error.required" class="help-block">Ім'я обов'язкове для заповнення</span>
         </div>
         <div class="form-group" ng-class="{ 'has-error': form.lastName.$dirty && form.lastName.$error.required }">
-            <label for="username">Last name</label>
+            <label for="username">Прізвище:</label>
             <input type="text" name="lastName" id="Text1" class="form-control" ng-model="user.lastName" required />
-            <span ng-show="form.lastName.$dirty && form.lastName.$error.required" class="help-block">Last name is required</span>
+            <span ng-show="form.lastName.$dirty && form.lastName.$error.required" class="help-block">Прізвище обов'язкове для заповнення</span>
         </div>
         <div class="form-group" ng-class="{ 'has-error': form.username.$dirty && form.username.$error.required }">
-            <label for="username">Email</label>
+            <label for="username">E-mail:</label>
             <input type="text" name="username" id="username" class="form-control" ng-model="user.email" required />
-            <span ng-show="form.username.$dirty && form.username.$error.required" class="help-block">Username is required</span>
+            <span ng-show="form.username.$dirty && form.username.$error.required" class="help-block">E-mail обов'язкова для заповнення</span>
         </div>
         <div class="form-group" ng-class="{ 'has-error': form.password.$dirty && form.password.$error.required }">
-            <label for="password">Password</label>
+            <label for="password">Пароль:</label>
             <input type="password" name="password" id="password" class="form-control" ng-model="user.password" required/>
-            <span ng-show="form.password.$dirty && form.password.$error.required" class="help-block">Password is required</span>
+            <span ng-show="form.password.$dirty && form.password.$error.required" class="help-block">Пароль обов'язковий для заповнення</span>
         </div>
         <div class="form-group" ng-class="{ 'has-error': form.password.$dirty && form.password.$error.required }">
-            <label for="password">Confirm password</label>
-            <input type="password" name="password" id="confirmpassword" class="form-control" ng-model="user.confirmPassword" required />
-            <span ng-show="form.password.$dirty && form.password.$error.required" class="help-block">Password is required</span>
+            <label for="password">Підтвердити пароль (ввести повторно):</label>
+            <input type="password" name="confirmpassword" id="confirmpassword" class="form-control" ng-model="user.confirmPassword" required />
+            <span ng-show="form.confirmpassword.$dirty && form.confirmpassword.$error.required" class="help-block">Підтвердження паролю обов'язкове</span>
         </div>
         <div class="form-actions">
-            <button type="submit" ng-disabled="form.$invalid" class="btn btn-primary">Register
+            <button type="submit" ng-disabled="form.$invalid" class="btn btn-primary">Реєстрація
                 <i ng-show="loadingData.reg" class="fa fa-refresh fa-spin"></i>
             </button>
-            <button type="button" ng-click="registerExternal('Google')" class="btn btn-danger">
-                <i class="fa fa-google-plus"></i>
+            <button type="button" ng-click="registerExternal('Google')" class="btn btn-danger" title="Зареєструватися за допомогою Вашого Google Account">
+                <i class="fa fa-google-plus"></i> | Аккаунт Google
                 <i ng-show="loadingData.regExt" class="fa fa-refresh fa-spin"></i>
             </button>
-            <a href="#/login" class="btn btn-link">Cancel</a>
+            <a href="#/login" class="btn btn-link">Відмінити</a>
         </div>
     </form>
 </div>
