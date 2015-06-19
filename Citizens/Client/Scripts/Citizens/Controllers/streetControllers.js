@@ -104,6 +104,6 @@ streetControllers.controller("listStreetsController", ['$location', '$rootScope'
 
         $scope.onPageChange = function (newPageNumber) {
             //todo: change location path without reload page
-            $location.path("/streets/" + newPageNumber);
+            //$location.path("/streets/" + newPageNumber);
         };
 }]);
