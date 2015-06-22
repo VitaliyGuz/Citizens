@@ -187,7 +187,7 @@ app.config(['$routeProvider', 'paginationTemplateProvider', function ($routeProv
 }]);
 
 app.value("config", {
-    baseUrl: 'http://poltava2015.azurewebsites.net', //http://localhost:6600',
+    baseUrl: 'http://apicitizens.azurewebsites.net', //http://localhost:6600', 'http://poltava2015.azurewebsites.net', 
     pageSize: 20, // by default 20
     pageSizeTabularSection: 10,
     checkDeleteItem: true,

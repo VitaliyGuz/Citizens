@@ -126,6 +126,8 @@
     <Content Include="Content\css\bootstrap.css.map" />
     <None Include="Properties\PublishProfiles\citizens2015 - FTP.pubxml" />
     <None Include="Properties\PublishProfiles\citizens2015 - Web Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\poltava2015Client - FTP.pubxml" />
+    <None Include="Properties\PublishProfiles\poltava2015Client - Web Deploy.pubxml" />
     <None Include="Scripts\jQuery\jquery-1.9.1.intellisense.js" />
     <Content Include="Scripts\AngularUtils\directives\angular-scrollable-table.min.js" />
     <Content Include="Scripts\AngularUtils\directives\dirPagination.js" />
