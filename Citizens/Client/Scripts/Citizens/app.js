@@ -190,7 +190,11 @@ app.value("config", {
     baseUrl: 'http://poltava2015.azurewebsites.net', //http://localhost:6600',
     pageSize: 20, // by default 20
     pageSizeTabularSection: 10,
-    checkDeleteItem: true
+    checkDeleteItem: true,
+    getExternalProviderUrl: function(provider) {
+        var redirectUri = location.protocol + '//' + location.host + '/Views/AuthComplete.html';
+        return  this.baseUrl + "/api/Account/ExternalLogin?provider=" + provider + "&response_type=token&client_id=Citizens" + "&redirect_uri=" + redirectUri;
+    }
 });
 
 app.filter('checkApartment', function () {
@@ -404,7 +408,9 @@ app.factory('genlData', ['$q', '$rootScope', 'cityData', 'streetData', 'regionPa
             $rootScope[param.propName] = res.value;
             deferred.resolve();
         }, function (err) {
-            deferred.reject(param.desc+' не завантажено (' + serviceUtil.getErrorMessage(err) + ')');
+            var errMsg = param.desc + ' не завантажено';
+            if (err && err.length > 0) errMsg = errMsg + ' (' + serviceUtil.getErrorMessage(err) + ')';
+            deferred.reject(errMsg);
         });
         return deferred.promise;
     };

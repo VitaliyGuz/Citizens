@@ -2,30 +2,32 @@
 
 var authControllers = angular.module('authControllers', ['authServices','ngRoute']);
 
-authControllers.controller('loginController', ['$rootScope', '$scope', '$location', 'Login', 'ExternalLogin', function ($rootScope, $scope, $location, Login, ExternalLogin) {
+authControllers.controller('loginController', ['$rootScope', '$scope', '$location', 'Login', 'ExternalLogin', 'config', function ($rootScope, $scope, $location, Login, ExternalLogin, config) {
     
     $rootScope.pageTitle = '';
     $scope.loadingData = {};
 
     function responseHandler(resp) {
         if (resp.success) {
-            if (resp.externalProviderUrl) {
-                window.$windowScope = $scope;
-                window.open(resp.externalProviderUrl, "Authenticate Account", "location=0,status=0,width=500,height=650");
-            } else {
+            //if (resp.externalProviderUrl) {
+            //    window.$windowScope = $scope;
+            //    var popup = window.open(resp.externalProviderUrl, "Authenticate Account", "location=0,status=0,width=500,height=650");
+            //} else {
                 $scope.loadingData = {};
                 var backUrl = $location.search().backUrl;
                 if (!backUrl) backUrl = '/';
                 $location.url(backUrl);
-            }
+            //}
         } else {
             $scope.loadingData = {};
             $scope.error = 'Авторизація не виконана';
-            if (resp.error.error_description) {
-                $scope.error = $scope.error + ' ('+resp.error.error_description+')';
-            }
-            if (resp.error.Message) {
-                $scope.error = $scope.error + ' (' + resp.error.Message + ')';
+            if (resp.error) {
+                if (resp.error.error_description) {
+                    $scope.error = $scope.error + ' (' + resp.error.error_description + ')';
+                }
+                if (resp.error.Message) {
+                    $scope.error = $scope.error + ' (' + resp.error.Message + ')';
+                }
             }
         }
     };
@@ -37,8 +39,10 @@ authControllers.controller('loginController', ['$rootScope', '$scope', '$locatio
 
     $scope.externalLogin = function (providerName) {
         $scope.loadingData.extLogin = true;
-        var redirectUri = location.protocol + '//' + location.host + '/Views/AuthComplete.html';
-        ExternalLogin.getProviderUrl(redirectUri, providerName, responseHandler);
+        var externalProviderUrl = config.getExternalProviderUrl(providerName);
+        window.$windowScope = $scope;
+        var popup = window.open(externalProviderUrl, "Authenticate Account", "location=0,status=0,width=500,height=650");
+        //ExternalLogin.getProviderUrl(redirectUri, providerName, responseHandler);
         $scope.authCompleted = function (fragment) {
             $scope.$apply(function () {
                 ExternalLogin.complete(fragment.external_access_token, providerName, responseHandler);
@@ -47,7 +51,7 @@ authControllers.controller('loginController', ['$rootScope', '$scope', '$locatio
     };
 }]);
 
-authControllers.controller('registerController', ['$rootScope', '$scope', '$location', 'Registration', 'ExternalLogin', function ($rootScope, $scope, $location, Registration, ExternalLogin) {
+authControllers.controller('registerController', ['$rootScope', '$scope', '$location', 'Registration', 'config', 'ExternalLogin', function ($rootScope, $scope, $location, Registration, config, ExternalLogin) {
     $scope.loadingData = {};
     $rootScope.pageTitle = '';
 
@@ -93,15 +97,17 @@ authControllers.controller('registerController', ['$rootScope', '$scope', '$loca
 
     $scope.registerExternal = function (providerName) {
         $scope.loadingData.regExt = true;
-        var redirectUri = location.protocol + '//' + location.host + '/Views/AuthComplete.html';
-        ExternalLogin.getProviderUrl(redirectUri, providerName, function(resp) {
-            if (resp.success) {
-                window.$windowScope = $scope;
-                window.open(resp.externalProviderUrl, "Authenticate Account", "location=0,status=0,width=500,height=650");
-            } else {
-                errorHandler(resp.error);
-            }
-        });
+        var externalProviderUrl = config.getExternalProviderUrl(providerName);
+        window.$windowScope = $scope;
+        var popup = window.open(externalProviderUrl, "Authenticate Account", "location=0,status=0,width=500,height=650");
+        //ExternalLogin.getProviderUrl(redirectUri, providerName, function(resp) {
+        //    if (resp.success) {
+        //        window.$windowScope = $scope;
+        //        window.open(resp.externalProviderUrl, "Authenticate Account", "location=0,status=0,width=500,height=650");
+        //    } else {
+        //        errorHandler(resp.error);
+        //    }
+        //});
         $scope.authCompleted = function (fragment) {
             Registration.external(providerName, responseHandler);
         };
