@@ -16,7 +16,7 @@ namespace Citizens.Models
         protected override void Seed(CitizenDbContext context)
         {
 
-            StoreUserManager userMgr = new StoreUserManager(new UserStore<User>(context));
+            StoreUserManager userMgr = new StoreUserManager(new UserStore<ApplicationUser>(context));
             StoreRoleManager roleMgr = new StoreRoleManager(new RoleStore<Role>(context));
 
             string roleName = "Administrators";
@@ -28,10 +28,10 @@ namespace Citizens.Models
             {
                 roleMgr.Create(new Role(roleName));
             }
-            User userAdmin = userMgr.FindByName(userName);
+            ApplicationUser userAdmin = userMgr.FindByName(userName);
             if (userAdmin == null)
             {
-                userMgr.Create(new User
+                userMgr.Create(new ApplicationUser
                 {
                     UserName = userName,
                     Email = email,
@@ -54,10 +54,10 @@ namespace Citizens.Models
             {
                 roleMgr.Create(new Role(roleName));
             }
-            User userOperator = userMgr.FindByName(userName);
+            ApplicationUser userOperator = userMgr.FindByName(userName);
             if (userOperator == null)
             {
-                userMgr.Create(new User
+                userMgr.Create(new ApplicationUser
                 {
                     UserName = userName,
                     Email = email,

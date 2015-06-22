@@ -1,28 +1,27 @@
 ﻿
 <h2>Завантаження з Excel</h2>
 <div>
-    @using (Html.BeginForm("Upload", "Home", FormMethod.Post, new { enctype = "multipart/form-data" }))
-    {
-        <input name="uploadFile" type="file" /><input type="submit" value="UploadFile" title="Upload file" onclick="return CheckFileName();" />
-    }
+    <form action="http://localhost:6600/api/Exchange/Upload" enctype="multipart/form-data" method="post">
+        <input name="uploadFile" type="file" />
+        <input type="submit" value="UploadFile" title="Upload file" onclick="return CheckFileName();" />
+    </form>
 </div>
 
 
 @section Scripts{
     <script type="text/javascript">
         function CheckFileName() {
-            var fileName = $("[name|='uploadFile']").val()
-            if (fileName == "") {
+            var fileName = $("[name|='uploadFile']").val();
+            if (fileName === "") {
                 alert("Browse to upload a valid File with xls / xlsx extension");
                 return false;
             }
-            else if (fileName.split(".")[1].toUpperCase() == "XLS" || fileName.split(".")[1].toUpperCase() == "XLSX")
+            else if (fileName.split(".")[1].toUpperCase() === "XLS" || fileName.split(".")[1].toUpperCase() === "XLSX")
                 return true;
             else {
                 alert("File with " + fileName.split(".")[1] + " is invalid. Upload a validfile with xls / xlsx extensions");
                 return false;
-            }
-            return true;
+            }            
         }
     </script>
 }

@@ -19,7 +19,7 @@ namespace Citizens.Models
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public int PrecinctId { get; set; }
 
-        public User User { get; set; }
+        public ApplicationUser User { get; set; }
         public Precinct Precinct { get; set; }
     }
 }

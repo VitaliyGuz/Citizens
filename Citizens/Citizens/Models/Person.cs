@@ -80,7 +80,7 @@ namespace Citizens.Models
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public string UserId { get; set; }
 
-        public User User { get; set; }
+        public ApplicationUser User { get; set; }
 
     }
 }

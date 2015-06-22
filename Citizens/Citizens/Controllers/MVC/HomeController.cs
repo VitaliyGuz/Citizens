@@ -26,14 +26,14 @@ namespace Citizens.Controllers
             return View();
         }
 
-        [CustomAuthorize]
+        [AllowAnonymous]
         public ActionResult Upload()
         {
             return View();
         }
 
 
-
+        [AllowAnonymous]
         [AcceptVerbs(HttpVerbs.Post)]
         public string Upload(HttpPostedFileBase uploadFile)
         {
@@ -42,8 +42,7 @@ namespace Citizens.Controllers
             //{
                 if (uploadFile.ContentLength > 0)
                 {
-                    string filePath = Path.Combine(HttpContext.Server.MapPath("../Uploads"),
-                   Path.GetFileName(uploadFile.FileName));
+                    string filePath = Path.Combine(HttpContext.Server.MapPath("../Uploads"), Path.GetFileName(uploadFile.FileName));
                     uploadFile.SaveAs(filePath);
                     DataSet ds = new DataSet();
 
@@ -106,7 +105,7 @@ namespace Citizens.Controllers
                                     {
                                         //streets.Add(new Street()
                                         string name = ds.Tables[0].Rows[i][0].ToString();
-                                        var findStreetType = context.StreetTypes.Where(u => u.Name == name).FirstOrDefault();
+                                        var findStreetType = context.StreetTypes.FirstOrDefault(u => u.Name == name);
                                         if (findStreetType == null && name != "")
                                         {
                                             context.StreetTypes.Add(new StreetType()
@@ -136,8 +135,8 @@ namespace Citizens.Controllers
                                         //streets.Add(new Street()
                                         string name = ds.Tables[0].Rows[i][0].ToString();
                                         string type = ds.Tables[0].Rows[i][1].ToString();
-                                        var findStreetType = context.StreetTypes.Where(u => u.Name == type).FirstOrDefault();
-                                        var findStreet = context.Streets.Where(u => u.Name == name && u.StreetType.Name == type).FirstOrDefault();
+                                        var findStreetType = context.StreetTypes.FirstOrDefault(u => u.Name == type);
+                                        var findStreet = context.Streets.FirstOrDefault(u => u.Name == name && u.StreetType.Name == type);
                                         if (findStreet == null && name != "")
                                         {
                                             context.Streets.Add(new Street()
@@ -168,7 +167,7 @@ namespace Citizens.Controllers
                                     for (int i = 0; i < ds.Tables[0].Rows.Count; i++)
                                     {
                                         string name = ds.Tables[0].Rows[i][0].ToString();
-                                        var findCityType = context.CityTypes.Where(u => u.Name == name).FirstOrDefault();
+                                        var findCityType = context.CityTypes.FirstOrDefault(u => u.Name == name);
                                         if (findCityType == null && name != "")
                                         {
                                             context.CityTypes.Add(new CityType()
@@ -194,7 +193,7 @@ namespace Citizens.Controllers
                                     for (int i = 0; i < ds.Tables[0].Rows.Count; i++)
                                     {
                                         string name = ds.Tables[0].Rows[i][0].ToString();
-                                        var findRegionPart = context.RegionParts.Where(u => u.Name == name).FirstOrDefault();
+                                        var findRegionPart = context.RegionParts.FirstOrDefault(u => u.Name == name);
                                         if (findRegionPart == null && name != "")
                                         {
                                             context.RegionParts.Add(new RegionPart()
@@ -226,9 +225,9 @@ namespace Citizens.Controllers
                                         string name = ds.Tables[0].Rows[i][0].ToString();
                                         string type = ds.Tables[0].Rows[i][1].ToString();
                                         string regionPart = ds.Tables[0].Rows[i][2].ToString();
-                                        var findCityType = context.CityTypes.Where(u => u.Name == type).FirstOrDefault();
-                                        var findRegionPart = context.RegionParts.Where(u => u.Name == regionPart).FirstOrDefault();
-                                        var findCity = context.Cities.Where(u => u.Name == name && u.CityType.Name == type).FirstOrDefault();
+                                        var findCityType = context.CityTypes.FirstOrDefault(u => u.Name == type);
+                                        var findRegionPart = context.RegionParts.FirstOrDefault(u => u.Name == regionPart);
+                                        var findCity = context.Cities.FirstOrDefault(u => u.Name == name && u.CityType.Name == type);
                                         if (findCity == null && name != "")
                                         {
                                             context.Cities.Add(new City()
@@ -245,117 +244,131 @@ namespace Citizens.Controllers
                                 }
                             }
 
-                            //query = "SELECT DISTINCT FirstName, MidleName, LastName, Street, StreetType, City, CityType, House, Apartment, Gender FROM [" + sheetName + "] WHERE FirstName<>'' & FirstName<>'*'";
-                            ////query = "SELECT DISTINCT Street, StreetType FROM [" + sheetName + "] WHERE FirstName<>'' & FirstName<>'*'";
-                            //adapter = new OleDbDataAdapter(query, conn);
-                            //ds = new DataSet();
-                            ////ds.Tables.Add("Items");
-                            ////ds.Tables[0].Columns.Add("Street", typeof(string));
-                            ////ds.Tables[0].Columns.Add("StreetType", typeof(string));
-                            ////ds.Tables[0].Columns.Add("City", typeof(string));
-                            ////ds.Tables[0].Columns.Add("CityType", typeof(string));
-                            //adapter.Fill(ds, "Items");
+                            query = "SELECT DISTINCT FirstName, MidleName, LastName, Street, StreetType, City, CityType, House, Apartment, Gender FROM [" + sheetName + "] WHERE FirstName<>'' & FirstName<>'*' & LastName<>'' & LastName<>'*'";
+                            //query = "SELECT DISTINCT Street, StreetType FROM [" + sheetName + "] WHERE FirstName<>'' & FirstName<>'*'";
+                            adapter = new OleDbDataAdapter(query, conn);
+                            ds = new DataSet();
+                            //ds.Tables.Add("Items");
+                            //ds.Tables[0].Columns.Add("Street", typeof(string));
+                            //ds.Tables[0].Columns.Add("StreetType", typeof(string));
+                            //ds.Tables[0].Columns.Add("City", typeof(string));
+                            //ds.Tables[0].Columns.Add("CityType", typeof(string));
+                            adapter.Fill(ds, "Items");
 
-                            ////var citizens = from ExcelTable in ds.Tables[0].AsEnumerable()
-                            ////               from streetsNames in context.Streets.AsEnumerable().Where(x => ExcelTable.Field<string>("Street") == x.Name && ExcelTable.Field<string>("StreetType") == x.StreetType.Name)
-                            ////               from cityNames in context.Cities.AsEnumerable().Where(x => ExcelTable.Field<string>("City") == x.Name && ExcelTable.Field<string>("CityType") == x.CityType.Name)
-                            ////               select new { StreetId = streetsNames.Id, CityId = cityNames.Id };
+                            //var citizens = from ExcelTable in ds.Tables[0].AsEnumerable()
+                            //               from streetsNames in context.Streets.AsEnumerable().Where(x => ExcelTable.Field<string>("Street") == x.Name && ExcelTable.Field<string>("StreetType") == x.StreetType.Name)
+                            //               from cityNames in context.Cities.AsEnumerable().Where(x => ExcelTable.Field<string>("City") == x.Name && ExcelTable.Field<string>("CityType") == x.CityType.Name)
+                            //               select new { StreetId = streetsNames.Id, CityId = cityNames.Id };
 
-                            //DataTable ExcelTable = ds.Tables[0];
-                            ////var citizens = from table in ExcelTable.AsEnumerable()
-                            ////               join streetNames in context.Streets
-                            ////               on table.Field<string>("Street") equals streetNames.Name
-                            ////               join streetTypesNames in context.StreetTypes
-                            ////               on table.Field<string>("StreetType") equals streetTypesNames.Name
-                            ////               join cityNames in context.Cities
-                            ////               on table.Field<string>("City") equals cityNames.Name
-                            ////               join cityTypesNames in context.CityTypes
-                            ////               on table.Field<string>("CityType") equals cityTypesNames.Name
-                            ////               where streetNames.StreetTypeId == streetTypesNames.Id && cityNames.CityTypeId == cityTypesNames.Id
-                            ////               select new { table, StreetId = streetNames.Id, CityId = cityNames.Id };
+                            DataTable ExcelTable = ds.Tables[0];
+                            //var citizens = from table in ExcelTable.AsEnumerable()
+                            //               join streetNames in context.Streets
+                            //               on table.Field<string>("Street") equals streetNames.Name
+                            //               join streetTypesNames in context.StreetTypes
+                            //               on table.Field<string>("StreetType") equals streetTypesNames.Name
+                            //               join cityNames in context.Cities
+                            //               on table.Field<string>("City") equals cityNames.Name
+                            //               join cityTypesNames in context.CityTypes
+                            //               on table.Field<string>("CityType") equals cityTypesNames.Name
+                            //               where streetNames.StreetTypeId == streetTypesNames.Id && cityNames.CityTypeId == cityTypesNames.Id
+                            //               select new { table, StreetId = streetNames.Id, CityId = cityNames.Id };
 
-                            ///////////////////////////////////////////////////////////////////////
-                            ////string connectionString = "Data Source=.; Initial Catalog=CitizensDb;Integrated Security=True; Connect Timeout=15;Encrypt=False;TrustServerCertificate=False";
-                            //string connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["CitizensDb"].ConnectionString;
-                            ////
-                            //// In a using statement, acquire the SqlConnection as a resource.
-                            ////
-                            //using (SqlConnection connection = new SqlConnection(connectionString))
-                            //{
-                            //    // Create a DataTable with the modified rows.
+                            /////////////////////////////////////////////////////////////////////
+                            //string connectionString = "Data Source=.; Initial Catalog=CitizensDb;Integrated Security=True; Connect Timeout=15;Encrypt=False;TrustServerCertificate=False";
+                            string connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["CitizensDb"].ConnectionString;
+                            //
+                            // In a using statement, acquire the SqlConnection as a resource.
+                            //
+                            using (SqlConnection connection = new SqlConnection(connectionString))
+                            {
+                                // Create a DataTable with the modified rows.
 
 
-                            //    // Define the INSERT-SELECT statement.
-                            //    string sqlInsert =
-                            //    //"CREATE TYPE dbo.PersonsTable AS TABLE"
-                            //    //+ "("
-                            //    //+ "FirstName nvarchar(20),"
-                            //    //+ "MidleName nvarchar(20),"
-                            //    //+ "LastName nvarchar(20),"
-                            //    //+ "Gender int,"
-                            //    //+ "Street nvarchar(50),"
-                            //    //+ "StreetType nvarchar(50),"
-                            //    //+ "City nvarchar(50),"
-                            //    //+ "CityType nvarchar(50),"
-                            //    //+ "House nvarchar(50),"
-                            //    //+ "Apartment int"
-                            //    //+ ")"
-                            //    //+ "GO "
+                                // Define the INSERT-SELECT statement.
+                                string sqlInsert =
+                                    //"CREATE TYPE dbo.PersonsTable AS TABLE"
+                                    //+ "("
+                                    //+ "FirstName nvarchar(20),"
+                                    //+ "MidleName nvarchar(20),"
+                                    //+ "LastName nvarchar(20),"
+                                    //+ "Gender int,"
+                                    //+ "Street nvarchar(50),"
+                                    //+ "StreetType nvarchar(50),"
+                                    //+ "City nvarchar(50),"
+                                    //+ "CityType nvarchar(50),"
+                                    //+ "House nvarchar(50),"
+                                    //+ "Apartment int"
+                                    //+ ")"
+                                    //+ "GO "
 
-                            //    //" INSERT INTO dbo.People (FirstName, LastName, MidleName, Gender, CityId, StreetId, House, Apartment) "
-                            //    //+ " SELECT ExcelTable.FirstName, ExcelTable.LastName, ExcelTable.MidleName, ExcelTable.Gender, cityNames.Id, streetNames.Id, ExcelTable.House, ExcelTable.Apartment "
-                            //    //+ " FROM @ExcelTable AS ExcelTable "
-                            //    //+ " Inner join dbo.Streets as streetNames "
-                            //    //+ " on ExcelTable.Street = streetNames.Name "
-                            //    //+ " Inner join dbo.StreetTypes as streetTypeNames "
-                            //    //+ " on ExcelTable.StreetType = streetTypeNames.Name "
-                            //    //+ " and streetNames.StreetTypeId = streetTypeNames.Id "
-                            //    //+ " Inner join dbo.Cities as cityNames "
-                            //    //+ " on ExcelTable.City = cityNames.Name "
-                            //    //+ " Inner join dbo.CityTypes as cityTypeNames "
-                            //    //+ " on ExcelTable.CityType = cityTypeNames.Name "
-                            //    //+ " and cityNames.CityTypeId = cityTypeNames.Id "
-                            //    //;
+                                //" INSERT INTO dbo.People (FirstName, LastName, MidleName, Gender, CityId, StreetId, House, Apartment) "
+                                    //+ " SELECT ExcelTable.FirstName, ExcelTable.LastName, ExcelTable.MidleName, ExcelTable.Gender, cityNames.Id, streetNames.Id, ExcelTable.House, ExcelTable.Apartment "
+                                    //+ " FROM @ExcelTable AS ExcelTable "
+                                    //+ " Inner join dbo.Streets as streetNames "
+                                    //+ " on ExcelTable.Street = streetNames.Name "
+                                    //+ " Inner join dbo.StreetTypes as streetTypeNames "
+                                    //+ " on ExcelTable.StreetType = streetTypeNames.Name "
+                                    //+ " and streetNames.StreetTypeId = streetTypeNames.Id "
+                                    //+ " Inner join dbo.Cities as cityNames "
+                                    //+ " on ExcelTable.City = cityNames.Name "
+                                    //+ " Inner join dbo.CityTypes as cityTypeNames "
+                                    //+ " on ExcelTable.CityType = cityTypeNames.Name "
+                                    //+ " and cityNames.CityTypeId = cityTypeNames.Id "
+                                    //;
 
-                            //    " INSERT INTO dbo.PrecinctAddresses (CityId, StreetId, House, PrecinctId) "
-                            //    + " SELECT Distinct cityNames.Id, streetNames.Id, ExcelTable.House, 531188 "
-                            //    + " FROM @ExcelTable AS ExcelTable "
-                            //    + " Inner join dbo.Streets as streetNames "
-                            //    + " on ExcelTable.Street = streetNames.Name "
-                            //    + " Inner join dbo.StreetTypes as streetTypeNames "
-                            //    + " on ExcelTable.StreetType = streetTypeNames.Name "
-                            //    + " and streetNames.StreetTypeId = streetTypeNames.Id "
-                            //    + " Inner join dbo.Cities as cityNames "
-                            //    + " on ExcelTable.City = cityNames.Name "
-                            //    + " Inner join dbo.CityTypes as cityTypeNames "
-                            //    + " on ExcelTable.CityType = cityTypeNames.Name "
-                            //    + " and cityNames.CityTypeId = cityTypeNames.Id "                                
-                            //    + " INSERT INTO dbo.People (FirstName, LastName, MidleName, Gender, CityId, StreetId, House, Apartment) "
-                            //    + " SELECT ExcelTable.FirstName, ExcelTable.LastName, ExcelTable.MidleName, ExcelTable.Gender, cityNames.Id, streetNames.Id, ExcelTable.House, ExcelTable.Apartment "
-                            //    + " FROM @ExcelTable AS ExcelTable "
-                            //    + " Inner join dbo.Streets as streetNames "
-                            //    + " on ExcelTable.Street = streetNames.Name "
-                            //    + " Inner join dbo.StreetTypes as streetTypeNames "
-                            //    + " on ExcelTable.StreetType = streetTypeNames.Name "
-                            //    + " and streetNames.StreetTypeId = streetTypeNames.Id "
-                            //    + " Inner join dbo.Cities as cityNames "
-                            //    + " on ExcelTable.City = cityNames.Name "
-                            //    + " Inner join dbo.CityTypes as cityTypeNames "
-                            //    + " on ExcelTable.CityType = cityTypeNames.Name "
-                            //    + " and cityNames.CityTypeId = cityTypeNames.Id "
-                            //    ;
-                            //    // Configure the command and parameter.
-                            //    SqlCommand insertCommand = new SqlCommand(sqlInsert, connection);
-                            //    SqlParameter tvpParam = insertCommand.Parameters.AddWithValue(
-                            //        "@ExcelTable", ExcelTable);
-                            //    tvpParam.SqlDbType = SqlDbType.Structured;
-                            //    tvpParam.TypeName = "dbo.PersonsTable";
+                                " INSERT INTO dbo.PrecinctAddresses (CityId, StreetId, House, PrecinctId) "
+                                + " SELECT Distinct cityNames.Id, streetNames.Id, ExcelTable.House, PrecinctId = case when precinctAddressesWholeStreet.PrecinctId is null then 531188 else precinctAddressesWholeStreet.PrecinctId end "
+                                + " FROM @ExcelTable AS ExcelTable "
+                                + " Inner join dbo.Streets as streetNames "
+                                + " on ExcelTable.Street = streetNames.Name "
+                                + " Inner join dbo.StreetTypes as streetTypeNames "
+                                + " on ExcelTable.StreetType = streetTypeNames.Name "
+                                + " and streetNames.StreetTypeId = streetTypeNames.Id "
+                                + " Inner join dbo.Cities as cityNames "
+                                + " on ExcelTable.City = cityNames.Name "
+                                + " Inner join dbo.CityTypes as cityTypeNames "
+                                + " on ExcelTable.CityType = cityTypeNames.Name "
+                                + " and cityNames.CityTypeId = cityTypeNames.Id "
+                                + " left join dbo.PrecinctAddresses as precinctAddresses "
+                                + " on cityNames.Id = precinctAddresses.CityId "
+                                + " and streetNames.Id = precinctAddresses.StreetId "
+                                + " and ExcelTable.House = precinctAddresses.House "
+                                + " left join dbo.PrecinctAddresses as precinctAddressesWholeStreet "
+                                + " on cityNames.Id = precinctAddressesWholeStreet.CityId "
+                                + " and streetNames.Id = precinctAddressesWholeStreet.StreetId "
+                                + " and precinctAddressesWholeStreet.House = '' "
+                                + " where precinctAddresses.CityId is null "
+                                + " INSERT INTO dbo.People (FirstName, LastName, MidleName, Gender, CityId, StreetId, House, Apartment) "
+                                + " SELECT ExcelTable.FirstName, ExcelTable.LastName, ExcelTable.MidleName, ExcelTable.Gender, cityNames.Id, streetNames.Id, ExcelTable.House, ExcelTable.Apartment "
+                                + " FROM @ExcelTable AS ExcelTable "
+                                + " Inner join dbo.Streets as streetNames "
+                                + " on ExcelTable.Street = streetNames.Name "
+                                + " Inner join dbo.StreetTypes as streetTypeNames "
+                                + " on ExcelTable.StreetType = streetTypeNames.Name "
+                                + " and streetNames.StreetTypeId = streetTypeNames.Id "
+                                + " Inner join dbo.Cities as cityNames "
+                                + " on ExcelTable.City = cityNames.Name "
+                                + " Inner join dbo.CityTypes as cityTypeNames "
+                                + " on ExcelTable.CityType = cityTypeNames.Name "
+                                + " and cityNames.CityTypeId = cityTypeNames.Id "
+                                ;
+                                // Configure the command and parameter.
+                                string path1 = HttpContext.Server.MapPath("~/Scripts/Sql/insertAddresses.sql");
+                                FileInfo file = new FileInfo(path1);
+                                sqlInsert = file.OpenText().ReadToEnd();
+                                SqlCommand insertCommand = new SqlCommand(sqlInsert, connection);
+                                //SqlCommand insertCommand = new SqlCommand(sqlInsert, connection);
+                                SqlParameter tvpParam = insertCommand.Parameters.AddWithValue("@ExcelTable", ExcelTable);
+                                tvpParam.SqlDbType = SqlDbType.Structured;
+                                tvpParam.TypeName = "dbo.PersonsTable";
 
-                            //    // Execute the command.
-                            //    connection.Open();
-                            //    insertCommand.CommandTimeout = 0;
-                            //    //insertCommand.ExecuteNonQuery();
-                            //}
+
+
+                                // Execute the command.
+                                connection.Open();
+                                insertCommand.CommandTimeout = 0;
+                                insertCommand.ExecuteNonQuery();
+                            }
 
 
                             /////////////////////////////////////////////                        

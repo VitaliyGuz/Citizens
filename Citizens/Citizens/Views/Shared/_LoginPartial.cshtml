@@ -5,7 +5,7 @@
 @model Citizens.Models.ExternalLoginListViewModel
 @if (Request.IsAuthenticated)
 {
-    using (Html.BeginForm("LogOff", "Account", new { area = "" }, FormMethod.Post, new { id = "logoutForm", @class = "navbar-right" }))
+    @*using (Html.BeginForm("LogOff", "Account", new { area = "" }, FormMethod.Post, new { id = "logoutForm", @class = "navbar-right" }))
     {
         @Html.AntiForgeryToken()
         
@@ -23,33 +23,33 @@
 
 
                 <ul class="list-inline navbar-text navbar-right">
-                    <li>
+                    <li>*@
                         @*@Html.ActionLink("Hello " + User.Identity.GetUserName() + "!", "Index", "Manage", routeValues: new { area = "" }, htmlAttributes: new { title = "Manage" })*@
-                        @Html.Label(firstName, firstName)
-                    </li>
-                    <li><a href="javascript:sessionStorage.removeItem('accessToken');$('#logoutForm').submit();">Log off</a></li>
+                        @*@Html.Label(firstName, firstName)*@
+                    @*</li>
+                    <li><a href="javascript:sessionStorage.removeItem('accessToken');$('#logoutForm').submit();">Log off</a></li>*@
                     @*<li><a href="/Account/signout" class="btn btn-sm btn-primary">Log off</a></li>*@
-                </ul>
+                @*</ul>
             }
         
-    }
+    }*@
 }
 else
 {
-    using (Html.BeginForm("ExternalLogin", "Account", new { ReturnUrl = Model.ReturnUrl }))
-    {
+    //using (Html.BeginForm("ExternalLogin", "Account", new { ReturnUrl = Model.ReturnUrl }))
+    @*{
         var loginProviders = Context.GetOwinContext().Authentication.GetExternalAuthenticationTypes();
         @Html.AntiForgeryToken()
-        <ul class="list-inline navbar-text navbar-right">
+        <ul class="list-inline navbar-text navbar-right">*@
 
-            <li>@Html.ActionLink("Register", "Register", "Account", routeValues: new { area = "" }, htmlAttributes: new { id = "registerLink" })</li>
-            <li>@Html.ActionLink("Log in", "Login", "Account", routeValues: new { area = "" }, htmlAttributes: new { id = "loginLink" })</li>
-            @foreach (AuthenticationDescription p in loginProviders)
-            {
+            @*<li>@Html.ActionLink("Register", "Register", "Account", routeValues: new { area = "" }, htmlAttributes: new { id = "registerLink" })</li>
+            <li>@Html.ActionLink("Log in", "Login", "Account", routeValues: new { area = "" }, htmlAttributes: new { id = "loginLink" })</li>*@
+            @*@foreach (AuthenticationDescription p in loginProviders)*@
+            @*{
                 <button style="background: url(https://lh5.googleusercontent.com/-2r7nkB71SpM/AAAAAAAAAAI/AAAAAAAA4U8/OAQYVuzPXCs/photo.jpg?sz=48)" type="submit" class="btn btn-default" id="@p.AuthenticationType" name="provider" value="@p.AuthenticationType" title="Log in using your @p.Caption account">_  </button>
-            }
+            }*@
             @*<li><a href="/Account/signin" class="btn btn-sm btn-primary">Sign In</a></li>*@
             @*<li><a href="/Account/signout" class="btn btn-sm btn-primary">Sign Out</a></li>*@
-        </ul>
+        @*</ul>*@
     }
 }

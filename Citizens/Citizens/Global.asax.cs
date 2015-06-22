@@ -22,26 +22,25 @@ namespace Citizens
             AreaRegistration.RegisterAllAreas();
             GlobalConfiguration.Configure(WebApiConfig.Register);
             RouteConfig.RegisterRoutes(RouteTable.Routes);
-            GlobalFilters.Filters.Add(new CustomAuthorize());//GlobalFilters.Filters.Add(new AuthorizeAttribute() { Roles = "Admin, SuperUser" });            
+            //GlobalFilters.Filters.Add(new CustomAuthorize());//GlobalFilters.Filters.Add(new AuthorizeAttribute() { Roles = "Admin, SuperUser" });            
         }
 
         protected void Application_BeginRequest(object sender, EventArgs e)
         {
-            HttpContext.Current.Response.AddHeader("Access-Control-Allow-Origin", "*");
+            HttpContext.Current.Response.AddHeader("Access-Control-Allow-Origin", "http://citizens2015.azurewebsites.net");// http://poltava2015client.azurewebsites.net http://localhost:36561 http://citizens2015.azurewebsites.net
+            HttpContext.Current.Response.AddHeader("Access-Control-Allow-Credentials", "true");
 
             if (HttpContext.Current.Request.HttpMethod == "OPTIONS")
             {
                 //These headers are handling the "pre-flight" OPTIONS call sent by the browser
-                HttpContext.Current.Response.AddHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-                HttpContext.Current.Response.AddHeader("Access-Control-Allow-Headers", "Content-Type, Accept");
+                HttpContext.Current.Response.AddHeader("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE");                
+                HttpContext.Current.Response.AddHeader("Access-Control-Allow-Headers", "Content-Type, Accept, Authorization");
                 HttpContext.Current.Response.AddHeader("Access-Control-Max-Age", "1728000");
                 HttpContext.Current.Response.End();
             }
 
         }
     }
-
-
     
 
     public class CustomAuthorize : System.Web.Mvc.AuthorizeAttribute

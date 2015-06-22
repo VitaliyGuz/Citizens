@@ -35,20 +35,20 @@ namespace Citizens.Controllers.API
 
         // GET: odata/Users
         [EnableQuery]        
-        public IQueryable<User> GetUsers()
+        public IQueryable<ApplicationUser> GetUsers()
         {
             return db.Users.Include(u => u.Roles);
         }
 
         // GET: odata/Users(5)
         [EnableQuery]
-        public SingleResult<User> GetUser([FromODataUri] string key)
+        public SingleResult<ApplicationUser> GetUser([FromODataUri] string key)
         {
             return SingleResult.Create(db.Users.Where(user => user.Id == key));
         }
 
         // PUT: odata/Users(5)
-        public async Task<IHttpActionResult> Put([FromODataUri] string key, Delta<User> patch)
+        public async Task<IHttpActionResult> Put([FromODataUri] string key, Delta<ApplicationUser> patch)
         {
             Validate(patch.GetEntity());
 
@@ -57,7 +57,7 @@ namespace Citizens.Controllers.API
                 return BadRequest(ModelState);
             }
 
-            User user = db.Users.Find(key);
+            ApplicationUser user = db.Users.Find(key);
             if (user == null)
             {
                 return NotFound();
@@ -85,7 +85,7 @@ namespace Citizens.Controllers.API
         }
 
         // POST: odata/Users
-        public async Task<IHttpActionResult> Post(User user)
+        public async Task<IHttpActionResult> Post(ApplicationUser user)
         {
             if (!ModelState.IsValid)
             {
@@ -115,7 +115,7 @@ namespace Citizens.Controllers.API
 
         // PATCH: odata/Users(5)
         [AcceptVerbs("PATCH", "MERGE")]
-        public async Task<IHttpActionResult> Patch([FromODataUri] string key, Delta<User> patch)
+        public async Task<IHttpActionResult> Patch([FromODataUri] string key, Delta<ApplicationUser> patch)
         {
             Validate(patch.GetEntity());
 
@@ -124,7 +124,7 @@ namespace Citizens.Controllers.API
                 return BadRequest(ModelState);
             }
 
-            User user = db.Users.Find(key);
+            ApplicationUser user = db.Users.Find(key);
             if (user == null)
             {
                 return NotFound();
@@ -154,7 +154,7 @@ namespace Citizens.Controllers.API
         // DELETE: odata/Users(5)
         public async Task<IHttpActionResult> Delete([FromODataUri] string key)
         {
-            User user = db.Users.Find(key);
+            ApplicationUser user = db.Users.Find(key);
             if (user == null)
             {
                 return NotFound();

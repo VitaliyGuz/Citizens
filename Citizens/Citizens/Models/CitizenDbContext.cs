@@ -13,7 +13,7 @@ using System.Web.Http;
 
 namespace Citizens.Models
 {
-    public class CitizenDbContext : IdentityDbContext<User>
+    public class CitizenDbContext : IdentityDbContext<ApplicationUser>
     {
         public CitizenDbContext() : base("CitizensDb")
         {

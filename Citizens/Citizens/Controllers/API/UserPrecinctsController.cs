@@ -174,7 +174,7 @@ namespace Citizens.Controllers.API
 
         // GET: odata/UserPrecincts(5)/User
         [EnableQuery]
-        public SingleResult<User> GetUser([FromODataUri] string key)
+        public SingleResult<ApplicationUser> GetUser([FromODataUri] string key)
         {
             return SingleResult.Create(db.UserPrecincts.Where(m => m.UserId == key).Select(m => m.User));
         }

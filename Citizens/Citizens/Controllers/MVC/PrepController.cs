@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.Owin.Security;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
-using System.Security.Claims;
+//using System.Security.Claims;
 
 namespace Citizens.Controllers
 {
@@ -63,8 +63,8 @@ namespace Citizens.Controllers
             IAuthenticationManager authMgr = HttpContext.GetOwinContext().Authentication;
             StoreUserManager userMgr = HttpContext.GetOwinContext().GetUserManager<StoreUserManager>();
 
-            User user = await userMgr.FindAsync("Admin", "secret");
-            authMgr.SignIn(await userMgr.CreateIdentityAsync(user, DefaultAuthenticationTypes.ApplicationCookie));
+            ApplicationUser user = await userMgr.FindAsync("Admin", "secret");
+            //authMgr.SignIn(await userMgr.CreateIdentityAsync(user, DefaultAuthenticationTypes.ApplicationCookie));
             return RedirectToAction("Index");
         }
 

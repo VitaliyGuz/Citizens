@@ -1,13 +1,13 @@
-﻿@model Citizens.Models.User
+﻿@model Citizens.Models.ApplicationUser
 @{
     ViewBag.Title = "Register";
 }
 <h2>@ViewBag.Title.</h2>
 <h3>Associate your @ViewBag.LoginProvider account.</h3>
 
-@using (Html.BeginForm("ExternalLoginConfirmation", "Account", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+@*@using (Html.BeginForm("ExternalLoginConfirmation", "Account", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { @class = "form-horizontal", role = "form" }))*@
 {
-    @Html.AntiForgeryToken()
+    @*@Html.AntiForgeryToken()
 
     <h4>Association Form</h4>
     <hr />
@@ -34,7 +34,7 @@
         <div class="col-md-offset-2 col-md-10">
             <input type="submit" class="btn btn-default" value="Register" />
         </div>
-    </div>
+    </div>*@
 }
 
 

@@ -40,14 +40,14 @@ namespace Citizens.Controllers.API
 
         // GET: odata/PrecinctAddresses(5)
         [EnableQuery]
-        [ODataRoute("PrecinctAddresses(CityId={cityId}, StreetId={streetId}, House={house})")]        
+        [ODataRoute("PrecinctAddresses(CityId={cityId}, StreetId={streetId}, House={house})")]
         public SingleResult<PrecinctAddress> GetPrecinctAddresses([FromODataUri] int cityId, [FromODataUri] int? streetId, [FromODataUri] string house)
-        {            
+        {
             return SingleResult.Create(db.PrecinctAddresses.Where(precinctAddress => precinctAddress.CityId == cityId && precinctAddress.StreetId == streetId && precinctAddress.House == house));
         }
 
         // PUT: odata/PrecinctAddresses(5)
-        [ODataRoute("PrecinctAddresses(CityId={cityId}, StreetId={streetId}, House={house})")] 
+        [ODataRoute("PrecinctAddresses(CityId={cityId}, StreetId={streetId}, House={house})")]
         public async Task<IHttpActionResult> Put([FromODataUri] int cityId, [FromODataUri] int? streetId, [FromODataUri] string house, [FromBody] Delta<PrecinctAddress> patch)
         {
             Validate(patch.GetEntity());
@@ -93,6 +93,8 @@ namespace Citizens.Controllers.API
         // POST: odata/PrecinctAddresses
         public async Task<IHttpActionResult> Post(PrecinctAddress precinctAddress)
         {
+            var textConflict = "";
+
             if (precinctAddress.StreetId == null)
             {
                 precinctAddress.StreetId = 1;
@@ -114,14 +116,23 @@ namespace Citizens.Controllers.API
             }
             catch (DbUpdateException)
             {
-                if (PrecinctAddressExists(precinctAddress.CityId, precinctAddress.StreetId, precinctAddress.House))
+                //if (PrecinctAddressExists(precinctAddress.CityId, precinctAddress.StreetId, precinctAddress.House))
+                //{
+                PrecinctAddress precinctAddress2 = db.PrecinctAddresses.Include("City.CityType").Include("Street.StreetType").SingleOrDefault(precinctAddress1 => precinctAddress1.CityId == precinctAddress.CityId && precinctAddress1.StreetId == precinctAddress.StreetId && precinctAddress1.House == precinctAddress.House);
+                if (precinctAddress2 != null)
                 {
-                    return Conflict();
+                    textConflict = textConflict + "Адреса " + precinctAddress.City.CityType.Name + precinctAddress.City.Name +
+                                       ", " + precinctAddress.Street.StreetType.Name + precinctAddress.Street.Name +
+                                       "," + precinctAddress.House + " вже знаходиться в дільниці " +
+                                       precinctAddress2.PrecinctId.ToString() + "\r\n";
+                    //return Conflict();
+                    return new TextResult(textConflict, Request, HttpStatusCode.Conflict);
                 }
-                else
-                {
-                    throw;
-                }
+                //}
+                //else
+                //{
+                throw;
+                //}
             }
 
             return Created(precinctAddress);
@@ -129,7 +140,7 @@ namespace Citizens.Controllers.API
 
         // PATCH: odata/PrecinctAddresses(5)
         [AcceptVerbs("PATCH", "MERGE")]
-        [ODataRoute("PrecinctAddresses(CityId={cityId}, StreetId={streetId}, House={house})")] 
+        [ODataRoute("PrecinctAddresses(CityId={cityId}, StreetId={streetId}, House={house})")]
         public async Task<IHttpActionResult> Patch([FromODataUri] int cityId, [FromODataUri] int? streetId, [FromODataUri] string house, [FromBody] Delta<PrecinctAddress> patch)
         {
             Validate(patch.GetEntity());
@@ -173,11 +184,11 @@ namespace Citizens.Controllers.API
         }
 
         // DELETE: odata/PrecinctAddresses(5)
-        [ODataRoute("PrecinctAddresses(CityId={cityId}, StreetId={streetId}, House={house})")]   
+        [ODataRoute("PrecinctAddresses(CityId={cityId}, StreetId={streetId}, House={house})")]
         public async Task<IHttpActionResult> Delete([FromODataUri] int cityId, [FromODataUri] int? streetId, [FromODataUri] string house)
         {
             object[] key = new object[3];
-            
+
             key[0] = cityId;
             key[1] = streetId;
             key[2] = house;
@@ -224,7 +235,7 @@ namespace Citizens.Controllers.API
             base.Dispose(disposing);
         }
 
-        private bool PrecinctAddressExists([FromODataUri] int cityId, [FromODataUri] int? streetId , [FromODataUri] string house)
+        private bool PrecinctAddressExists([FromODataUri] int cityId, [FromODataUri] int? streetId, [FromODataUri] string house)
         {
             return db.PrecinctAddresses.Count(precinctAddress => precinctAddress.CityId == cityId && precinctAddress.StreetId == streetId && precinctAddress.House == house) > 0;
         }

@@ -23,6 +23,14 @@ namespace Citizens
     {
         public static void Register(HttpConfiguration config)
         {
+            config.MapHttpAttributeRoutes();
+
+            config.Routes.MapHttpRoute(
+                name: "DefaultApi",
+                routeTemplate: "api/{controller}/{id}",
+                defaults: new { id = RouteParameter.Optional }
+            );
+
             //config.Filters.Add(new AuthorizeAttribute());            
             // Web API configuration and services
             ODataConventionModelBuilder builder = new ODataConventionModelBuilder();
@@ -43,8 +51,8 @@ namespace Citizens
             builder.EntitySet<PersonAdditionalProperty>("PersonAdditionalProperties");
 
 
-            builder.EntitySet<User>("Users");
-            builder.EntitySet<IdentityUserClaim>("Claims");
+            builder.EntitySet<ApplicationUser>("Users");
+            //builder.EntitySet<IdentityUserClaim>("Claims");
             builder.EntitySet<Role>("Roles");
             //builder.EntitySet<IdentityUserRole>("UserRoles");
             //builder.EntitySet<IdentityUserLogin>("Logins");
@@ -76,11 +84,19 @@ namespace Citizens
             // Web API routes
             //config.MapHttpAttributeRoutes();
 
-            config.Routes.MapHttpRoute(
-                name: "OrdersRoute",
-                routeTemplate: "nonrest/{controller}/{action}/{id}",
-                defaults: new { id = RouteParameter.Optional }
-            );
+            //config.MapHttpAttributeRoutes();
+
+            //config.Routes.MapHttpRoute(
+            //    name: "DefaultApi",
+            //    routeTemplate: "api/{controller}/{action}/{id}",
+            //    defaults: new { id = RouteParameter.Optional }
+            //);
+
+            //config.Routes.MapHttpRoute(
+            //    name: "DefaultApi",
+            //    routeTemplate: "api/{controller}/{id}",
+            //    defaults: new { id = RouteParameter.Optional }
+            //);
 
             //config.Routes.MapHttpRoute(
             //    name: "DefaultApi",
