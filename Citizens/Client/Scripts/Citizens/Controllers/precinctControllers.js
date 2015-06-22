@@ -339,15 +339,39 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
         };
 
         function sortAddresses(addresses) {
-            //todo: compare by house number with slash
-            function compareAddressesWithHouse(a1, a2) {
-                var compCity, compStreet, compHouse, compTypeStreet,h1, h2;
+            function getParseHouseNumber(strNumber) {
+                var houseNumbRegex = /(\d*)?([а-яА-Я]*)?\/?(\d*)/i,
+                    housingRegex = /к.(\d*)/i,
+                    matches = houseNumbRegex.exec(strNumber),
+                    housing = housingRegex.exec(strNumber) || 0;
+                return { beforeSlash: parseInt(matches[1]), letter: matches[2] || '', afterSlash: parseInt(matches[3]) || 0, housing: housing[1] || 0 };
+            };
+
+            function compareHouses(h1, h2) {
+                var compInt = h1.beforeSlash - h2.beforeSlash, compLetter, compAfterSlash;
+                if (compInt === 0) {
+                    compLetter = h1.letter.localeCompare(h2.letter);
+                    if (compLetter === 0) {
+                        compAfterSlash = h1.afterSlash - h2.afterSlash;
+                        if (compAfterSlash === 0) {
+                            return h1.housing - h2.housing;
+                        } else {
+                            return compAfterSlash;
+                        }
+                    } else {
+                        return compLetter;
+                    }
+                } else {
+                    return compInt;
+                }
+            };
+
+            function compareAddresses(a1, a2) {
+                var compCity, compStreet, compHouse, compTypeStreet;
                 compCity = serviceUtil.compareByName(a1.City, a2.City);
                 compStreet = serviceUtil.compareByName(a1.Street, a2.Street);
                 compTypeStreet = serviceUtil.compareByName(a1.Street.StreetType, a2.Street.StreetType);
-                h1 = parseInt(a1.House);
-                h2 = parseInt(a2.House);
-                compHouse = h1 > h2 ? 1 : h1 < h2 ? -1 : 0;
+                compHouse = compareHouses(getParseHouseNumber(a1.House), getParseHouseNumber(a2.House));
                 if (compCity === 0) {
                     if (compStreet === 0) {
                         if (compTypeStreet === 0) {
@@ -362,23 +386,24 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
                     return compCity;
                 }
             };
+
             if (addresses) {
-                addresses.sort(function (a1, a2) {
-                    var compCity, compStreet, compTypeStreet;
-                    compCity = serviceUtil.compareByName(a1.City, a2.City);
-                    compStreet = serviceUtil.compareByName(a1.Street, a2.Street);
-                    compTypeStreet = serviceUtil.compareByName(a1.Street.StreetType, a2.Street.StreetType);
-                    if (compCity === 0) {
-                        if (compStreet === 0) {
-                            return compTypeStreet;
-                        } else {
-                            return compStreet;
-                        }
-                    } else {
-                        return compCity;
-                    }
-                });
-                addresses.sort(compareAddressesWithHouse);
+                //addresses.sort(function (a1, a2) {
+                //    var compCity, compStreet, compTypeStreet;
+                //    compCity = serviceUtil.compareByName(a1.City, a2.City);
+                //    compStreet = serviceUtil.compareByName(a1.Street, a2.Street);
+                //    compTypeStreet = serviceUtil.compareByName(a1.Street.StreetType, a2.Street.StreetType);
+                //    if (compCity === 0) {
+                //        if (compStreet === 0) {
+                //            return compTypeStreet;
+                //        } else {
+                //            return compStreet;
+                //        }
+                //    } else {
+                //        return compCity;
+                //    }
+                //});
+                addresses.sort(compareAddresses);
             }
         };
 
