@@ -2,13 +2,12 @@
 
 var precinctControllers = angular.module('precinctControllers', ['precinctServices', 'scrollable-table', 'ui.bootstrap']);
 
-precinctControllers.controller("listPrecinctsController", ['$location', '$rootScope', '$scope', 'config', 'serviceUtil', 'precinctData', 'genlPrecinctsData',
-    function ($location, $rootScope, $scope, config, serviceUtil, precinctData, genlPrecinctsData) {
+precinctControllers.controller("listPrecinctsController", ['$location', '$rootScope', '$scope', 'config', 'serviceUtil', 'precinctData', 'genlPrecinctsData', 'filterSettings',
+    function ($location, $rootScope, $scope, config, serviceUtil, precinctData, genlPrecinctsData, filterSettings) {
         
         $rootScope.pageTitle = 'Дільниці';
         $scope.tableHead = ['№', 'Дільниця', 'Адреса', 'Округ', 'Дії'];
 
-        $scope.query = {};
         $scope.options = [
               { value: "Id", desc: "Дільниця"},
               { value: "City.Name", desc: "Населений пункт" },
@@ -16,7 +15,25 @@ precinctControllers.controller("listPrecinctsController", ['$location', '$rootSc
               { value: "House", desc: "Буд" },
               { value: "District.Id", desc: "Округ" }
         ];
-        $scope.queryBy = 'Id';
+        
+        var precinctsQuery = filterSettings.get('precincts');
+        if (precinctsQuery) {
+            $scope.query = precinctsQuery;
+            $scope.queryBy = Object.keys(precinctsQuery)[0];
+        } else {
+            $scope.query = {};
+            $scope.queryBy = 'Id';
+        }
+
+        $scope.onFilterQueryChange = function (isChangeValue) {
+            if (isChangeValue) {
+                filterSettings.set('precincts', $scope.query);
+            } else {
+                $scope.query = {};
+                filterSettings.remove('precincts');
+            }
+        };
+
         $rootScope.editInd = -1;
         $scope.currentPage = serviceUtil.getRouteParam("currPage") || 1;
         $scope.pageSize = config.pageSize;
