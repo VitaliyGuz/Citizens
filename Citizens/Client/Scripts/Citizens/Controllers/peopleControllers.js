@@ -2,14 +2,13 @@
 
 var peopleControllers = angular.module('peopleControllers', ['peopleServices', 'streetServices', 'cityServices', 'precinctServices', 'ui.bootstrap']);
 
-//todo: add initData service for cities, streets, propKeys/Values
-peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$location', 'peopleData', 'config', 'serviceUtil', 'genlPeopleData',
-    function ($rootScope, $scope, $location, peopleData, config, serviceUtil, genlPeopleData) {
+peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$location', 'peopleData', 'config', 'serviceUtil', 'genlPeopleData', 'filterSettings',
+    function ($rootScope, $scope, $location, peopleData, config, serviceUtil, genlPeopleData, filterSettings) {
         var propValues = [], DATE_FORMAT = 'yyyy-MM-ddT00:00:00';
         
         $rootScope.pageTitle = 'Фізичні особи';
         $scope.saving = false;
-        $scope.filterQuery = {};
+        //$scope.filterQuery = {};
 
         $scope.currentPage = serviceUtil.getRouteParam("currPage") || 1;
         
@@ -21,6 +20,21 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
 
         $scope.propKeys = genlPeopleData.propKeys;
         propValues = genlPeopleData.propValues;
+
+        var peopleQuery = filterSettings.get('people');
+        if (peopleQuery) {
+            angular.forEach($scope.propKeys, function (propKey) {
+                var findedKeys = peopleQuery.filter(function (query) {
+                    return query.Id === propKey.Id;
+                });
+                if (findedKeys.length > 0) {
+                    propKey.input = findedKeys[0].input;
+                } 
+            });
+            
+        } else {
+            $scope.filterQuery = {};
+        }
 
         $scope.getPropertyValuesByKeyId = function (keyId) {
             return propValues.filter(function (item) {
@@ -144,6 +158,7 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
         // todo: rename to 'applyFilter'
         $scope.onFilterChange = function () {
             $scope.filtering = true;
+            filterSettings.set('people', $scope.propKeys);
             setPeopleOnPage();
         };
 
@@ -173,6 +188,7 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
             angular.forEach($scope.propKeys, function (propKey) {
                 if (propKey.input) propKey.input = undefined;
             });
+            filterSettings.remove('people');
             setPeopleOnPage();
         };
     }]);
