@@ -3,28 +3,28 @@
 var app = angular.module("citizens",
     [
         'ngRoute', 'ngCookies',
-        'angularUtils.directives.dirPagination',
-        'peopleControllers', 'streetControllers', 'regionPartControllers', 'cityControllers', 'authControllers', 'precinctControllers', 'uploadXlsModule'
+        'angularUtils.directives.dirPagination','ui.bootstrap',
+        'peopleControllers', 'streetControllers', 'regionPartControllers', 'cityControllers', 'authControllers','precinctControllers'
     ]
 );
 
 app.config(['$routeProvider', 'paginationTemplateProvider', function ($routeProvider, paginationTemplateProvider) {
     
     var routeListCities = {
-        templateUrl: 'Views/ListCities.html',
-        controller: 'listCitiesController',
+            templateUrl: 'Views/ListCities.html',
+            controller: 'listCitiesController',
             resolve: { genlData: function(genlData) { genlData.asyncLoad() } },
-        reloadOnSearch: true
-    },
-    routeEditCity = {
-        templateUrl: 'Views/EditCity.html',
-        controller: 'editCityController',
-        resolve: {
+            reloadOnSearch: true
+        },
+        routeEditCity = {
+            templateUrl: 'Views/EditCity.html',
+            controller: 'editCityController',
+            resolve: {
                 genlData: function(genlData) { genlData.asyncLoad() },
                 resolvedData: function($route, dataForEditCityPage) {
-                return dataForEditCityPage.asyncLoad($route.current.params.id);
+                    return dataForEditCityPage.asyncLoad($route.current.params.id);
+                }
             }
-        }
         },
         routeListPeople = {
             templateUrl: 'Views/ListPeople.html',
