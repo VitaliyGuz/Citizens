@@ -28,3 +28,5 @@
 /// <reference path="citizens/services/authservices.js" />
 /// <reference path="citizens/authcomplete.js" />
 /// <reference path="angularutils/directives/angular-scrollable-table.min.js" />
+/// <reference path="citizens/controllers/uploadxlscontroller.js" />
+/// <reference path="angularjs/angular-file-model.js" />

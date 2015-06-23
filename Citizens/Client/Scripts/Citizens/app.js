@@ -4,27 +4,27 @@ var app = angular.module("citizens",
     [
         'ngRoute', 'ngCookies',
         'angularUtils.directives.dirPagination',
-        'peopleControllers', 'streetControllers', 'regionPartControllers', 'cityControllers', 'authControllers','precinctControllers'
+        'peopleControllers', 'streetControllers', 'regionPartControllers', 'cityControllers', 'authControllers', 'precinctControllers', 'uploadXlsModule'
     ]
 );
 
 app.config(['$routeProvider', 'paginationTemplateProvider', function ($routeProvider, paginationTemplateProvider) {
     
     var routeListCities = {
-            templateUrl: 'Views/ListCities.html',
-            controller: 'listCitiesController',
+        templateUrl: 'Views/ListCities.html',
+        controller: 'listCitiesController',
             resolve: { genlData: function(genlData) { genlData.asyncLoad() } },
-            reloadOnSearch: true
-        },
-        routeEditCity = {
-            templateUrl: 'Views/EditCity.html',
-            controller: 'editCityController',
-            resolve: {
+        reloadOnSearch: true
+    },
+    routeEditCity = {
+        templateUrl: 'Views/EditCity.html',
+        controller: 'editCityController',
+        resolve: {
                 genlData: function(genlData) { genlData.asyncLoad() },
                 resolvedData: function($route, dataForEditCityPage) {
-                    return dataForEditCityPage.asyncLoad($route.current.params.id);
-                }
+                return dataForEditCityPage.asyncLoad($route.current.params.id);
             }
+        }
         },
         routeListPeople = {
             templateUrl: 'Views/ListPeople.html',
@@ -99,6 +99,10 @@ app.config(['$routeProvider', 'paginationTemplateProvider', function ($routeProv
         when('/city/new/:currPage', routeEditCity).
         when('/city/:id', routeEditCity).
         when('/city/:id/:currPage', routeEditCity).
+        when('/uploadXls', {
+            templateUrl: 'Views/UploadXls.html',
+            controller: 'uploadXlsController'
+        }).
         when('/login', {
             templateUrl: 'Views/Login.html',
             controller: 'loginController'
@@ -123,13 +127,13 @@ app.config(['$routeProvider', 'paginationTemplateProvider', function ($routeProv
 }]);
 
 app.value("config", {
-    baseUrl: 'http://poltava2015.azurewebsites.net', //'http://localhost:6600', 'http://poltava2015.azurewebsites.net', 'http://apicitizens.azurewebsites.net',
+    baseUrl: 'http://poltava2015.azurewebsites.net', //'http://localhost:6600', 'http://poltava2015.azurewebsites.net', 'http://apicitizens.azurewebsites.net', #Deploy
     pageSize: 20, // by default 20
     pageSizeTabularSection: 10,
     checkDeleteItem: true,
-    getExternalProviderUrl: function(provider) {
+    getExternalProviderUrl: function (provider) {
         var redirectUri = location.protocol + '//' + location.host + '/Views/AuthComplete.html';
-        return  this.baseUrl + "/api/Account/ExternalLogin?provider=" + provider + "&response_type=token&client_id=Citizens" + "&redirect_uri=" + redirectUri;
+        return this.baseUrl + "/api/Account/ExternalLogin?provider=" + provider + "&response_type=token&client_id=Citizens" + "&redirect_uri=" + redirectUri;
     }
 });
 
@@ -160,7 +164,7 @@ app.factory("serviceUtil", ["$filter", '$routeParams', '$location', function ($f
             }
             return errMsg;
         },
-        compareByName: function (a,b) {
+        compareByName: function (a, b) {
             return a.Name.localeCompare(b.Name);
         },
         copyProperties: function (source, destination) {
@@ -173,7 +177,7 @@ app.factory("serviceUtil", ["$filter", '$routeParams', '$location', function ($f
         getAddressKey: function (address) {
             return { cityId: address.CityId, streetId: address.StreetId, house: address.House };
         },
-        formatDate: function (date,pattern) {
+        formatDate: function (date, pattern) {
             return $filter("date")(date, pattern);
         },
         getRouteParam: function (paramName) {
@@ -364,10 +368,10 @@ app.factory('genlData', ['$q', '$rootScope', 'cityData', 'streetData', 'regionPa
     };
 }]);
 
-app.factory('filterSettings', [function() {
+app.factory('filterSettings', [function () {
     var settings = {};
     return {
-        get: function(key) {
+        get: function (key) {
             return settings[key];
         },
         set: function (key, value) {

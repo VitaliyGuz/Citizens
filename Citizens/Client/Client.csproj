@@ -103,6 +103,7 @@
     <Content Include="ApplicationInsights.config" />
     <Content Include="Scripts\AngularJS\angular-cookies.js" />
     <Content Include="Scripts\AngularJS\angular-cookies.min.js" />
+    <Content Include="Scripts\AngularJS\angular-file-model.js" />
     <Content Include="Scripts\AngularJS\angular-resource.js" />
     <Content Include="Scripts\AngularJS\angular-resource.min.js" />
     <Content Include="Scripts\AngularJS\angular-route.js" />
@@ -143,6 +144,7 @@
     <Content Include="Scripts\Citizens\Controllers\precinctControllers.js" />
     <Content Include="Scripts\Citizens\Controllers\regionPartControllers.js" />
     <Content Include="Scripts\Citizens\Controllers\streetControllers.js" />
+    <Content Include="Scripts\Citizens\Controllers\uploadXlsController.js" />
     <Content Include="Scripts\Citizens\Controllers\userControllers.js" />
     <Content Include="Scripts\Citizens\Services\authServices.js" />
     <Content Include="Scripts\Citizens\Services\cityServices.js" />
@@ -179,6 +181,7 @@
     <Content Include="Views\RegionParts.html" />
     <Content Include="Views\Register.html" />
     <Content Include="Views\Streets.html" />
+    <Content Include="Views\UploadXls.html" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
