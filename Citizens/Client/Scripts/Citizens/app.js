@@ -9,154 +9,90 @@ var app = angular.module("citizens",
 );
 
 app.config(['$routeProvider', 'paginationTemplateProvider', function ($routeProvider, paginationTemplateProvider) {
-    //todo: create route obj to anoter pages
+    
     var routeListCities = {
-        templateUrl: 'Views/ListCities.html',
-        controller: 'listCitiesController',
-        resolve: { genlData: function (genlData) { genlData.asyncLoad() } },
-        reloadOnSearch: true
-    },
-    routeEditCity = {
-        templateUrl: 'Views/EditCity.html',
-        controller: 'editCityController',
-        resolve: {
-            genlData: function (genlData) { genlData.asyncLoad() },
-            resolvedData: function ($route, dataForEditCityPage) {
-                return dataForEditCityPage.asyncLoad($route.current.params.id);
+            templateUrl: 'Views/ListCities.html',
+            controller: 'listCitiesController',
+            resolve: { genlData: function(genlData) { genlData.asyncLoad() } },
+            reloadOnSearch: true
+        },
+        routeEditCity = {
+            templateUrl: 'Views/EditCity.html',
+            controller: 'editCityController',
+            resolve: {
+                genlData: function(genlData) { genlData.asyncLoad() },
+                resolvedData: function($route, dataForEditCityPage) {
+                    return dataForEditCityPage.asyncLoad($route.current.params.id);
+                }
             }
-        }
-    }
+        },
+        routeListPeople = {
+            templateUrl: 'Views/ListPeople.html',
+            controller: 'listPeopleController',
+            resolve: {
+                genlData: function(genlData) { genlData.asyncLoad() },
+                genlPeopleData: function(genlPeopleData) { return genlPeopleData.asyncLoad() }
+            }
+        },
+        routeEditPerson = {
+            templateUrl: 'Views/EditPerson.html',
+            controller: 'editPersonController',
+            resolve: {
+                genlData: function(genlData) { genlData.asyncLoad() },
+                genlPeopleData: function(genlPeopleData) { return genlPeopleData.asyncLoad() },
+                resolvedData: function($route, dataForEditPersonPage) {
+                    return dataForEditPersonPage.asyncLoad($route.current.params.id);
+                }
+            }
+        },
+        routeStreets = {
+            templateUrl: 'Views/Streets.html',
+            controller: 'listStreetsController',
+            resolve: { genlData: function(genlData) { genlData.asyncLoad() } }
+        },
+        routeRegionParts = {
+            templateUrl: 'Views/RegionParts.html',
+            controller: 'listRegionPartsController',
+            resolve: {
+                genlData: function(genlData) { genlData.asyncLoad() }
+            }
+        },
+        routeListPrecincts = {
+            templateUrl: 'Views/ListPrecincts.html',
+            controller: 'listPrecinctsController',
+            resolve: {
+                genlData: function(genlData) { genlData.asyncLoad() },
+                genlPrecinctsData: function(genlPrecinctsData) { return genlPrecinctsData.asyncLoad() }
+            }
+        },
+        routeEditPecinct = {
+            templateUrl: 'Views/EditPrecinct.html',
+            controller: 'editPrecinctController',
+            resolve: {
+                genlData: function(genlData) { genlData.asyncLoad() },
+                genlPrecinctsData: function(genlPrecinctsData) { return genlPrecinctsData.asyncLoad() },
+                resolvedData: function($route, dataForEditPrecinctPage) {
+                    return dataForEditPrecinctPage.asyncLoad($route.current.params.id);
+                }
+            }
+        };
 
     $routeProvider.
-        when('/people', {
-            templateUrl: 'Views/ListPeople.html',
-            controller: 'listPeopleController',
-            resolve: {
-                genlData: function (genlData) { genlData.asyncLoad() },
-                genlPeopleData: function (genlPeopleData) { return genlPeopleData.asyncLoad() }
-            }
-        }).
-        when('/people/:currPage', {
-            templateUrl: 'Views/ListPeople.html',
-            controller: 'listPeopleController',
-            resolve: {
-                genlData: function (genlData) { genlData.asyncLoad() },
-                genlPeopleData: function (genlPeopleData) { return genlPeopleData.asyncLoad() }
-            }
-        }).
-        when('/person/new/:currPage', {
-            templateUrl: 'Views/EditPerson.html',
-            controller: 'editPersonController',
-            resolve: {
-                genlData: function (genlData) { genlData.asyncLoad() },
-                genlPeopleData: function (genlPeopleData) { return genlPeopleData.asyncLoad() },
-                resolvedData: function ($route, dataForEditPersonPage) {
-                    return dataForEditPersonPage.asyncLoad($route.current.params.id);
-                }
-            }
-        }).
-        when('/person/:id/:currPage', {
-            templateUrl: 'Views/EditPerson.html',
-            controller: 'editPersonController',
-            resolve: {
-                genlData: function (genlData) { genlData.asyncLoad() },
-                genlPeopleData: function (genlPeopleData) { return genlPeopleData.asyncLoad() },
-                resolvedData: function ($route, dataForEditPersonPage) {
-                    return dataForEditPersonPage.asyncLoad($route.current.params.id);
-                }
-            }
-        }).
-        when('/person/:id', {
-            templateUrl: 'Views/EditPerson.html',
-            controller: 'editPersonController',
-            resolve: {
-                genlData: function (genlData) { return genlData.asyncLoad() },
-                genlPeopleData: function (genlPeopleData) { return genlPeopleData.asyncLoad() },
-                resolvedData: function ($route, dataForEditPersonPage) {
-                    return dataForEditPersonPage.asyncLoad($route.current.params.id);
-                }
-            }
-        }).
-        when('/streets', {
-            templateUrl: 'Views/Streets.html',
-            controller: 'listStreetsController',
-            resolve: { genlData: function (genlData) { genlData.asyncLoad() } }
-        }).
-        when('/streets/:currPage', {
-            templateUrl: 'Views/Streets.html',
-            controller: 'listStreetsController',
-            resolve: { genlData: function (genlData) { genlData.asyncLoad() } }
-        }).
-        when('/region-parts', {
-            templateUrl: 'Views/RegionParts.html',
-            controller: 'listRegionPartsController',
-            resolve: { genlData: function (genlData) { genlData.asyncLoad() } }
-        }).
-        when('/region-parts/:currPage', {
-            templateUrl: 'Views/RegionParts.html',
-            controller: 'listRegionPartsController',
-            resolve: { genlData: function (genlData) { genlData.asyncLoad() } }
-        }).
-        when('/precincts', {
-            templateUrl: 'Views/ListPrecincts.html',
-            controller: 'listPrecinctsController',
-            resolve: {
-                genlData: function (genlData) { genlData.asyncLoad() },
-                genlPrecinctsData: function (genlPrecinctsData) { return genlPrecinctsData.asyncLoad() }
-            }
-        }).
-        when('/precincts/:currPage', {
-            templateUrl: 'Views/ListPrecincts.html',
-            controller: 'listPrecinctsController',
-            resolve: {
-                genlData: function (genlData) { genlData.asyncLoad() },
-                genlPrecinctsData: function (genlPrecinctsData) { return genlPrecinctsData.asyncLoad() }
-            }
-        }).
-        when('/precinct/new', {
-            templateUrl: 'Views/EditPrecinct.html',
-            controller: 'editPrecinctController',
-            resolve: {
-                genlData: function (genlData) { genlData.asyncLoad() },
-                genlPrecinctsData: function (genlPrecinctsData) { return genlPrecinctsData.asyncLoad() },
-                resolvedData: function ($route, dataForEditPrecinctPage) {
-                    return dataForEditPrecinctPage.asyncLoad($route.current.params.id);
-                }
-            }
-        }).
-        when('/precinct/new/:currPage', {
-            templateUrl: 'Views/EditPrecinct.html',
-            controller: 'editPrecinctController',
-            resolve: {
-                genlData: function (genlData) { genlData.asyncLoad() },
-                genlPrecinctsData: function (genlPrecinctsData) { return genlPrecinctsData.asyncLoad() },
-                resolvedData: function ($route, dataForEditPrecinctPage) {
-                    return dataForEditPrecinctPage.asyncLoad($route.current.params.id);
-                }
-            }
-        }).
-        when('/precinct/:id', {
-            templateUrl: 'Views/EditPrecinct.html',
-            controller: 'editPrecinctController',
-            resolve: {
-                genlData: function (genlData) { genlData.asyncLoad() },
-                genlPrecinctsData: function (genlPrecinctsData) { return genlPrecinctsData.asyncLoad() },
-                resolvedData: function ($route, dataForEditPrecinctPage) {
-                    return dataForEditPrecinctPage.asyncLoad($route.current.params.id);
-                 }
-            }
-        }).
-        when('/precinct/:id/:currPage', {
-            templateUrl: 'Views/EditPrecinct.html',
-            controller: 'editPrecinctController',
-            resolve: {
-                genlData: function (genlData) { genlData.asyncLoad() },
-                genlPrecinctsData: function (genlPrecinctsData) { return genlPrecinctsData.asyncLoad() },
-                resolvedData: function ($route, dataForEditPrecinctPage) {
-                    return dataForEditPrecinctPage.asyncLoad($route.current.params.id);
-                }
-            }
-        }).
+        when('/people', routeListPeople).
+        when('/people/:currPage', routeListPeople).
+        when('/person/new/:currPage', routeEditPerson).
+        when('/person/:id/:currPage', routeEditPerson).
+        when('/person/:id', routeEditPerson).
+        when('/streets', routeStreets).
+        when('/streets/:currPage', routeStreets).
+        when('/region-parts', routeRegionParts).
+        when('/region-parts/:currPage', routeRegionParts).
+        when('/precincts', routeListPrecincts).
+        when('/precincts/:currPage', routeListPrecincts).
+        when('/precinct/new', routeEditPecinct).
+        when('/precinct/new/:currPage', routeEditPecinct).
+        when('/precinct/:id', routeEditPecinct).
+        when('/precinct/:id/:currPage', routeEditPecinct).
         when('/cities', routeListCities).
         when('/cities/:currPage', routeListCities).
         when('/city/new', routeEditCity).
