@@ -22,6 +22,8 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
         propValues = genlPeopleData.propValues;
 
         var peopleQuery = filterSettings.get('people');
+        //todo: include filterQuery in propKyes, personNameQuery is temp
+        var personNameQuery = filterSettings.get('people_name');
         if (peopleQuery) {
             angular.forEach($scope.propKeys, function (propKey) {
                 var findedKeys = peopleQuery.filter(function (query) {
@@ -29,9 +31,12 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
                 });
                 if (findedKeys.length > 0) {
                     propKey.input = findedKeys[0].input;
+                    $scope.showFilters = true;
                 } 
             });
-            
+        }
+        if (personNameQuery) {
+            $scope.filterQuery = personNameQuery;
         } else {
             $scope.filterQuery = {};
         }
@@ -155,10 +160,19 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
             //console.log(filterStr);
             return filterStr;
         };
-        // todo: rename to 'applyFilter'
-        $scope.onFilterChange = function () {
+        
+        $scope.applyFilter = function () {
             $scope.filtering = true;
             filterSettings.set('people', $scope.propKeys);
+            setPeopleOnPage();
+        };
+
+        $scope.onFilterChange = function () {
+            if ($scope.filterQuery.LastName || $scope.filterQuery.FirstName || $scope.filterQuery.MidleName) {
+                filterSettings.set('people_name', $scope.filterQuery);
+            } else {
+                filterSettings.remove('people_name');
+            }
             setPeopleOnPage();
         };
 
@@ -190,6 +204,13 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
             });
             filterSettings.remove('people');
             setPeopleOnPage();
+        };
+
+        $scope.checkedPropValue = function (propKey, checkVal) {
+            if (!propKey.input) return false;
+            return propKey.input.some(function (val) {
+                return val.Id === checkVal.Id;
+            });
         };
     }]);
 

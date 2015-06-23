@@ -41,7 +41,7 @@
                     <label>{{propKey.Name}}:</label>
                     <div class="checkbox">
                         <label ng-repeat="v in getPropertyValuesByKeyId(propKey.Id)" class="checkbox">
-                            <input type="checkbox" ng-click="toggleSelection(propKey,v)" ng-checked="propKey.input.indexOf(v)>=0" />{{v.Value}}
+                            <input type="checkbox" ng-click="toggleSelection(propKey,v)" ng-checked="checkedPropValue(propKey,v)" />{{v.Value}}
                         </label>
                     </div>
                 </div>
@@ -58,7 +58,7 @@
             </div>
             <hr />
         </div>
-        <button ng-click="onFilterChange()" class="btn btn-sm btn-success">
+        <button ng-click="applyFilter()" class="btn btn-sm btn-success">
             <span class="glyphicon glyphicon-check"></span> Застосувати
             <i ng-show="filtering" class="fa fa-refresh fa-spin"></i>
         </button>

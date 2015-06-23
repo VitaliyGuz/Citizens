@@ -32,10 +32,10 @@ angular.module("peopleServices", ['ngResource', 'precinctServices']).
 		    'save': { method: "POST", url: urlOdata },
 		    'remove': { method: 'DELETE', params: params, url: urlOdata + key },
 		    'getKey': { method: 'GET', params: { id: "@id" }, url: urlOdataKeys + "(:id)" },
-		    'getKeys': { method: 'GET', url: urlOdataKeys + "?$orderby=Name", cache: true },
+		    'getKeys': { method: 'GET', url: urlOdataKeys + "?$orderby=Name", cache: false },
 		    'getValue': { method: 'GET', params: { id: "@id" }, url: urlOdataValues + "(:id)" },
 		    'getValuesByKeyId': { method: 'GET', params: { keyId: "@keyId" }, url: urlOdataValues + "?$filter=PropertyKeyId eq :keyId&$orderby=Value" },
-		    'getValues': { method: 'GET', url: urlOdataValues + "?$orderby=PropertyKeyId,Value", cache: true },
+		    'getValues': { method: 'GET', url: urlOdataValues + "?$orderby=PropertyKeyId,Value", cache: false },
 		    'updateKey': { method: 'PUT', params: { id: "@id" }, url: urlOdataKeys + "(:id)" },
 		    'updateValue': { method: 'PUT', params: { id: "@id" }, url: urlOdataValues + "(:id)" },
 		    'saveKey': { method: "POST", url: urlOdataKeys },
@@ -72,7 +72,9 @@ angular.module("peopleServices", ['ngResource', 'precinctServices']).
                 peopleData.getById({ id: routeParam }, function (res) {
                     deferred.resolve(res);
                 }, function (err) {
-                    deferred.reject('Фізичну особу не знайдено (' + serviceUtil.getErrorMessage(err) + ')');
+                    var errMsg = 'Фізичну особу не знайдено';
+                    if (err && err.length > 0) errMsg = errMsg + ' (' + serviceUtil.getErrorMessage(err) + ')';
+                    deferred.reject(errMsg);
                 });
             } else {
                 deferred.resolve();
@@ -85,7 +87,9 @@ angular.module("peopleServices", ['ngResource', 'precinctServices']).
             precinctData.getAll(function (res) {
                 deferred.resolve(res.value);
             }, function (err) {
-                deferred.reject('Дільниці не завантажено (' + serviceUtil.getErrorMessage(err) + ')');
+                var errMsg = 'Дільниці не завантажено';
+                if (err && err.length > 0) errMsg = errMsg + ' (' + serviceUtil.getErrorMessage(err) + ')';
+                deferred.reject(errMsg);
             });
             return deferred.promise;
         };
@@ -115,7 +119,9 @@ angular.module("peopleServices", ['ngResource', 'precinctServices']).
             additionalPropsData[method](function (res) {
                 deferred.resolve(res.value);
             }, function (err) {
-                deferred.reject('Фізичну особу не знайдено (' + serviceUtil.getErrorMessage(err) + ')');
+                var errMsg = 'Додаткові характеристики не завантажено';
+                if (err && err.length > 0) errMsg = errMsg + ' (' + serviceUtil.getErrorMessage(err) + ')';
+                deferred.reject(errMsg);
             });
             
             return deferred.promise;
