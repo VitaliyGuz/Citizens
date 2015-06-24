@@ -17,7 +17,7 @@ namespace Citizens.Controllers.API
 {
     public class ExchangeController : ApiController
     {
-        [AllowAnonymous]
+        [Authorize(Roles = "Administrators")]
         [HttpPost]
         public IHttpActionResult Upload()
         {
@@ -38,9 +38,9 @@ namespace Citizens.Controllers.API
 
 
                         //string ConnectionString = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + filePath + ";Extended Properties=Excel 8.0;";
-                        string ConnectionString = "Provider=Microsoft.Jet.OLEDB.4.0; Data Source=" + filePath +
+                        var ConnectionString = "Provider=Microsoft.Jet.OLEDB.4.0; Data Source=" + filePath +
                                                   "; Extended Properties='Excel 8.0;'";
-                        using (OleDbConnection conn = new System.Data.OleDb.OleDbConnection(ConnectionString))
+                        using (OleDbConnection conn = new OleDbConnection(ConnectionString))
                         {
                             conn.Open();
                             using (DataTable dtExcelSchema = conn.GetSchema("Tables"))
@@ -217,7 +217,7 @@ namespace Citizens.Controllers.API
                                 adapter.Fill(ds, "Items");
 
 
-                                DataTable ExcelTable = ds.Tables[0];
+                                DataTable excelTable = ds.Tables[0];
 
 
                                 /////////////////////////////////////////////////////////////////////
@@ -243,7 +243,7 @@ namespace Citizens.Controllers.API
                                     string sqlInsert = file.OpenText().ReadToEnd();
                                     SqlCommand insertCommand = new SqlCommand(sqlInsert, connection);
                                     SqlParameter tvpParam = insertCommand.Parameters.AddWithValue("@ExcelTable",
-                                        ExcelTable);
+                                        excelTable);
                                     tvpParam.SqlDbType = SqlDbType.Structured;
                                     tvpParam.TypeName = "dbo.PersonsTable";
 
@@ -259,9 +259,9 @@ namespace Citizens.Controllers.API
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                throw ex;
             }
             return Ok();
         }

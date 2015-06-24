@@ -75,12 +75,13 @@ namespace Citizens
 
             GoogleAuthOptions = new GoogleOAuth2AuthenticationOptions()
             {
-                //ClientId = "1076913514687-bhrksa4k05elvb08uecoeul1s92q2t2m.apps.googleusercontent.com",
-                //ClientSecret = "G0aPsqu7qqcqBwyT9xFMV3X2",
+                ClientId = "1076913514687-bhrksa4k05elvb08uecoeul1s92q2t2m.apps.googleusercontent.com",
+                ClientSecret = "G0aPsqu7qqcqBwyT9xFMV3X2",
                 //ClientId = "1076913514687-90t2mcv9atf6o4eukhsqa0e4kntkegr4.apps.googleusercontent.com",
                 //ClientSecret = "3N3QraNkWYWgIzE_Aof9fqy1",
-                ClientId = "1076913514687-l4pfivi8annt8suev3mrvlploi9lk9mv.apps.googleusercontent.com",
-                ClientSecret = "yZgcBl5tts_diM_CHlERRTuZ",
+                //ClientId = "1076913514687-l4pfivi8annt8suev3mrvlploi9lk9mv.apps.googleusercontent.com",
+                //ClientSecret = "yZgcBl5tts_diM_CHlERRTuZ",
+                //#Deploy
                 Provider = new GoogleAuthProvider()
             };
             app.UseGoogleAuthentication(GoogleAuthOptions);

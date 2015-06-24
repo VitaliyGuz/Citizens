@@ -89,7 +89,7 @@ namespace Citizens.Models
         public DbSet<OrderLine> OrderLines { get; set; }
 
         public DbSet<UserRole> UserRoles { get; set; }
-        public DbSet<Role> Roles { get; set; }
+        public new DbSet<Role> Roles { get; set; }
         public DbSet<IdentityUserClaim> Claims { get; set; }
         public DbSet<IdentityUserLogin> Logins { get; set; }
 

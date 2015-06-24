@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Security.Claims;
@@ -7,20 +8,17 @@ using System.Security.Cryptography;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
-using System.Web.Http.ModelBinding;
-using Citizens;
+using Citizens.Models;
+using Citizens.Results;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using Microsoft.Owin.Security.Cookies;
 using Microsoft.Owin.Security.OAuth;
-using Citizens.Models;
-using Citizens.Providers;
-using Citizens.Results;
 using Newtonsoft.Json.Linq;
 
-namespace Citizens.Controllers
+namespace Citizens.Controllers.API
 {
     [Authorize]
     [RoutePrefix("api/Account")]
@@ -105,16 +103,10 @@ namespace Citizens.Controllers
                 return null;
             }
 
-            List<UserLoginInfoViewModel> logins = new List<UserLoginInfoViewModel>();
-
-            foreach (IdentityUserLogin linkedAccount in user.Logins)
+            List<UserLoginInfoViewModel> logins = user.Logins.Select(linkedAccount => new UserLoginInfoViewModel
             {
-                logins.Add(new UserLoginInfoViewModel
-                {
-                    LoginProvider = linkedAccount.LoginProvider,
-                    ProviderKey = linkedAccount.ProviderKey
-                });
-            }
+                LoginProvider = linkedAccount.LoginProvider, ProviderKey = linkedAccount.ProviderKey
+            }).ToList();
 
             if (user.PasswordHash != null)
             {
@@ -251,9 +243,6 @@ namespace Citizens.Controllers
         [Route("ExternalLogin", Name = "ExternalLogin")]
         public async Task<IHttpActionResult> GetExternalLogin(string provider, string error = null)
         {
-
-            string redirectUriStr;
-
             Uri redirectUri;
 
             var redirectUriString = GetQueryString(Request, "redirect_uri");
@@ -288,7 +277,7 @@ namespace Citizens.Controllers
 
             bool hasRegistered = user != null;
 
-            redirectUriStr = redirectUri.AbsoluteUri;
+            var redirectUriStr = redirectUri.AbsoluteUri;
 
             redirectUriStr = string.Format("{0}#external_access_token={1}&provider={2}&haslocalaccount={3}&external_user_name={4}",
                                             redirectUriStr,
@@ -330,7 +319,6 @@ namespace Citizens.Controllers
         public IEnumerable<ExternalLoginViewModel> GetExternalLogins(string returnUrl, bool generateState = false)
         {
             IEnumerable<AuthenticationDescription> descriptions = Authentication.GetExternalAuthenticationTypes();
-            List<ExternalLoginViewModel> logins = new List<ExternalLoginViewModel>();
 
             string state;
 
@@ -344,25 +332,14 @@ namespace Citizens.Controllers
                 state = null;
             }
 
-            foreach (AuthenticationDescription description in descriptions)
+            return descriptions.Select(description => new ExternalLoginViewModel
             {
-                ExternalLoginViewModel login = new ExternalLoginViewModel
+                Name = description.Caption, Url = Url.Route("ExternalLogin", new
                 {
-                    Name = description.Caption,
-                    Url = Url.Route("ExternalLogin", new
-                    {
-                        provider = description.AuthenticationType,
-                        response_type = "token",
-                        client_id = IdentityConfig.PublicClientId,
-                        redirect_uri = new Uri(Request.RequestUri, returnUrl).AbsoluteUri,
-                        state = state
-                    }),
-                    State = state
-                };
-                logins.Add(login);
-            }
-
-            return logins;
+                    provider = description.AuthenticationType, response_type = "token", client_id = IdentityConfig.PublicClientId, redirect_uri = new Uri(Request.RequestUri, returnUrl).AbsoluteUri, state
+                }),
+                State = state
+            }).ToList();
         }
 
         // POST api/Account/Register
@@ -489,7 +466,7 @@ namespace Citizens.Controllers
                                         new JProperty("userName", userName),
                                         new JProperty("access_token", accessToken),
                                         new JProperty("token_type", "bearer"),
-                                        new JProperty("expires_in", tokenExpiration.TotalSeconds.ToString()),
+                                        new JProperty("expires_in", tokenExpiration.TotalSeconds.ToString(CultureInfo.InvariantCulture)),
                                         new JProperty(".issued", ticket.Properties.IssuedUtc.ToString()),
                                         new JProperty(".expires", ticket.Properties.ExpiresUtc.ToString())
         );
@@ -687,7 +664,7 @@ namespace Citizens.Controllers
 
             if (queryStrings == null) return null;
 
-            var match = queryStrings.FirstOrDefault(keyValue => string.Compare(keyValue.Key, key, true) == 0);
+            var match = queryStrings.FirstOrDefault(keyValue => String.Compare(keyValue.Key, key, StringComparison.OrdinalIgnoreCase) == 0);
 
             if (string.IsNullOrEmpty(match.Value)) return null;
 

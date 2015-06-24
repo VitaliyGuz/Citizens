@@ -137,10 +137,6 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Web.Extensions" />
-    <Reference Include="System.Web.Helpers, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.Helpers.dll</HintPath>
-    </Reference>
     <Reference Include="System.Web.Http, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Microsoft.AspNet.WebApi.Core.5.2.3\lib\net45\System.Web.Http.dll</HintPath>
@@ -156,29 +152,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Microsoft.AspNet.WebApi.WebHost.5.2.0-rc\lib\net45\System.Web.Http.WebHost.dll</HintPath>
     </Reference>
-    <Reference Include="System.Web.Mvc, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Microsoft.AspNet.Mvc.5.2.3\lib\net45\System.Web.Mvc.dll</HintPath>
-    </Reference>
     <Reference Include="System.Web.OData, Version=5.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.OData.5.6.0-beta1\lib\net45\System.Web.OData.dll</HintPath>
       <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Web.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Microsoft.AspNet.Razor.3.2.3\lib\net45\System.Web.Razor.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Web.WebPages, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.WebPages.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Web.WebPages.Deployment, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.WebPages.Deployment.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Web.WebPages.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.WebPages.Razor.dll</HintPath>
     </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Drawing" />
@@ -189,105 +165,24 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.Web.Infrastructure">
-      <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Content\bootstrap-theme.css" />
-    <Content Include="Content\bootstrap-theme.min.css" />
-    <Content Include="Content\bootstrap.css" />
-    <Content Include="Content\bootstrap.min.css" />
-    <Content Include="Content\css\font-awesome.css" />
-    <Content Include="Content\css\font-awesome.min.css" />
-    <Content Include="Content\css\scrollable-table.css" />
-    <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
-    <Content Include="fonts\glyphicons-halflings-regular.woff2" />
-    <Content Include="fonts\glyphicons-halflings-regular.woff" />
-    <Content Include="fonts\glyphicons-halflings-regular.ttf" />
-    <Content Include="fonts\glyphicons-halflings-regular.eot" />
-    <Content Include="Content\bootstrap-theme.css.map" />
-    <Content Include="Content\bootstrap.css.map" />
-    <Content Include="Content\fonts\fontawesome-webfont.woff2" />
-    <Content Include="Content\fonts\fontawesome-webfont.woff" />
-    <Content Include="Content\fonts\fontawesome-webfont.ttf" />
-    <Content Include="Content\fonts\fontawesome-webfont.svg" />
-    <Content Include="Content\fonts\fontawesome-webfont.eot" />
-    <Content Include="Content\fonts\FontAwesome.otf" />
     <None Include="Properties\PublishProfiles\ApiCitizens - FTP.pubxml" />
     <None Include="Properties\PublishProfiles\ApiCitizens - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\Citizens2015 - FTP %282%29.pubxml" />
     <None Include="Properties\PublishProfiles\Citizens2015 - FTP.pubxml" />
     <None Include="Properties\PublishProfiles\Citizens2015 - Web Deploy %282%29.pubxml" />
-    <None Include="Properties\PublishProfiles\Citizens2015 - Web Deploy.pubxml" />
-    <Content Include="Scripts\angular-cookies.js" />
-    <Content Include="Scripts\angular-cookies.min.js" />
-    <Content Include="Scripts\angular-mocks.js" />
-    <Content Include="Scripts\angular-resource.js" />
-    <Content Include="Scripts\angular-resource.min.js" />
-    <Content Include="Scripts\angular-resource.min.js.map" />
-    <Content Include="Scripts\angular-route.js" />
-    <Content Include="Scripts\angular-route.min.js" />
-    <Content Include="Scripts\angular-route.min.js.map" />
-    <Content Include="Scripts\angular-cookies.min.js.map" />
-    <None Include="Scripts\angular.intellisense.js" />
-    <Content Include="Scripts\angular.js" />
-    <Content Include="Scripts\angular.min.js" />
-    <Content Include="Scripts\angular.min.js.map" />
-    <None Include="Scripts\jquery-2.1.3.intellisense.js" />
-    <Content Include="Icon.png" />
-    <Content Include="Scripts\AngularUtils\directives\angular-scrollable-table.min.js" />
-    <Content Include="Scripts\AngularUtils\directives\dirPagination.js" />
-    <Content Include="Scripts\AngularUtils\directives\dirPagination.tpl.html" />
-    <Content Include="Scripts\AngularUtils\directives\ui-bootstrap-custom-tpls-0.12.1.min.js" />
-    <Content Include="Scripts\Citizen\appCitizen.js" />
-    <Content Include="Scripts\bootstrap.js" />
-    <Content Include="Scripts\bootstrap.min.js" />
-    <Content Include="Scripts\Citizen\authComplete.js" />
-    <Content Include="Scripts\Citizen\Controllers\authControllers.js" />
-    <Content Include="Scripts\Citizen\Controllers\cityControllers.js" />
-    <Content Include="Scripts\Citizen\Controllers\peopleControllers.js" />
-    <Content Include="Scripts\Citizen\Controllers\precinctControllers.js" />
-    <Content Include="Scripts\Citizen\Controllers\regionPartControllers.js" />
-    <Content Include="Scripts\Citizen\Controllers\streetControllers.js" />
-    <Content Include="Scripts\Citizen\Controllers\userControllers.js" />
-    <Content Include="Scripts\Citizen\Services\authServices.js" />
-    <Content Include="Scripts\Citizen\Services\cityServices.js" />
-    <Content Include="Scripts\Citizen\Services\peopleServices.js" />
-    <Content Include="Scripts\Citizen\Services\precinctServises.js" />
-    <Content Include="Scripts\Citizen\Services\regionPartServices.js" />
-    <Content Include="Scripts\Citizen\Services\userServices.js" />
-    <Content Include="Scripts\Citizen\Controllers\streetTypesControllers.js" />
-    <Content Include="Scripts\jquery-2.1.3.js" />
-    <Content Include="Scripts\jquery-2.1.3.min.js" />
-    <Content Include="Scripts\knockout-3.3.0.debug.js" />
-    <Content Include="Scripts\knockout-3.3.0.js" />
-    <Content Include="Scripts\npm.js" />
-    <None Include="Scripts\_references.js" />
-    <Content Include="Scripts\Citizen\Services\streetServices.js" />
+    <None Include="Properties\PublishProfiles\Poltava2015 - Web Deploy.pubxml">
+      <SubType>Designer</SubType>
+    </None>
+    <Content Include="Index.html" />
     <Content Include="Scripts\Sql\createPersonType.sql" />
-    <Content Include="AuthComplete.html" />
     <Content Include="Scripts\Sql\insertAddresses.sql" />
-    <Content Include="Views\Home\import.cshtml" />
-    <Content Include="Views\Account\Login.cshtml" />
-    <Content Include="Views\Account\Register.cshtml" />
-    <Content Include="Views\Admin\Index.cshtml" />
-    <Content Include="Views\Admin\Users.cshtml" />
-    <Content Include="Views\People\EditPerson.cshtml" />
-    <Content Include="Views\City\Index.cshtml" />
-    <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>
-    <Content Include="Scripts\jquery-2.1.3.min.map" />
-    <Content Include="Views\Shared\_Layout.cshtml" />
-    <Content Include="Views\_ViewStart.cshtml" />
-    <Content Include="Views\Prep\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\IdentityConfig.cs" />
-    <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\API\CitiesController.cs" />
     <Compile Include="Controllers\API\CityRegionPartsController.cs" />
@@ -301,21 +196,14 @@
     <Compile Include="Controllers\API\PropertyKeysController.cs" />
     <Compile Include="Controllers\API\PropertyValuesController.cs" />
     <Compile Include="Controllers\API\RolesController.cs" />
-    <Compile Include="Controllers\MVC\AdminController.cs" />
     <Compile Include="Controllers\API\RegionPartsController.cs" />
     <Compile Include="Controllers\API\RegionsController.cs" />
     <Compile Include="Controllers\API\StreetsController.cs" />
     <Compile Include="Controllers\API\StreetTypesController.cs" />
     <Compile Include="Controllers\API\UserPrecinctsController.cs" />
     <Compile Include="Controllers\API\UsersController.cs" />
-    <Compile Include="Controllers\MVC\AccountController.cs" />
+    <Compile Include="Controllers\API\AccountController.cs" />
     <Compile Include="Controllers\API\NamesController.cs" />
-    <Compile Include="Controllers\MVC\CityController.cs" />
-    <Compile Include="Controllers\MVC\HomeController.cs" />
-    <Compile Include="Controllers\MVC\PeopleController.cs" />
-    <Compile Include="Controllers\MVC\PrecinctsController.cs" />
-    <Compile Include="Controllers\MVC\PrepController.cs" />
-    <Compile Include="Controllers\MVC\RegionPartController.cs" />
     <Compile Include="Extensions\PathAndSlashEscapeODataPathHandler.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
@@ -357,32 +245,9 @@
     <Compile Include="Results\ChallengeResult.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Views\web.config" />
     <Content Include="packages.config">
       <SubType>Designer</SubType>
     </Content>
-    <Content Include="Views\Prep\Orders.cshtml" />
-    <Content Include="Views\Home\StreetTypes.cshtml" />
-    <Content Include="Views\Home\Upload.cshtml" />
-    <Content Include="Views\Shared\_LoginPartial.cshtml" />
-    <Content Include="Views\Home\Streets.cshtml" />
-    <Content Include="Views\Shared\Alert.cshtml" />
-    <Content Include="Views\Shared\Pagination.cshtml" />
-    <Content Include="Views\Precincts\Index.cshtml" />
-    <Content Include="Views\People\ListPeople.cshtml" />
-    <Content Include="Views\RegionPart\Index.cshtml" />
-    <Content Include="Views\People\Index.cshtml" />
-    <Content Include="Views\City\ListCities.cshtml" />
-    <Content Include="Views\City\EditCity.cshtml" />
-    <Content Include="Views\Account\_ExternalLoginsListPartial.cshtml" />
-    <Content Include="Views\Account\ExternalLoginConfirmation.cshtml" />
-    <Content Include="Views\Account\ExternalLoginFailure.cshtml" />
-    <Content Include="Views\Shared\Lockout.cshtml" />
-    <Content Include="Views\Account\SendCode.cshtml" />
-    <Content Include="Views\Shared\Error.cshtml" />
-    <Content Include="Views\Account\VerifyCode.cshtml" />
-    <Content Include="Views\Precincts\EditPrecinct.cshtml" />
-    <Content Include="Views\Precincts\ListPrecincts.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -391,9 +256,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="App_Data\" />
-    <Folder Include="Static\" />
-    <Folder Include="Uploads\" />
+    <Folder Include="Controllers\MVC\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
