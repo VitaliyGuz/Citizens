@@ -4,7 +4,7 @@ var app = angular.module("citizens",
     [
         'ngRoute', 'ngCookies',
         'angularUtils.directives.dirPagination','ui.bootstrap',
-        'peopleControllers', 'streetControllers', 'regionPartControllers', 'cityControllers', 'authControllers','precinctControllers'
+        'peopleControllers', 'streetControllers', 'regionPartControllers', 'cityControllers', 'authControllers','precinctControllers','uploadXlsModule'
     ]
 );
 
