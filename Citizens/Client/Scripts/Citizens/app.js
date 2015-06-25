@@ -8,7 +8,7 @@ var app = angular.module("citizens",
     ]
 );
 
-app.config(['$routeProvider', 'paginationTemplateProvider', function ($routeProvider, paginationTemplateProvider) {
+app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider', function ($routeProvider, $locationProvider, paginationTemplateProvider) {
     
     var routeListCities = {
             templateUrl: 'Views/ListCities.html',
@@ -122,6 +122,9 @@ app.config(['$routeProvider', 'paginationTemplateProvider', function ($routeProv
         otherwise({
             redirectTo: '/'
         });
+
+    $locationProvider.html5Mode(true);
+
     
     paginationTemplateProvider.setPath('Scripts/AngularUtils/directives/dirPagination.tpl.html');
 }]);
