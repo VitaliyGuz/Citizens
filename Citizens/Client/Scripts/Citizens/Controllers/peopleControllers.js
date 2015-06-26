@@ -1,6 +1,6 @@
 ﻿'use strict';
 
-var peopleControllers = angular.module('peopleControllers', ['peopleServices', 'streetServices', 'cityServices', 'precinctServices', 'ui.bootstrap']);
+var peopleControllers = angular.module('peopleControllers', ['peopleServices', 'streetServices', 'cityServices', 'precinctServices']);
 
 peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$location', 'peopleData', 'config', 'serviceUtil', 'genlPeopleData', 'filterSettings',
     function ($rootScope, $scope, $location, peopleData, config, serviceUtil, genlPeopleData, filterSettings) {
@@ -212,6 +212,7 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
                 return val.Id === checkVal.Id;
             });
         };
+
     }]);
 
 peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$location', 'peopleData', 'serviceUtil', 'precinctData', 'precinctAddressesData', 'additionalPropsData', 'propertyTypes', 'config', 'resolvedData', 'genlPeopleData',
@@ -234,7 +235,7 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
             if (resolvedData.person) {
                 addMode = false;
                 $scope.person = resolvedData.person;
-                $scope.dateOfBirth = new Date(resolvedData.person.DateOfBirth);
+                $scope.dateOfBirth = serviceUtil.formatDate(new Date(resolvedData.person.DateOfBirth),'dd.MM.yyyy');
                 $scope.person.PrecinctId = resolvedData.person.PrecinctAddress.PrecinctId;
                 $scope.additionalProperties = getPropertyPairs(resolvedData.person.PersonAdditionalProperties);
             }
@@ -337,6 +338,11 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
             serviceUtil.copyProperties(person, precinctAddress);
             precinctAddress.PrecinctId = $scope.person.PrecinctId;
             person.DateOfBirth = serviceUtil.formatDate($scope.dateOfBirth, DATE_FORMAT);
+            if (!person.DateOfBirth) {
+                $scope.saving = false;
+                $rootScope.errorMsg = "Не вірно вказана дата народження";
+                return;
+            }
             if (!person.Apartment) person.Apartment = null;
 
             precinctData.getByIdNotExpand({ id: precinctAddress.PrecinctId }, function () {
@@ -436,7 +442,8 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
                     $scope.isPrimitive = false;
                 }
                 if (typeStr === 'date') {
-                    $scope.selected.property.Value = new Date(prop.value.desc);
+                    //$scope.selected.property.Value = new Date(prop.value.desc);
+                    $scope.selected.property.Value = serviceUtil.formatDate(new Date(prop.value.desc),'dd.MM.yyyy');
                 } else if (typeStr === 'number') {
                     $scope.selected.property.Value = Number(prop.value.desc);
                 } else {
@@ -499,6 +506,11 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
             }
             if (propType.html === 'date') {
                 newPropValue = serviceUtil.formatDate(newPropValue, DATE_FORMAT);
+                if (!newPropValue) {
+                    $scope.savingProp = false;
+                    $rootScope.errorMsg = "Не вірно вказана дата";
+                    return;
+                }
             }            
             newProperty[propType.field] = newPropValue;
             if ($scope.addPropertyMode) {
@@ -530,4 +542,15 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
                 $scope.additionalProperties.splice(ind, 1);
             }, errorHandler);
         };
-}]);
+
+        $scope.showPrimitiveInput = function () {
+            if ($scope.selected.property.Key) {
+                if ($scope.selected.property.Key.PropertyType.html === "date") {
+                    return false;
+                }
+                return $scope.isPrimitive;
+            } else {
+                return false;
+            }
+        };
+    }]);

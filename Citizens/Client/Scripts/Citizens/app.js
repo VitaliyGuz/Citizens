@@ -181,6 +181,15 @@ app.factory("serviceUtil", ["$filter", '$routeParams', '$location', function ($f
             return { cityId: address.CityId, streetId: address.StreetId, house: address.House };
         },
         formatDate: function (date, pattern) {
+            if (angular.isString(date)) {
+                var regex = /^(\d{2}).(\d{2}).(\d{4})/,
+                maches = regex.exec(date);
+                if (maches) {
+                    return $filter("date")(new Date(maches[3], maches[2]-1, maches[1]), pattern);
+                } else {
+                    return undefined;
+                }
+            }
             return $filter("date")(date, pattern);
         },
         getRouteParam: function (paramName) {
@@ -385,3 +394,119 @@ app.factory('filterSettings', [function () {
         }
     }
 }]);
+
+app.directive('datepicker', function () {
+    function parseDate(dateText) {
+        var arrDate, day, month, year;
+        if (!dateText) return undefined;
+        //var pattern = /^\d{2}.\d{2}.\d{4}/,
+        //maches = pattern.exec(dateText);
+        //if (!maches) return undefined;
+        arrDate = dateText.split('.');
+        if (arrDate && arrDate.length === 3) {
+            day = arrDate[0], month = arrDate[1], year = arrDate[2];
+            return new Date(year, month - 1, day);
+        }
+        return undefined;
+    }
+    return {
+        restrict: 'A',
+        require: 'ngModel',
+        link: function (scope, element, attrs, ngModelCtrl) {
+            $(function () {
+                element.datepicker({
+                    //dateFormat: 'dd.mm.yy',
+                    changeMonth: true,
+                    changeYear: true,
+                    regional: "ua",
+                    onSelect: function (date) {
+                        scope.$apply(function () {
+                            ngModelCtrl.$setViewValue(parseDate(date));
+                        });
+                    }
+                });
+            });
+        }
+    }
+});
+
+//app.directive('myDatepicker', ['serviceUtil',function (serviceUtil) {
+//    return {      
+//        require: 'ngModel',
+//        replace: true,
+//        scope: {
+//            ngModel: '='
+//        },
+//        templateUrl:'/Scripts/AngularUtils/directives/datepicker.tpl.html' ,
+//        link: function (scope, element, attrs, ngModelCtrl) {
+//            $('.datepicker').datepicker({
+//                language: "uk"
+//            });
+//            $('.datepicer-icon').on('click', '.btn', function (e) {
+//                $(e.delegateTarget).find('.datepicker').focus();
+//            });
+            
+//            //ngModelCtrl.$formatters.push(function (modelValue) {
+//            //    console.log("modelValue = " + modelValue);
+//            //    var d = new Date(modelValue);
+//            //    if (angular.isDate(d)) {
+//            //        //return serviceUtil.formatDate(d,'dd.MM.yyyy');
+//            //        return d;
+//            //    }
+//            //    return '';
+//            //});
+
+//            //ngModelCtrl.$parsers.push(function (viewValue) {
+//            //    console.log('viewValue = ' + viewValue);
+//            //    //if (angular.isDate(viewValue)) return viewValue;
+//            //    if (angular.isString(viewValue)) {
+//            //        var arrDate, day, month, year;
+//            //        arrDate = viewValue.split('.');
+//            //        if (arrDate && arrDate.length === 3) {
+//            //            day = arrDate[0], month = arrDate[1], year = arrDate[2];
+//            //            return new Date(year, month - 1, day);
+//            //        }
+//            //    }
+//            //    return null;
+//            //});
+
+//            //scope.$watch('model', function () {
+//            //    //var arrDate, mDate, day, month, year;
+//            //    //if (scope.model) arrDate = scope.model.split('.');
+//            //    //if (arrDate && arrDate.length === 3) {
+//            //    //    day = arrDate[0], month = arrDate[1], year = arrDate[2];
+//            //    //    mDate = new Date(year, month - 1, day);
+//            //    //}
+//            //    ngModelCtrl.$setViewValue(scope.model);
+//            //    //ngModelCtrl.$render();
+//            //});
+
+//            //ngModelCtrl.$render = function () {
+//            //    if (!scope.model) {
+//            //        scope.model = ngModelCtrl.$viewValue;
+//            //    }
+
+//            //};
+//        }
+//    }
+//}]);
+
+//app.directive('datetimez', function () {
+//    return {
+//        restrict: 'A',
+//        require: 'ngModel',
+//        link: function (scope, element, attrs, ngModelCtrl) {
+//            element.datetimepicker({
+//                dateFormat: 'dd-MM-yyyy',
+//                language: 'ru',
+//                pickTime: false,
+//                startDate: '01-11-2013',      // set a minimum date
+//                endDate: '01-11-2030'          // set a maximum date
+//            }).on('changeDate', function (e) {
+//                ngModelCtrl.$setViewValue(e.date);
+//                scope.$apply();
+//                console.log(e);
+//            });
+//        }
+//    };
+//});

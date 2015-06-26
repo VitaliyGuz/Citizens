@@ -8,17 +8,27 @@
     <link href="Content/css/bootstrap.min.css" rel="stylesheet"/>
     <!--<link href="~/Content/bootstrap-theme.css" rel="stylesheet"/>-->
     <link href="Content/css/font-awesome.min.css" rel="stylesheet"/>
-    <link href="Content/css/scrollable-table.css" rel="stylesheet"/>
+    <link href="Content/css/scrollable-table.css" rel="stylesheet" />
+    <link href="Content/css/jquery-ui.min.css" rel="stylesheet" />
+    <!--<link href="Content/css/jquery-ui.theme.min.css" rel="stylesheet"/>
+    <link href="Content/css/bootstrap-datetimepicker.min.css" rel="stylesheet"/>
+    <link href="Content/css/ng-bs3-datepicker.css" rel="stylesheet" />-->
     <script src="Scripts/AngularJS/angular.min.js"></script>
     <script src="Scripts/AngularJS/angular-resource.min.js"></script>
     <script src="Scripts/AngularJS/angular-route.min.js"></script>
     <script src="Scripts/AngularJS/angular-cookies.min.js"></script>
     <script src="Scripts/AngularJS/angular-file-model.js"></script>
+    <script src="Scripts/Bootstrap/bootstrap.min.js"></script>
     <script src="Scripts/Citizens/app.js"></script>
     <script src="Scripts/AngularUtils/directives/dirPagination.js"></script>
     <script src="Scripts/AngularUtils/directives/ui-bootstrap-typeahead-tpls-0.12.1.min.js"></script>
     <script src="Scripts/AngularUtils/directives/angular-scrollable-table.min.js"></script>
-    <!-- SERVICES -->
+    <script src="Scripts/AngularUtils/directives/jquery-ui.min.js"></script>
+    <script src="Scripts/AngularUtils/directives/datepicker-uk.js"></script>
+    <!--<script src="Scripts/AngularUtils/directives/moment-with-locales.min.js"></script>
+    <script src="Scripts/AngularUtils/directives/bootstrap-datetimepicker.min.js"></script>
+    <script src="Scripts/AngularUtils/directives/ng-bs3-datepicker.min.js"></script>-->
+    <!-- SERVICES  -->
     <script src="Scripts/Citizens/Services/peopleServices.js"></script>
     <script src="Scripts/Citizens/Services/streetServices.js"></script>
     <script src="Scripts/Citizens/Services/cityServices.js"></script>
@@ -26,7 +36,7 @@
     <script src="Scripts/Citizens/Services/regionPartServices.js"></script>
     <script src="Scripts/Citizens/Services/userServices.js"></script>
     <script src="Scripts/Citizens/Services/authServices.js"></script>
-    <!-- CONTROLLERS -->
+    <!-- CONTROLLERS  -->
     <script src="Scripts/Citizens/Controllers/peopleControllers.js"></script>
     <script src="Scripts/Citizens/Controllers/authControllers.js"></script>
     <script src="Scripts/Citizens/Controllers/cityControllers.js"></script>
@@ -46,16 +56,15 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a href="/people" class="navbar-brand">Фізичні особи</a>
             </div>
             <div class="navbar-collapse collapse">
-                <ul class="nav navbar-nav">
+                <ul class="nav navbar-nav" ng-if="UserInfo">
+                    <li><a href="/people" class="navbar-brand">Фізичні особи</a></li>
                     <li><a href="/precincts">Дільниці</a></li>
                     <li><a href="/streets">Вулиці</a></li>
                     <li><a href="/cities">Населені пункти</a></li>
                     <li><a href="/region-parts">Райони</a></li>
                     <li><a href="/uploadXls">Завантажити Excel</a></li>
-                    <!--<li><a >Завантаження з Excel</a></li>-->
                 </ul>
                 <ul class="list-inline navbar-text navbar-right">
                     <li ng-if="UserInfo">{{UserInfo.UserName}}</li>

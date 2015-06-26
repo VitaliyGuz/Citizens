@@ -1,6 +1,6 @@
 ﻿'use strict';
 
-var precinctControllers = angular.module('precinctControllers', ['precinctServices', 'scrollable-table', 'ui.bootstrap']);
+var precinctControllers = angular.module('precinctControllers', ['precinctServices', 'scrollable-table']);
 
 precinctControllers.controller("listPrecinctsController", ['$location', '$rootScope', '$scope', 'config', 'serviceUtil', 'precinctData', 'genlPrecinctsData', 'filterSettings',
     function ($location, $rootScope, $scope, config, serviceUtil, precinctData, genlPrecinctsData, filterSettings) {
