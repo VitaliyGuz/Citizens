@@ -5,11 +5,12 @@ angular.module("precinctServices", ['ngResource'])
         var urlOdata = config.baseUrl + '/odata/Precincts',
             baseExpand = "?$expand=City($expand=CityType,RegionPart),Street($expand=StreetType),District,RegionPart",
             addressesExpand = "PrecinctAddresses($expand=City($expand=CityType)),PrecinctAddresses($expand=Street($expand=StreetType))",
+            districtsExpand = 'DistrictPrecincts($expand = District($expand = DistrictType))',
             params = { id: "@id" };
         return $resource('', {},
 		{
 		    'getAll': { method: 'GET', url: urlOdata + baseExpand + "&$orderby=Id asc", cache: false },
-		    'getById': { method: 'GET', params: params, url: urlOdata + "(:id)" + baseExpand + "," + addressesExpand },
+		    'getById': { method: 'GET', params: params, url: urlOdata + "(:id)" + baseExpand + "," + addressesExpand + "," + districtsExpand },
 		    'getByIdNotExpand': { method: 'GET', params: params, url: urlOdata + "(:id)" },
 		    'saveAll': { method: 'PATCH', url: urlOdata },
 		    'update': { method: 'PUT', params: params, url: urlOdata + "(:id)" },
@@ -19,13 +20,22 @@ angular.module("precinctServices", ['ngResource'])
     }])
     .factory("districtData", ['$resource', 'config', function ($resource, config) {
         var urlOdata = config.baseUrl + '/odata/Districts',
-            params = { id: "@id" };
+            urlDistrictTypes = config.baseUrl + '/odata/DistrictTypes',
+            urlDistrictPrecincts = config.baseUrl + '/odata/DistrictPrecincts',
+            params = { id: "@id" },
+            paramKey = { districtId: "@districtId", precinctId: "@precinctId"},
+            key = "(DistrictId=:districtId,PrecinctId=:precinctId)";
         return $resource('', {},
         {
             'query': { method: 'GET', params: params, url: urlOdata + "(:id)", cache: true },
             'update': { method: 'PUT', params: params, url: urlOdata + "(:id)" },
             'save': { method: "POST", url: urlOdata },
-            'remove': { method: 'DELETE', params: params, url: urlOdata + "(:id)" }
+            'remove': { method: 'DELETE', params: params, url: urlOdata + "(:id)" },
+            'getTypes': { method: 'GET', url: urlDistrictTypes, cache: true },
+            'getPrecinctDistricts': { method: 'GET', params: paramKey, url: urlDistrictPrecincts + key },
+            'updatePrecinctDistrict': { method: 'PUT', params: paramKey, url: urlDistrictPrecincts + key },
+            'savePrecinctDistrict': { method: "POST", url: urlDistrictPrecincts },
+            'removePrecinctDistrict': { method: 'DELETE', params: paramKey, url: urlDistrictPrecincts + key }
         });
     }])
     .factory("precinctAddressesData", ['$resource', 'config', function ($resource, config) {
@@ -70,6 +80,18 @@ angular.module("precinctServices", ['ngResource'])
             return deferred.promise;
         };
 
+        function getDistrictTypesPromise() {
+            var deferred = $q.defer();
+            districtData.getTypes(function (res) {
+                deferred.resolve(res.value);
+            }, function (err) {
+                var errMsg = 'Типи округів не завантажено';
+                if (err && err.length > 0) errMsg = errMsg + ' (' + serviceUtil.getErrorMessage(err) + ')';
+                deferred.reject(errMsg);
+            });
+            return deferred.promise;
+        };
+
         return {
             asyncLoad: function (routeParam) {
                 var resolved = {}, deferred = $q.defer();
@@ -81,6 +103,9 @@ angular.module("precinctServices", ['ngResource'])
                     return getDistrictsPromise();
                 }, errorHandler).then(function (districts) {
                     resolved.districts = districts;
+                    return getDistrictTypesPromise();
+                }, errorHandler).then(function (types) {
+                    resolved.districtTypes = types;
                     deferred.resolve(resolved);
                 }, errorHandler);
 

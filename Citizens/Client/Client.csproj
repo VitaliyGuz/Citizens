@@ -169,6 +169,7 @@
     <Content Include="Scripts\AngularUtils\directives\moment-with-locales.min.js" />
     <Content Include="Scripts\AngularUtils\directives\ng-bs3-datepicker.js" />
     <Content Include="Scripts\AngularUtils\directives\ng-bs3-datepicker.min.js" />
+    <Content Include="Scripts\AngularUtils\directives\ui-bootstrap-typeahead-tabs-tpls-0.13.0.min.js" />
     <Content Include="Scripts\AngularUtils\directives\ui-bootstrap-typeahead-tpls-0.12.1.min.js" />
     <Content Include="Scripts\Bootstrap\bootstrap.js" />
     <Content Include="Scripts\Bootstrap\bootstrap.min.js" />

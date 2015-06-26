@@ -35,3 +35,4 @@
 /// <reference path="angularutils/directives/moment-with-locales.min.js" />
 /// <reference path="angularutils/directives/ng-bs3-datepicker.min.js" />
 /// <reference path="angularutils/directives/datepicker-uk.js" />
+/// <reference path="angularutils/directives/ui-bootstrap-typeahead-tabs-tpls-0.13.0.min.js" />
