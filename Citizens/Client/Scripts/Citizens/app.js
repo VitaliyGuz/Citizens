@@ -61,8 +61,8 @@ app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider',
             templateUrl: 'Views/ListPrecincts.html',
             controller: 'listPrecinctsController',
             resolve: {
-                genlData: function(genlData) { genlData.asyncLoad() },
-                loadedPrecincts: function (asyncLoadlPrecincts) { return asyncLoadlPrecincts() }
+                genlData: function(genlData) { genlData.asyncLoad() }
+                //loadedPrecincts: function (asyncLoadPrecincts) { return asyncLoadPrecincts() }
             }
         },
         routeEditPecinct = {

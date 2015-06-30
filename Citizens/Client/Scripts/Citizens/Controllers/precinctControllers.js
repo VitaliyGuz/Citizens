@@ -2,19 +2,19 @@
 
 var precinctControllers = angular.module('precinctControllers', ['precinctServices', 'scrollable-table']);
 
-precinctControllers.controller("listPrecinctsController", ['$location', '$rootScope', '$scope', 'config', 'serviceUtil', 'precinctData', 'loadedPrecincts', 'filterSettings',
-    function ($location, $rootScope, $scope, config, serviceUtil, precinctData, loadedPrecincts, filterSettings) {
+precinctControllers.controller("listPrecinctsController", ['$location', '$rootScope', '$scope', 'config', 'serviceUtil', 'precinctData', 'filterSettings',
+    function ($location, $rootScope, $scope, config, serviceUtil, precinctData, filterSettings) {
         
         $rootScope.pageTitle = 'Дільниці';
         $scope.tableHead = ['№', 'Дільниця', 'Адреса', 'Дії'];
 
-        $scope.options = [
-              { value: "Id", desc: "Дільниця"},
-              { value: "City.Name", desc: "Населений пункт" },
-              { value: "Street.Name", desc: "Вулиця" },
-              { value: "House", desc: "Буд" }
-              //{ value: "District.Id", desc: "Округ" }
-        ];
+        //$scope.options = [
+        //      { value: "Id", desc: "Дільниця"},
+        //      { value: "City.Name", desc: "Населений пункт" },
+        //      { value: "Street.Name", desc: "Вулиця" },
+        //      { value: "House", desc: "Буд" }
+        //      //{ value: "District.Id", desc: "Округ" }
+        //];
         
         var precinctsQuery = filterSettings.get('precincts');
         if (precinctsQuery) {
@@ -25,29 +25,50 @@ precinctControllers.controller("listPrecinctsController", ['$location', '$rootSc
             $scope.queryBy = 'Id';
         }
 
-        $scope.onFilterQueryChange = function (isChangeValue) {
-            if (isChangeValue) {
-                filterSettings.set('precincts', $scope.query);
-            } else {
-                $scope.query = {};
-                filterSettings.remove('precincts');
-            }
-        };
-
         $rootScope.editInd = -1;
         $scope.currentPage = serviceUtil.getRouteParam("currPage") || 1;
         $scope.pageSize = config.pageSize;
+        $scope.totalItems = 0;
         $scope.pageSizeTS = config.pageSizeTabularSection;
-        $scope.precincts = loadedPrecincts;
+        //$scope.precincts = loadedPrecincts;
+        
+        setPrecinctsOnPage(($scope.currentPage - 1) * config.pageSize);
 
-        $scope.getIndex = function (precinct) {
-            return $scope.precincts.indexOf(precinct);
+        function setPrecinctsOnPage(skipItems) {
+            $scope.loadingPrecincts = true;
+            var filterString = getFilterString();
+            if (!skipItems) skipItems = 0;
+            if (filterString) {
+                precinctData.getFilteredPageItems({ skip: skipItems, filter: filterString }, successHandler, errorHandler);
+            } else {
+                precinctData.getPageItems({ skip: skipItems }, successHandler, errorHandler);
+            }
+        };
+
+        function getFilterString() {
+            var filterStr, filterPattern = "indexof(cast(:fieldName,Edm.String), ':val') ge 0";
+            if ($scope.query && $scope.query[$scope.queryBy]) {
+                filterStr = filterPattern.replace(':fieldName', $scope.queryBy).replace(':val', $scope.query[$scope.queryBy]);
+            }
+            //console.log(filterStr);
+            return filterStr;
+        };
+
+        function successHandler(data) {
+            $rootScope.errorMsg = '';
+            $scope.loadingPrecincts = false;
+            $scope.precincts = data.value;
+            $scope.totalItems = data['@odata.count'];
+        };
+
+        $scope.getIndex = function (ind) {
+            return ($scope.currentPage - 1) * config.pageSize + ind + 1;
         };
 
         $scope.edit = function (precinct) {
             $rootScope.errorMsg = '';
             $rootScope.editInd = $scope.getIndex(precinct);
-            $location.path('/precinct/' +precinct.Id);
+            $location.path('/precinct/' + precinct.Id + '/' + $scope.currentPage);
         };
 
         $scope.delete = function (precinct) {
@@ -56,25 +77,32 @@ precinctControllers.controller("listPrecinctsController", ['$location', '$rootSc
                 if (!ok) return;
             }
             $rootScope.errorMsg = '';
-            precinctData.remove({ id: precinct.Id },
-                function () {
-                    $scope.precincts.splice($scope.getIndex(precinct), 1);
-                }, errorHandler);
+            precinctData.remove({ id: precinct.Id },function () {
+                setPrecinctsOnPage(($scope.currentPage - 1) * config.pageSize);
+            }, errorHandler);
         };        
 
         $scope.addNewPrecinct = function () {
             $rootScope.errorMsg = '';
-            $location.path('/precinct/new');
+            $location.path('/precinct/new/' + $scope.currentPage);
         };
 
         function errorHandler(e) {
-            $rootScope.errorMsg = '';
+            $scope.loadingPrecincts = false;
             $rootScope.errorMsg = serviceUtil.getErrorMessage(e);
         };
 
         $scope.onPageChange = function (newPageNumber) {
-            //todo: change location path without reload page
-            //$location.path("/precincts/" + newPageNumber);
+            $location.path("/precincts/" + newPageNumber);
+        };
+
+        $scope.applyFilter = function () {
+            if ($scope.query[$scope.queryBy]) {
+                filterSettings.set('precincts', $scope.query);
+            } else {
+                filterSettings.remove('precincts');
+            }
+            setPrecinctsOnPage();
         };
     }]);
 
@@ -298,33 +326,25 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
                 "DistrictId": $scope.selected.precinctDistrict.DistrictId,
                 "PrecinctId": $scope.precinct.Id
             };
-            
-            if ($scope.addDistrictMode) {
-                savePrecinctDistrictData(precinctDistrict);
-            } else {
-                districtData.removePrecinctDistrict({ districtId: oldValue.DistrictId, precinctId: oldValue.PrecinctId },
-                    function () {
-                        savePrecinctDistrictData(precinctDistrict, ind);
-                    }, errorHandler);
-            }
 
-            function savePrecinctDistrictData(data, i) {
-                districtData.savePrecinctDistrict(data,
-                    function (saved) {
-                        districtData.getPrecinctDistricts({ districtId: saved.DistrictId, precinctId: saved.PrecinctId }, function (res) {
+            districtData.savePrecinctDistrict(precinctDistrict, function (saved) {
+                districtData.getPrecinctDistricts({ districtId: saved.DistrictId, precinctId: saved.PrecinctId }, function (res) {
+                    if ($scope.addDistrictMode) {
+                        $scope.savingPrecinctDistrict = false;
+                        $scope.precinctDistricts.push(res);
+                    } else {
+                        districtData.removePrecinctDistrict({ districtId: oldValue.DistrictId, precinctId: oldValue.PrecinctId }, function() {
                             $scope.savingPrecinctDistrict = false;
-                            if (i == undefined) {
-                                $scope.precinctDistricts.push(res);
-                            } else {
-                                $scope.precinctDistricts[i] = res;
-                            }
-                            $scope.precinctDistricts.sort(function (a, b) {
-                                return a.DistrictId - b.DistrictId;
-                            });
-                            $scope.resetPrecinctDistrict();
+                            $scope.precinctDistricts[ind] = res;
                         }, errorHandler);
-                    }, errorHandler);
-            };
+                    }
+                    $scope.precinctDistricts.sort(function (a, b) {
+                        return a.DistrictId - b.DistrictId;
+                    });
+                    $scope.resetPrecinctDistrict();
+                }, errorHandler);
+            }, errorHandler);
+
         };
 
         $scope.addNewAddress = function () {
@@ -390,7 +410,7 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
         $scope.backToList = function () {
             $rootScope.errorMsg = '';
             var currPage = serviceUtil.getRouteParam("currPage") || 1;
-            $location.path('/precincts');
+            $location.path('/precincts/' + currPage);
         };
 
         $scope.autoCompleteAddresses = function () {

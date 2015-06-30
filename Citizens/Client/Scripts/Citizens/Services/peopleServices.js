@@ -84,7 +84,7 @@ angular.module("peopleServices", ['ngResource', 'precinctServices']).
 
         function getPrecinctsPromise() {
             var deferred = $q.defer();
-            precinctData.getAll(function (res) {
+            precinctData.getAllNotExpand(function (res) {
                 deferred.resolve(res.value);
             }, function (err) {
                 var errMsg = 'Дільниці не завантажено';

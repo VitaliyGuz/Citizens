@@ -1,16 +1,25 @@
-﻿<!--<h3>Дільниці</h3>
-<h5 ng-show="loading">Завантаження... <i class="fa fa-refresh fa-spin"></i></h5>-->
+﻿<!--<h3>Дільниці</h3>-->
+<h5 ng-show="loadingPrecincts">Завантаження... <i class="fa fa-refresh fa-spin"></i></h5>
 <hr>
 <div class="row form-inline">
-    <div class="col-md-6">
-        <label>Пошук:</label>
-        <input ng-model="query[queryBy]" type="text" ng-change="onFilterQueryChange(true)" class="form-control" placeholder="Введіть слово">
-        <label>по:</label>
-        <select ng-model="queryBy" ng-change="onFilterQueryChange(false)" class="form-control">
-            <option ng-repeat="option in options" value="{{option.value}}">{{option.desc}}</option>
-        </select>
+    <div class="col-md-7">
+        <form ng-submit="applyFilter()">
+            <label>Пошук:</label>
+            <input ng-model="query[queryBy]" type="text" class="form-control" placeholder="Введіть слово">
+            <label>по:</label>
+            <select ng-model="queryBy" ng-change="query = {}" class="form-control">
+                <!--<option ng-repeat="option in options" value="{{option.value}}">{{option.desc}}</option>-->
+                <option value="Id">Дільниця</option>
+                <option value="City/Name">Населений пункт</option>
+                <option value="Street/Name">Вулиця</option>
+                <option value="House">Буд</option>
+            </select>
+            <button type="submit" class="btn btn-success" title="Виконати пошук">
+                <span class="glyphicon glyphicon-search"></span>
+            </button>
+        </form>
     </div>
-    <div class="col-md-6">
+    <div class="col-md-5">
         <button ng-click="addNewPrecinct()" class="btn btn-success">
             <span class="glyphicon glyphicon-plus"></span> Створити нову дільницю
         </button>
@@ -24,8 +33,8 @@
         </tr>
     </thead>
     <tbody>
-        <tr dir-paginate="precinct in precincts | filterByFirstChar: query | itemsPerPage: pageSize" current-page="currentPage" pagination-id="precinctsPagination">
-            <td>{{ getIndex(precinct) + 1 }}</td>
+        <tr dir-paginate="precinct in precincts | itemsPerPage: pageSize" current-page="currentPage" total-items="totalItems" pagination-id="precinctsPagination">
+            <td>{{ getIndex($index) }}</td>
             <td>{{ precinct.Id }}</td>
             <td>{{ precinct.Street.StreetType.Name }}{{ precinct.Street.Name }}, {{ precinct.House }}, {{ precinct.City.CityType.Name }}{{ precinct.City.Name }}, {{ precinct.City.RegionPart.Name }} р-н.</td>
             <!--<td>{{ precinct.District.Id }}</td>-->

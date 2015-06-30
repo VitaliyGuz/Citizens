@@ -6,13 +6,17 @@ angular.module("precinctServices", ['ngResource'])
             baseExpand = "?$expand=City($expand=CityType,RegionPart),Street($expand=StreetType),RegionPart",
             addressesExpand = "PrecinctAddresses($expand=City($expand=CityType)),PrecinctAddresses($expand=Street($expand=StreetType))",
             districtsExpand = 'DistrictPrecincts($expand = District($expand = DistrictType))',
+            order = "&$orderby=Id asc",
+            paginate = "&$count=true&$skip=:skip&$top=" + config.pageSize,
             params = { id: "@id" };
         return $resource('', {},
 		{
-		    'getAll': { method: 'GET', url: urlOdata + baseExpand + "&$orderby=Id asc", cache: false },
+		    'getAll': { method: 'GET', url: urlOdata + baseExpand + order, cache: false },
 		    'getById': { method: 'GET', params: params, url: urlOdata + "(:id)" + baseExpand + "," + addressesExpand + "," + districtsExpand },
 		    'getByIdNotExpand': { method: 'GET', params: params, url: urlOdata + "(:id)" },
 		    'getAllNotExpand': { method: 'GET', url: urlOdata + "?$orderby=Id asc", cache: false },
+		    'getPageItems': { method: 'GET', params: { skip: "@skip" }, url: urlOdata + baseExpand + paginate + order },
+		    'getFilteredPageItems': { method: 'GET', params: { skip: "@skip", filter: '@filter' }, url: urlOdata + baseExpand + "&$filter=:filter" + paginate + order },
 		    'saveAll': { method: 'PATCH', url: urlOdata },
 		    'update': { method: 'PUT', params: params, url: urlOdata + "(:id)" },
 			'save': { method: "POST", url: urlOdata },
@@ -118,7 +122,7 @@ angular.module("precinctServices", ['ngResource'])
             }
         };
     }])
-    .service('asyncLoadlPrecincts', ['$q', 'precinctData', 'serviceUtil', function ($q, precinctData, serviceUtil) {
+    .service('asyncLoadPrecincts', ['$q', 'precinctData', 'serviceUtil', function ($q, precinctData, serviceUtil) {
         function getPrecinctsPromise() {
             var deferred = $q.defer();
             precinctData.getAll(function (res) {
