@@ -38,6 +38,7 @@ angular.module("precinctServices", ['ngResource'])
             'remove': { method: 'DELETE', params: params, url: urlOdata + "(:id)" },
             'getTypes': { method: 'GET', url: urlDistrictTypes, cache: true },
             'getPrecinctDistricts': { method: 'GET', params: paramKey, url: urlDistrictPrecincts + key + '?$expand=District($expand=DistrictType)' },
+            'updatePrecinctDistrict': { method: 'PUT', params: paramKey, url: urlDistrictPrecincts + key },
             'savePrecinctDistrict': { method: "POST", url: urlDistrictPrecincts },
             'removePrecinctDistrict': { method: 'DELETE', params: paramKey, url: urlDistrictPrecincts + key }
         });

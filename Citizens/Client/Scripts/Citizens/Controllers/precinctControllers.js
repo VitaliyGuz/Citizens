@@ -327,23 +327,26 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
                 "PrecinctId": $scope.precinct.Id
             };
 
-            districtData.savePrecinctDistrict(precinctDistrict, function (saved) {
-                districtData.getPrecinctDistricts({ districtId: saved.DistrictId, precinctId: saved.PrecinctId }, function (res) {
+            if ($scope.addDistrictMode) {
+                districtData.savePrecinctDistrict(precinctDistrict, successHandler, errorHandler);
+            } else {
+                districtData.updatePrecinctDistrict({ districtId: oldValue.DistrictId, precinctId: oldValue.PrecinctId }, precinctDistrict, successHandler, errorHandler);
+            }
+
+            function successHandler(data) {
+                districtData.getPrecinctDistricts({ districtId: data.DistrictId, precinctId: data.PrecinctId }, function(res) {
+                    $scope.savingPrecinctDistrict = false;
                     if ($scope.addDistrictMode) {
-                        $scope.savingPrecinctDistrict = false;
                         $scope.precinctDistricts.push(res);
                     } else {
-                        districtData.removePrecinctDistrict({ districtId: oldValue.DistrictId, precinctId: oldValue.PrecinctId }, function() {
-                            $scope.savingPrecinctDistrict = false;
-                            $scope.precinctDistricts[ind] = res;
-                        }, errorHandler);
+                        $scope.precinctDistricts[ind] = res;
                     }
                     $scope.precinctDistricts.sort(function (a, b) {
                         return a.DistrictId - b.DistrictId;
                     });
                     $scope.resetPrecinctDistrict();
-                }, errorHandler);
-            }, errorHandler);
+                }, errorHandler);       
+            };
 
         };
 
