@@ -28,7 +28,7 @@
             <td>{{ getIndex(precinct) + 1 }}</td>
             <td>{{ precinct.Id }}</td>
             <td>{{ precinct.Street.StreetType.Name }}{{ precinct.Street.Name }}, {{ precinct.House }}, {{ precinct.City.CityType.Name }}{{ precinct.City.Name }}, {{ precinct.City.RegionPart.Name }} р-н.</td>
-            <td>{{ precinct.District.Id }}</td>
+            <!--<td>{{ precinct.District.Id }}</td>-->
             <td>
                 <button class="btn btn-xs" ng-click="edit(precinct)" title="Редагувати">
                     <span class="glyphicon glyphicon-edit"></span>
