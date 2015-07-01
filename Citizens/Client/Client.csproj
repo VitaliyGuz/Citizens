@@ -159,7 +159,10 @@
     <None Include="Properties\PublishProfiles\citizens2015 - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\poltava2015Client - FTP.pubxml" />
     <None Include="Properties\PublishProfiles\poltava2015Client - Web Deploy.pubxml" />
-    <None Include="Scripts\jQuery\jquery-1.9.1.intellisense.js" />
+    <None Include="Scripts\jQuery\jquery-2.1.4.intellisense.js" />
+    <Content Include="Scripts\jQuery\jquery-2.1.4.js" />
+    <Content Include="Scripts\jQuery\jquery-2.1.4.min.js" />
+    <Content Include="Scripts\jQuery\jquery-2.1.4.min.map" />
     <Content Include="Scripts\AngularUtils\directives\angular-scrollable-table.min.js" />
     <Content Include="Scripts\AngularUtils\directives\bootstrap-datetimepicker.min.js" />
     <Content Include="Scripts\AngularUtils\directives\datepicker-uk.js" />
@@ -190,9 +193,6 @@
     <Content Include="Scripts\Citizens\Services\regionPartServices.js" />
     <Content Include="Scripts\Citizens\Services\streetServices.js" />
     <Content Include="Scripts\Citizens\Services\userServices.js" />
-    <Content Include="Scripts\jQuery\jquery-1.9.1.js" />
-    <Content Include="Scripts\jQuery\jquery-1.9.1.min.js" />
-    <Content Include="Scripts\jQuery\jquery-1.9.1.min.map" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
