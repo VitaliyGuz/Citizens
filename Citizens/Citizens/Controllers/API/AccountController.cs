@@ -436,21 +436,36 @@ namespace Citizens.Controllers.API
             }
 
             //generate access token response
-            var accessTokenResponse = GenerateLocalAccessTokenResponse(user.UserName);
+            var accessTokenResponse = await GenerateLocalAccessTokenResponse(user.UserName);
 
             return Ok(accessTokenResponse);
 
         }
 
-        private JObject GenerateLocalAccessTokenResponse(string userName)
+        [HttpGet]
+        [Route("RefreshToken")]
+        public async Task<IHttpActionResult> RefreshToken()
+        {
+             
+            //generate access token response
+            Task<string> userName = new Task<string>(() => User.Identity.GetUserName());            
+            userName.Start();
+            var accessTokenResponse = await GenerateLocalAccessTokenResponse(await userName);
+            return Ok(accessTokenResponse);
+
+        }
+
+        private async Task<JObject> GenerateLocalAccessTokenResponse(string userName)
         {
 
-            var tokenExpiration = TimeSpan.FromDays(1);
+            var tokenExpiration = TimeSpan.FromMinutes(15);
 
-            ClaimsIdentity identity = new ClaimsIdentity(OAuthDefaults.AuthenticationType);
+            ApplicationUser user = await UserManager.FindByNameAsync(userName);
 
-            identity.AddClaim(new Claim(ClaimTypes.Name, userName));
-            identity.AddClaim(new Claim("role", "user"));
+            ClaimsIdentity identity = await user.GenerateUserIdentityAsync(UserManager,
+               OAuthDefaults.AuthenticationType);
+
+
 
             var props = new AuthenticationProperties()
             {
@@ -474,6 +489,12 @@ namespace Citizens.Controllers.API
             return tokenResponse;
         }
 
+        [OverrideAuthentication]
+        [HostAuthentication(DefaultAuthenticationTypes.ApplicationCookie)]
+        public IHttpActionResult Test()
+        {
+            return Ok();
+        }
 
 
         private async Task<ParsedExternalAccessToken> VerifyExternalAccessToken(string provider, string accessToken)

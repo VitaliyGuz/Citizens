@@ -10,8 +10,14 @@ namespace Citizens.Models
     public class District
     {
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
-        public int Id { get; set; }        
+        public int Id { get; set; }
+
+        public int? DistrictTypeId { get; set; }
+
+        public DistrictType DistrictType { get; set; }
 
         public ICollection<Precinct> Precincts { get; set; }
+
+        public ICollection<DistrictPrecinct> DistrictPrecincts { get; set; }
     }
 }

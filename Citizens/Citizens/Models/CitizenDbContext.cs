@@ -17,7 +17,7 @@ namespace Citizens.Models
     {
         public CitizenDbContext() : base("CitizensDb")
         {
-            Database.SetInitializer<CitizenDbContext>(new ProductDbInitializer());
+            Database.SetInitializer(new MigrateDatabaseToLatestVersion<CitizenDbContext, Migrations.Configuration>());
             Configuration.ProxyCreationEnabled = false;
 
         }
@@ -60,7 +60,11 @@ namespace Citizens.Models
 
         public DbSet<PersonAdditionalProperty> PersonAdditionalProperties { get; set; }
 
+        public DbSet<DistrictPrecinct> DistrictPrecincts { get; set; }
 
+        public DbSet<DistrictType> DistrictTypes { get; set; }
+
+        public DbSet<Election> Elections { get; set; }
 
 
         //protected override void OnModelCreating(DbModelBuilder modelBuilder)
@@ -82,11 +86,6 @@ namespace Citizens.Models
 
         
 
-
-
-        public DbSet<Product> Products { get; set; }
-        public DbSet<Order> Orders { get; set; }
-        public DbSet<OrderLine> OrderLines { get; set; }
 
         public DbSet<UserRole> UserRoles { get; set; }
         public new DbSet<Role> Roles { get; set; }

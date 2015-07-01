@@ -19,7 +19,13 @@ namespace Citizens.Models
         public StreetType StreetType { get; set; }
 
 		//[HttpBindNever]
-		//public ICollection<Person> Persons { get; set; }
+		public ICollection<Person> Persons { get; set; }
+
+        public ICollection<PrecinctAddress> PrecinctAddresses { get; set; }
+
+        public ICollection<Precinct> Precincts { get; set; }
+
+        public ICollection<PersonChangeHistory> PersonChangeHistory { get; set; }
 
     }
 }

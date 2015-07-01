@@ -52,7 +52,7 @@ namespace Citizens
             {
                 TokenEndpointPath = new PathString("/Token"),
                 Provider = new ApplicationOAuthProvider(PublicClientId),                
-                AccessTokenExpireTimeSpan = TimeSpan.FromDays(1),
+                AccessTokenExpireTimeSpan = TimeSpan.FromMinutes(15),
                 AllowInsecureHttp = true
             };
 

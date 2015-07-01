@@ -40,6 +40,10 @@ namespace Citizens.Models
 
         public string location_type { get; set; }
 
+        public ICollection<DistrictPrecinct> DistrictPrecincts { get; set; }
+
+        public ICollection<UserPrecinct> UserPrecincts { get; set; }
+
         
     }
 }

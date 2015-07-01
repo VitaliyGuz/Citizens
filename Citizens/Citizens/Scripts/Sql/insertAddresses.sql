@@ -1,6 +1,8 @@
 ﻿INSERT INTO dbo.PrecinctAddresses (CityId, StreetId, House, PrecinctId)  
 SELECT Distinct cityNames.Id, streetNames.Id, ExcelTable.House, 
-PrecinctId = case when precinctAddressesWholeStreet.PrecinctId is null then 531188 else precinctAddressesWholeStreet.PrecinctId end  
+PrecinctId = COALESCE(precinctAddressesWholeStreet.PrecinctId, precinctAddressesWholeCity.PrecinctId, 1)
+/*PrecinctId = isnull(precinctAddressesWholeStreet.PrecinctId, isnull(precinctAddressesWholeCity.PrecinctId, 1))
+case when precinctAddressesWholeStreet.PrecinctId is null then 531188 else precinctAddressesWholeStreet.PrecinctId end  */
 FROM @ExcelTable AS ExcelTable  
 Inner join dbo.Streets as streetNames  
 on ExcelTable.Street = streetNames.Name  
@@ -20,6 +22,10 @@ left join dbo.PrecinctAddresses as precinctAddressesWholeStreet
 on cityNames.Id = precinctAddressesWholeStreet.CityId  
 and streetNames.Id = precinctAddressesWholeStreet.StreetId  
 and precinctAddressesWholeStreet.House = ''  
+left join dbo.PrecinctAddresses as precinctAddressesWholeCity  
+on cityNames.Id = precinctAddressesWholeCity.CityId  
+and precinctAddressesWholeCity.StreetId  = 1
+and precinctAddressesWholeCity.House = ''  
 where precinctAddresses.CityId is null  
 
 INSERT INTO dbo.People (FirstName, LastName, MidleName, Gender, CityId, StreetId, House, Apartment)  

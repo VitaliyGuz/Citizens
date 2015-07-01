@@ -11,7 +11,7 @@ using System.Data;
 
 namespace Citizens.Models
 {
-    public class ProductDbInitializer : DropCreateDatabaseIfModelChanges<CitizenDbContext>
+    public class ProductDbInitializer : CreateDatabaseIfNotExists<CitizenDbContext>
     {
         protected override void Seed(CitizenDbContext context)
         {

@@ -28,6 +28,10 @@ namespace Citizens.Models
 
         public ICollection<Person> Persons { get; set; }
 
+        public ICollection<PersonChangeHistory> PersonChangeHistory { get; set; }
+
         public ICollection<CityRegionPart> CityRegionParts { get; set; }
+
+        public ICollection<PrecinctAddress> PrecinctAddresses { get; set; }
     }
 }

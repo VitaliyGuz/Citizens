@@ -15,6 +15,7 @@ namespace Citizens
         {
             HttpContext.Current.Response.AddHeader("Access-Control-Allow-Origin", "http://localhost:36561");// http://poltava2015client.azurewebsites.net http://localhost:36561 http://citizens2015.azurewebsites.net #Deploy
             HttpContext.Current.Response.AddHeader("Access-Control-Allow-Credentials", "true");
+            HttpContext.Current.Response.AddHeader("Arr-Disable-Session-Affinity", "True");
 
             if (HttpContext.Current.Request.HttpMethod == "OPTIONS")
             {

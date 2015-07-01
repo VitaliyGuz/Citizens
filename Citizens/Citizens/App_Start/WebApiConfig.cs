@@ -31,13 +31,16 @@ namespace Citizens
                 defaults: new { id = RouteParameter.Optional }
             );
 
-            //config.Filters.Add(new AuthorizeAttribute());            
+            config.Filters.Add(new AuthorizeAttribute());            
             // Web API configuration and services
             ODataConventionModelBuilder builder = new ODataConventionModelBuilder();
             builder.EntitySet<City>("Cities");
             builder.EntitySet<CityType>("CityTypes");
             builder.EntitySet<CityRegionPart>("CityRegionParts");
             builder.EntitySet<District>("Districts");
+            builder.EntitySet<DistrictPrecinct>("DistrictPrecincts");
+            builder.EntitySet<DistrictType>("DistrictTypes");
+            builder.EntitySet<Election>("Elections");
             builder.EntitySet<Person>("People");
             builder.EntitySet<Precinct>("Precincts");
             builder.EntitySet<PrecinctAddress>("PrecinctAddresses");
