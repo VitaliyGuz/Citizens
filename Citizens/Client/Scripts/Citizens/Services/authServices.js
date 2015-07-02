@@ -2,7 +2,7 @@
 
 var authServices = angular.module('authServices', []);
 
-authServices.service('Login', ['$http', 'Credentials', 'config', function ($http, Credentials, config) {
+authServices.service('Login', ['$http', 'Credentials', 'config', 'SuccessTokenHandler', function ($http, Credentials, config, SuccessTokenHandler) {
     return function (userName, password, callback) {
         var req = {
             method: 'POST',
@@ -12,9 +12,21 @@ authServices.service('Login', ['$http', 'Credentials', 'config', function ($http
         };
         Credentials.clear();
         $http(req).success(function (response) {
-            Credentials.set(response.token_type + ' ' + response.access_token, callback);
+            SuccessTokenHandler(response, callback);
         }).error(function (e) {
             callback({ success: false, error: e });
+        });
+    }
+}]);
+
+authServices.service('SuccessTokenHandler', ['GetUserInfo', 'Credentials', function (GetUserInfo, Credentials) {
+    return function (response, callback) {
+        var token = response.token_type + ' ' + response.access_token;
+        GetUserInfo(token).success(function (userInfo) {
+            Credentials.set(token, response.expires_in, userInfo);
+            if (callback) callback({ success: true });
+        }).error(function (e) {
+            if (callback) callback({ success: false, error: e });
         });
     }
 }]);
@@ -26,27 +38,27 @@ authServices.service('GetUserInfo', ['$http', 'config', function ($http, config)
     }
 ]);
 
-authServices.factory('Credentials', ['$rootScope', '$http', '$cookieStore', 'GetUserInfo', function ($rootScope, $http, $cookieStore, GetUserInfo) {
+authServices.factory('Credentials', ['$rootScope', '$cookies', function ($rootScope, $cookies) {
     return {
-        set: function (accessToken, callback) {
-            GetUserInfo(accessToken).success(function (userInfo) {
-                $rootScope.UserInfo = userInfo;
-                $http.defaults.headers.common['Authorization'] = accessToken;
-                $cookieStore.put('auth_data', { userInfo: userInfo, accessToken: accessToken });
-                callback({ success: true });
-            }).error(function (e) {
-                callback({ success: false, error: e });
-            });
+        set: function (accessToken, expiresin, userInfo) {
+            var expireDate = new Date();
+            expireDate.setSeconds(expireDate.getSeconds() + parseInt(expiresin));
+            $rootScope.UserInfo = userInfo;
+            //$http.defaults.headers.common['Authorization'] = accessToken;
+            $cookies.putObject('auth_data', { userInfo: userInfo, accessToken: accessToken, expireDate: expireDate }, { expires: expireDate });    
+        },
+        get: function() {
+            return $cookies.getObject('auth_data');
         },
         clear: function () {
             $rootScope.UserInfo = undefined;
-            $cookieStore.remove('auth_data');
-            $http.defaults.headers.common.Authorization = '';
+            $cookies.remove('auth_data');
+            //$http.defaults.headers.common.Authorization = '';
         }
     };
 }]);
 
-authServices.factory('ExternalLogin', ['$http', 'Credentials', 'config', function ($http, Credentials, config) {
+authServices.factory('ExternalLogin', ['$http', 'Credentials', 'config', 'SuccessTokenHandler', function ($http, Credentials, config, SuccessTokenHandler) {
     return {
         getProviderUrl: function (redirectUri, providerName, callback) {
             $http.get(config.baseUrl + '/api/Account/ExternalLogins?returnUrl=' + redirectUri + '&generateState=true')
@@ -69,7 +81,7 @@ authServices.factory('ExternalLogin', ['$http', 'Credentials', 'config', functio
             Credentials.clear();
             $http.get(config.baseUrl + '/api/Account/ObtainLocalAccessToken?provider=' + providerName + '&externalAccessToken=' + externalAccessToken)
                 .success(function (response) {
-                    Credentials.set(response.token_type + ' ' + response.access_token, callback);
+                    SuccessTokenHandler(response, callback);
                 }).error(function(e) {
                     callback({ success: false, error: e });
                 });
@@ -77,7 +89,7 @@ authServices.factory('ExternalLogin', ['$http', 'Credentials', 'config', functio
     }
 }]);
 
-authServices.service('Registration', ['$http', 'Login', 'Credentials', 'config', function ($http, Login, Credentials, config) {
+authServices.service('Registration', ['$http', 'Credentials', 'config', 'SuccessTokenHandler', function ($http, Credentials, config, SuccessTokenHandler) {
     this.internal = function (firstName, email, pass, confirmPass, callback) {
         var req = {
             method: 'POST',
@@ -96,10 +108,66 @@ authServices.service('Registration', ['$http', 'Login', 'Credentials', 'config',
     function register(request, callback) {
         Credentials.clear();
         $http(request).success(function (response) {
-            Credentials.set(response.token_type + ' ' + response.access_token, callback);
+            SuccessTokenHandler(response, callback);
         }).error(function (e) {
             callback({ success: false, error: e });
         });
     };
 
+}]);
+
+authServices.factory('authInterceptor', ['$q', '$location', '$rootScope', '$injector', 'Credentials', 'config', 'serviceUtil',function ($q, $location, $rootScope, $injector, Credentials, config, serviceUtil) {
+
+    var refreshingToken = false;
+
+    function checkAuthorization(status) {
+        if (status === 401) {
+            Credentials.clear();
+            var currentUrl = $location.path();
+            if (currentUrl) {
+                $location.path('/login').search('backUrl', currentUrl);
+            } else {
+                $location.path('/login');
+            }
+        }
+    };
+
+    return {
+        request: function (configReq) {
+            configReq.headers = configReq.headers || {};
+            var authData = Credentials.get(),
+                diff = 0; // difference between dates in sec                
+            if (authData && authData.accessToken) {
+                if (authData.expireDate) {
+                    var currDate = new Date(),
+                        expireDate = new Date(authData.expireDate);
+                    diff = Math.abs((expireDate.getTime() - currDate.getTime()) / 1000);
+                }
+                configReq.headers.Authorization = authData.accessToken;
+            }
+            if (diff <= 30 && !refreshingToken && authData) {
+                refreshingToken = true;
+                var $http = $injector.get('$http'); // cannot inject $http servise in interceptor provider
+                $http.get(config.baseUrl + '/api/Account/RefreshToken').success(function(resp) {
+                    refreshingToken = false;
+                    Credentials.set(resp.token_type + ' ' + resp.access_token, resp.expires_in, $rootScope.UserInfo);
+                }).error(function (e) {
+                    refreshingToken = false;
+                    $rootScope.errorMsg = 'Оновлення даних авторизації не відбулося';
+                    var errDetail = serviceUtil.getErrorMessage(e);
+                    if (errDetail) $rootScope.errorMsg = $rootScope.errorMsg + ' (' + errDetail + ')';
+                });
+                console.info('refresh token');
+            }
+            return configReq;
+        },
+        response: function (response) {
+            checkAuthorization(response.status);
+            return response || $q.when(response);
+        },
+        responseError: function (rejection) {
+            if (rejection && rejection.status) checkAuthorization(rejection.status);
+            return $q.reject(rejection);
+        }
+    };
 }]);

@@ -8,7 +8,7 @@ var app = angular.module("citizens",
     ]
 );
 
-app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider', function ($routeProvider, $locationProvider, paginationTemplateProvider) {
+app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider', '$httpProvider', function ($routeProvider, $locationProvider, paginationTemplateProvider, $httpProvider) {
     
     var routeListCities = {
             templateUrl: 'Views/ListCities.html',
@@ -106,10 +106,10 @@ app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider',
             templateUrl: 'Views/Login.html',
             controller: 'loginController'
         }).
-        when('/register', {
-            templateUrl: 'Views/Register.html',
-            controller: 'registerController'
-        }).
+        //when('/register', {
+        //    templateUrl: 'Views/Register.html',
+        //    controller: 'registerController'
+        //}).
         when('/logout', {
             resolve: {
                 logout: function ($location, Credentials) {
@@ -122,9 +122,8 @@ app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider',
             redirectTo: '/'
         });
 
+    $httpProvider.interceptors.push('authInterceptor');
     $locationProvider.html5Mode(true);
-
-    
     paginationTemplateProvider.setPath('Scripts/AngularUtils/directives/dirPagination.tpl.html');
 }]);
 
@@ -149,11 +148,6 @@ app.factory("serviceUtil", ["$filter", '$routeParams', '$location', function ($f
     return {
         getErrorMessage: function (error) {
             var errMsg;
-            if (error.status === 401) {
-                $location.path('/login');
-                //return "Недостатньо прав для здійснення операції";
-                return '';
-            }
             if (error.data !== "") {
                 if (angular.isObject(error.data)) {
                     errMsg = error.data.error.message;
@@ -204,11 +198,11 @@ app.factory("serviceUtil", ["$filter", '$routeParams', '$location', function ($f
     };
 }]);
 
-app.run(["$rootScope", "$timeout", '$location', '$cookieStore', '$http', function ($rootScope, $timeout, $location, $cookieStore, $http) {
-    var authData = $cookieStore.get('auth_data') || undefined;
+app.run(["$rootScope", "$timeout", '$location', 'Credentials', function ($rootScope, $timeout, $location, Credentials) {
+    var authData = Credentials.get();
     if (authData) {
         $rootScope.UserInfo = authData.userInfo;
-        $http.defaults.headers.common['Authorization'] = authData.accessToken;
+        //$http.defaults.headers.common['Authorization'] = authData.accessToken;
     }
 
     $rootScope.$watch("successMsg", function (newValue) {
