@@ -72,8 +72,9 @@ angular.module("peopleServices", ['ngResource', 'precinctServices']).
                 peopleData.getById({ id: routeParam }, function (res) {
                     deferred.resolve(res);
                 }, function (err) {
-                    var errMsg = 'Фізичну особу не знайдено';
-                    if (err && err.length > 0) errMsg = errMsg + ' (' + serviceUtil.getErrorMessage(err) + ')';
+                    var errMsg = 'Фізичну особу не знайдено',
+                        errDetail = serviceUtil.getErrorMessage(err);
+                    if (errDetail) errMsg = errMsg + ' (' + errDetail + ')';
                     deferred.reject(errMsg);
                 });
             } else {
@@ -87,8 +88,9 @@ angular.module("peopleServices", ['ngResource', 'precinctServices']).
             precinctData.getAllNotExpand(function (res) {
                 deferred.resolve(res.value);
             }, function (err) {
-                var errMsg = 'Дільниці не завантажено';
-                if (err && err.length > 0) errMsg = errMsg + ' (' + serviceUtil.getErrorMessage(err) + ')';
+                var errMsg = 'Дільниці не завантажено',
+                    errDetail = serviceUtil.getErrorMessage(err);
+                if (errDetail) errMsg = errMsg + ' (' + errDetail + ')';
                 deferred.reject(errMsg);
             });
             return deferred.promise;
@@ -119,8 +121,9 @@ angular.module("peopleServices", ['ngResource', 'precinctServices']).
             additionalPropsData[method](function (res) {
                 deferred.resolve(res.value);
             }, function (err) {
-                var errMsg = 'Додаткові характеристики не завантажено';
-                if (err && err.length > 0) errMsg = errMsg + ' (' + serviceUtil.getErrorMessage(err) + ')';
+                var errMsg = 'Додаткові характеристики не завантажено',
+                    errDetail = serviceUtil.getErrorMessage(err);
+                if (errDetail) errMsg = errMsg + ' (' + errDetail + ')';
                 deferred.reject(errMsg);
             });
             

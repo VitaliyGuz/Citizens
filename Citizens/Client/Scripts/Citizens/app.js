@@ -148,7 +148,7 @@ app.factory("serviceUtil", ["$filter", '$routeParams', '$location', function ($f
     return {
         getErrorMessage: function (error) {
             var errMsg;
-            if (error.data !== "") {
+            if (error && error.data !== "") {
                 if (angular.isObject(error.data)) {
                     errMsg = error.data.error.message;
                 } else {
@@ -175,6 +175,7 @@ app.factory("serviceUtil", ["$filter", '$routeParams', '$location', function ($f
         },
         formatDate: function (date, pattern) {
             if (angular.isString(date)) {
+                // todo: replace regex to global object (used also in datepicker directive)
                 var regex = /^(\d{2}).(\d{2}).(\d{4})/,
                 maches = regex.exec(date);
                 if (maches) {

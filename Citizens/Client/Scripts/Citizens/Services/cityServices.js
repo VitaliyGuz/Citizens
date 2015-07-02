@@ -49,7 +49,10 @@ angular.module("cityServices", ['ngResource', 'regionPartServices']).
                 cityData.getById({ id: routeParam }, function (res) {
                     deferred.resolve(res);
                 }, function (err) {
-                    deferred.reject('Населений пункт не знайдено (' + serviceUtil.getErrorMessage(err) + ')');
+                    var errMsg = 'Населений пункт не знайдено',
+                        errDetail = serviceUtil.getErrorMessage(err);
+                    if (errDetail) errMsg = errMsg + ' (' + errDetail + ')';
+                    deferred.reject(errMsg);
                 });
             } else {
                 deferred.resolve();
@@ -62,7 +65,10 @@ angular.module("cityServices", ['ngResource', 'regionPartServices']).
             cityTypesData.query(function (res) {
                 deferred.resolve(res.value);
             }, function (err) {
-                deferred.reject('Типи населених пунктів не завантажено (' + serviceUtil.getErrorMessage(err) + ')');
+                var errMsg = 'Типи населених пунктів не завантажено',
+                    errDetail = serviceUtil.getErrorMessage(err);
+                if (errDetail) errMsg = errMsg + ' (' + errDetail + ')';
+                deferred.reject(errMsg);
             });
             return deferred.promise;
         };
@@ -72,7 +78,10 @@ angular.module("cityServices", ['ngResource', 'regionPartServices']).
             regionPartData.getAllByType({ type: type.val }, function (res) {
                 deferred.resolve(res.value);
             }, function (err) {
-                deferred.reject("Райони з типом '" + type.desc + "' не завантажено (" + serviceUtil.getErrorMessage(err) + ")");
+                var errMsg = "Райони з типом '" + type.desc + "' не завантажено",
+                    errDetail = serviceUtil.getErrorMessage(err);
+                if (errDetail) errMsg = errMsg + ' (' + errDetail + ')';
+                deferred.reject(errMsg);
             });
             return deferred.promise;
         };
