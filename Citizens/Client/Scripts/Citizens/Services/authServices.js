@@ -157,7 +157,7 @@ authServices.factory('authInterceptor', ['$q', '$location', '$rootScope', '$inje
                     var errDetail = serviceUtil.getErrorMessage(e);
                     if (errDetail) $rootScope.errorMsg = $rootScope.errorMsg + ' (' + errDetail + ')';
                 });
-                console.info('refresh token');
+                //console.info('refresh token');
             }
             return configReq;
         },
