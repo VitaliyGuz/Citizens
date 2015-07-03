@@ -192,7 +192,7 @@
         </table>
         <script type="text/ng-template" id="displayDistrict">
             <td>{{ $index + 1 }}</td>
-            <td>{{precinctDistrict.DistrictId}}</td>
+            <td>{{precinctDistrict.District.Number}}</td>
             <td>{{precinctDistrict.District.DistrictType.Name}}</td>
             <td>
                 <button class="btn btn-xs" ng-click="editPrecinctDistrict(precinctDistrict)" title="Редагувати">
@@ -206,7 +206,7 @@
         <script type="text/ng-template" id="editDistrict">
             <td>{{ $index + 1 }}</td>
             <td>
-                <select class="form-control" ng-options="d.Id as d.Id + ' (' + d.DistrictType.Name + ')' for d in districts"
+                <select class="form-control" ng-options="d.Id as d.Number + ' (' + d.DistrictType.Name + ')' for d in districts"
                         ng-model="selected.precinctDistrict.DistrictId">
                     <option value='' disabled>-Вибрати-</option>
                 </select>
