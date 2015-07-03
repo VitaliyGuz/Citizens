@@ -237,6 +237,7 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
                 $scope.person = resolvedData.person;
                 $scope.dateOfBirth = serviceUtil.formatDate(new Date(resolvedData.person.DateOfBirth),'dd.MM.yyyy');
                 $scope.person.PrecinctId = resolvedData.person.PrecinctAddress.PrecinctId;
+                $scope.person.Precinct = resolvedData.person.PrecinctAddress.Precinct;
                 $scope.additionalProperties = getPropertyPairs(resolvedData.person.PersonAdditionalProperties);
             }
             $scope.precincts = resolvedData.precincts;
@@ -406,6 +407,7 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
         };
 
         $scope.onSelectPrecinctNumber = function ($item, $model, $label) {
+            $scope.person.Precinct = $item;
             $scope.person.PrecinctId = $model;
         };
 

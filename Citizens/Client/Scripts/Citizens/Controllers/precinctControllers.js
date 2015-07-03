@@ -9,7 +9,7 @@ precinctControllers.controller("listPrecinctsController", ['$location', '$rootSc
         $scope.tableHead = ['№', 'Дільниця', 'Адреса', 'Дії'];
 
         //$scope.options = [
-        //      { value: "Id", desc: "Дільниця"},
+        //      { value: "Number", desc: "Дільниця"},
         //      { value: "City.Name", desc: "Населений пункт" },
         //      { value: "Street.Name", desc: "Вулиця" },
         //      { value: "House", desc: "Буд" }
@@ -22,7 +22,7 @@ precinctControllers.controller("listPrecinctsController", ['$location', '$rootSc
             $scope.queryBy = Object.keys(precinctsQuery)[0];
         } else {
             $scope.query = {};
-            $scope.queryBy = 'Id';
+            $scope.queryBy = 'Number';
         }
 
         $rootScope.editInd = -1;
@@ -89,6 +89,7 @@ precinctControllers.controller("listPrecinctsController", ['$location', '$rootSc
 
         function errorHandler(e) {
             $scope.loadingPrecincts = false;
+            e.description = 'Дільниці не завантажено';
             $rootScope.errorMsg = serviceUtil.getErrorMessage(e);
         };
 
@@ -129,7 +130,7 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
         if (resolvedData.precinct) {
             $scope.addMode = false;
             $scope.precinct = resolvedData.precinct;
-            $scope.precinct.Number = resolvedData.precinct.Id;
+            //$scope.precinct.Number = resolvedData.precinct.Id;
             $scope.precinctAddresses = resolvedData.precinct.PrecinctAddresses;
             $scope.autocomplete.CityId = $scope.precinct.City.Id;
             $scope.autocomplete.City = $scope.precinct.City;
@@ -212,6 +213,7 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
             $scope.saving = true;
             var precinct = {
                 "Id": 0,
+                "Number": 0,
                 "CityId": 0,
                 "StreetId": 0,
                 "House": '',
@@ -221,7 +223,7 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
 
             serviceUtil.copyProperties($scope.precinct, precinct);
             if ($scope.addMode) {
-                precinct.Id = $scope.precinct.Number;
+                //precinct.Id = $scope.precinct.Number;
                 precinctData.save(precinct, function (newItem) {
                     successHandler({ id: newItem.Id });
                 }, errorHandler);
@@ -237,7 +239,7 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
                         $scope.addMode = false;
                         $scope.precincts.push(res);
                         $scope.precinct = res;
-                        $scope.precinct.Number = res.Id;
+                        //$scope.precinct.Number = res.Id;
                         $rootScope.successMsg = 'Дільницю успішно створено!';
                     } else {
                         $scope.precincts[$rootScope.editInd] = res;
@@ -249,7 +251,7 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
         };
 
         function comparePrecinct(p1, p2) {
-            return p1.Id - p2.Id;
+            return p1.Number - p2.Number;
         };
 
         $scope.saveAddress = function (oldValue, ind) {
@@ -520,24 +522,7 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
                 }
             };
 
-            if (addresses) {
-                //addresses.sort(function (a1, a2) {
-                //    var compCity, compStreet, compTypeStreet;
-                //    compCity = serviceUtil.compareByName(a1.City, a2.City);
-                //    compStreet = serviceUtil.compareByName(a1.Street, a2.Street);
-                //    compTypeStreet = serviceUtil.compareByName(a1.Street.StreetType, a2.Street.StreetType);
-                //    if (compCity === 0) {
-                //        if (compStreet === 0) {
-                //            return compTypeStreet;
-                //        } else {
-                //            return compStreet;
-                //        }
-                //    } else {
-                //        return compCity;
-                //    }
-                //});
-                addresses.sort(compareAddresses);
-            }
+            if (addresses) addresses.sort(compareAddresses);
         };
 
         $scope.onSelectStreet = function ($item, $model, $label, model) {

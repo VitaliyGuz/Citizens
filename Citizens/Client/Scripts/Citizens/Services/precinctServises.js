@@ -6,7 +6,7 @@ angular.module("precinctServices", ['ngResource'])
             baseExpand = "?$expand=City($expand=CityType,RegionPart),Street($expand=StreetType),RegionPart",
             addressesExpand = "PrecinctAddresses($expand=City($expand=CityType)),PrecinctAddresses($expand=Street($expand=StreetType))",
             districtsExpand = 'DistrictPrecincts($expand = District($expand = DistrictType))',
-            order = "&$orderby=Id asc",
+            order = "&$orderby=Number asc",
             paginate = "&$count=true&$skip=:skip&$top=" + config.pageSize,
             params = { id: "@id" };
         return $resource('', {},
@@ -14,7 +14,7 @@ angular.module("precinctServices", ['ngResource'])
 		    'getAll': { method: 'GET', url: urlOdata + baseExpand + order, cache: false },
 		    'getById': { method: 'GET', params: params, url: urlOdata + "(:id)" + baseExpand + "," + addressesExpand + "," + districtsExpand },
 		    'getByIdNotExpand': { method: 'GET', params: params, url: urlOdata + "(:id)" },
-		    'getAllNotExpand': { method: 'GET', url: urlOdata + "?$orderby=Id asc", cache: false },
+		    'getAllNotExpand': { method: 'GET', url: urlOdata + "?$orderby=Number asc", cache: false },
 		    'getPageItems': { method: 'GET', params: { skip: "@skip" }, url: urlOdata + baseExpand + paginate + order },
 		    'getFilteredPageItems': { method: 'GET', params: { skip: "@skip", filter: '@filter' }, url: urlOdata + baseExpand + "&$filter=:filter" + paginate + order },
 		    'saveAll': { method: 'PATCH', url: urlOdata },

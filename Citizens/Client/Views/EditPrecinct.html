@@ -14,7 +14,7 @@
     <div class="container row form-horizontal">
         <div class="form-group col-lg-2">
             <label>Дільниця</label>
-            <input ng-model="precinct.Number" type="text" class="form-control" ng-disabled="!addMode" required>
+            <input ng-model="precinct.Number" type="text" class="form-control" required>
         </div>
         <div class="form-group col-lg-4">
             <label>Населений пункт</label>
@@ -136,7 +136,7 @@
             <td>{{address.House}}</td>
             <td>
                 <input type="text" ng-change="selected.newPrecinctId=0" typeahead-on-select="onSelectPrecinctNumber($item, $model, $label)" ng-model="selected.newPrecinct"
-                       typeahead="p.Id as p.Id for p in precincts | filter: {Id:$viewValue} | orderByStartsWith:{Id:$viewValue} | limitTo:10" class="form-control">
+                       typeahead="p.Id as p.Number for p in precincts | filter: {Number:$viewValue} | orderByStartsWith:{Number:$viewValue} | limitTo:10" class="form-control">
             </td>
             <td>
                 <button ng-click="saveChangesPrecinct(address,$index)" class="btn btn-sm btn-success" title="Зберегти зміни">

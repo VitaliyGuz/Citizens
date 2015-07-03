@@ -4,7 +4,7 @@ angular.module("peopleServices", ['ngResource', 'precinctServices']).
     factory("peopleData", ['$resource', 'config', function ($resource, config) {
         var urlOdata = config.baseUrl + '/odata/People',
             order = '&$orderby=LastName,FirstName,MidleName',
-            expand = '?$expand=City($expand=CityType,RegionPart),Street($expand=StreetType),PrecinctAddress',
+            expand = '?$expand=City($expand=CityType,RegionPart),Street($expand=StreetType),PrecinctAddress($expand=Precinct)',
             expandWithProps = expand + ",PersonAdditionalProperties($expand=PropertyKey,PropertyValue)",
             paginate = "&$count=true&$skip=:skip&$top=" + config.pageSize;
 
