@@ -2,8 +2,8 @@
 
 var cityControllers = angular.module('cityControllers', ['cityServices']);
 
-cityControllers.controller("listCitiesController", ['$rootScope', '$location', '$timeout', '$scope', 'config', 'serviceUtil', 'cityData', 'filterSettings',
-    function ($rootScope, $location, $timeout, $scope, config, serviceUtil, cityData, filterSettings) {
+cityControllers.controller("listCitiesController", ['$rootScope', '$location', '$scope', 'config', 'serviceUtil', 'cityData', 'filterSettings',
+    function ($rootScope, $location, $scope, config, serviceUtil, cityData, filterSettings) {
 
         $rootScope.pageTitle = 'Населені пункти';
         $rootScope.editInd = -1;
@@ -64,8 +64,8 @@ cityControllers.controller("listCitiesController", ['$rootScope', '$location', '
         };
     }]);
 
-cityControllers.controller('editCityController', ['$timeout', '$rootScope', '$scope', '$location', 'cityData', 'serviceUtil', 'cityRegionPartsData', 'config', 'resolvedData',
-    function ($timeout, $rootScope, $scope, $location, cityData, serviceUtil, cityRegionPartsData, config, resolvedData) {
+cityControllers.controller('editCityController', ['$rootScope', '$scope', '$location', 'cityData', 'serviceUtil', 'cityRegionPartsData', 'config', 'resolvedData',
+    function ($rootScope, $scope, $location, cityData, serviceUtil, cityRegionPartsData, config, resolvedData) {
         var editInd, editableCityDistrict, addMode;
         $rootScope.pageTitle = 'Населений пункт';
         $scope.saving = false;
