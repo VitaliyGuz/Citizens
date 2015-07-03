@@ -49,10 +49,8 @@ angular.module("cityServices", ['ngResource', 'regionPartServices']).
                 cityData.getById({ id: routeParam }, function (res) {
                     deferred.resolve(res);
                 }, function (err) {
-                    var errMsg = 'Населений пункт не знайдено',
-                        errDetail = serviceUtil.getErrorMessage(err);
-                    if (errDetail) errMsg = errMsg + ' (' + errDetail + ')';
-                    deferred.reject(errMsg);
+                    err.description = 'Населений пункт не знайдено';
+                    deferred.reject(serviceUtil.getErrorMessage(err));
                 });
             } else {
                 deferred.resolve();
@@ -65,10 +63,8 @@ angular.module("cityServices", ['ngResource', 'regionPartServices']).
             cityTypesData.query(function (res) {
                 deferred.resolve(res.value);
             }, function (err) {
-                var errMsg = 'Типи населених пунктів не завантажено',
-                    errDetail = serviceUtil.getErrorMessage(err);
-                if (errDetail) errMsg = errMsg + ' (' + errDetail + ')';
-                deferred.reject(errMsg);
+                err.description = 'Типи населених пунктів не завантажено';
+                deferred.reject(serviceUtil.getErrorMessage(err));
             });
             return deferred.promise;
         };
@@ -78,10 +74,8 @@ angular.module("cityServices", ['ngResource', 'regionPartServices']).
             regionPartData.getAllByType({ type: type.val }, function (res) {
                 deferred.resolve(res.value);
             }, function (err) {
-                var errMsg = "Райони з типом '" + type.desc + "' не завантажено",
-                    errDetail = serviceUtil.getErrorMessage(err);
-                if (errDetail) errMsg = errMsg + ' (' + errDetail + ')';
-                deferred.reject(errMsg);
+                err.description = "Райони з типом '" + type.desc + "' не завантажено";
+                deferred.reject(serviceUtil.getErrorMessage(err));
             });
             return deferred.promise;
         };

@@ -63,10 +63,8 @@ angular.module("precinctServices", ['ngResource'])
                 precinctData.getById({ id: routeParam }, function (res) {
                     deferred.resolve(res);
                 }, function (err) {
-                    var errMsg = 'Дільницю не знайдено',
-                        errDetail = serviceUtil.getErrorMessage(err);
-                    if (errDetail) errMsg = errMsg + ' (' + errDetail + ')';
-                    deferred.reject(errMsg);
+                    err.description = 'Дільницю не знайдено',
+                    deferred.reject(serviceUtil.getErrorMessage(err));
                 });
             } else {
                 deferred.resolve();
@@ -79,10 +77,8 @@ angular.module("precinctServices", ['ngResource'])
             districtData.query(function (res) {
                 deferred.resolve(res.value);
             }, function (err) {
-                var errMsg = 'Округи не завантажено',
-                    errDetail = serviceUtil.getErrorMessage(err);
-                if (errDetail) errMsg = errMsg + ' (' + errDetail + ')';
-                deferred.reject(errMsg);
+                err.description = 'Округи не завантажено',
+                deferred.reject(serviceUtil.getErrorMessage(err));
             });
             return deferred.promise;
         };
@@ -92,10 +88,8 @@ angular.module("precinctServices", ['ngResource'])
             precinctData.getAllNotExpand(function (res) {
                 deferred.resolve(res.value);
             }, function (err) {
-                var errMsg = 'Дільниці не завантажено',
-                    errDetail = serviceUtil.getErrorMessage(err);
-                if (errDetail) errMsg = errMsg + ' (' + errDetail + ')';
-                deferred.reject(errMsg);
+                err.description = 'Дільниці не завантажено',
+                deferred.reject(serviceUtil.getErrorMessage(err));
             });
             return deferred.promise;
         };

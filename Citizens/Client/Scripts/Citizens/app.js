@@ -147,17 +147,18 @@ app.filter('checkApartment', function () {
 app.factory("serviceUtil", ["$filter", '$routeParams', '$location', function ($filter, $routeParams, $location) {
     return {
         getErrorMessage: function (error) {
-            var errMsg;
+            var errMsg, errDetail;
+            if (error && error.description) errMsg = error.description;
             if (error && error.data !== "") {
                 if (angular.isObject(error.data)) {
-                    errMsg = error.data.error.message;
+                    errDetail = error.data.error.message;
                 } else {
-                    errMsg = error.data;
+                    errDetail = error.data;
                 }
             }
-            if (!errMsg) {
-                errMsg = error.statusText;
-            }
+            if (!errDetail) errDetail = error.statusText;
+            if (errDetail && errMsg) errMsg = errMsg + " (" +errDetail + ")";
+            if (errDetail && !errMsg) errMsg = errDetail;
             return errMsg;
         },
         compareByName: function (a, b) {

@@ -153,9 +153,8 @@ authServices.factory('authInterceptor', ['$q', '$location', '$rootScope', '$inje
                     Credentials.set(resp.token_type + ' ' + resp.access_token, resp.expires_in, $rootScope.UserInfo);
                 }).error(function (e) {
                     refreshingToken = false;
-                    $rootScope.errorMsg = 'Оновлення даних авторизації не відбулося';
-                    var errDetail = serviceUtil.getErrorMessage(e);
-                    if (errDetail) $rootScope.errorMsg = $rootScope.errorMsg + ' (' + errDetail + ')';
+                    e.description = 'Оновлення даних авторизації не відбулося';
+                    $rootScope.errorMsg = serviceUtil.getErrorMessage(e);
                 });
                 //console.info('refresh token');
             }

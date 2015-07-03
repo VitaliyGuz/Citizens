@@ -72,10 +72,8 @@ angular.module("peopleServices", ['ngResource', 'precinctServices']).
                 peopleData.getById({ id: routeParam }, function (res) {
                     deferred.resolve(res);
                 }, function (err) {
-                    var errMsg = 'Фізичну особу не знайдено',
-                        errDetail = serviceUtil.getErrorMessage(err);
-                    if (errDetail) errMsg = errMsg + ' (' + errDetail + ')';
-                    deferred.reject(errMsg);
+                    err.description = 'Фізичну особу не знайдено';
+                    deferred.reject(serviceUtil.getErrorMessage(err));
                 });
             } else {
                 deferred.resolve();
@@ -88,10 +86,8 @@ angular.module("peopleServices", ['ngResource', 'precinctServices']).
             precinctData.getAllNotExpand(function (res) {
                 deferred.resolve(res.value);
             }, function (err) {
-                var errMsg = 'Дільниці не завантажено',
-                    errDetail = serviceUtil.getErrorMessage(err);
-                if (errDetail) errMsg = errMsg + ' (' + errDetail + ')';
-                deferred.reject(errMsg);
+                err.description = 'Дільниці не завантажено';
+                deferred.reject(serviceUtil.getErrorMessage(err));
             });
             return deferred.promise;
         };
@@ -121,10 +117,8 @@ angular.module("peopleServices", ['ngResource', 'precinctServices']).
             additionalPropsData[method](function (res) {
                 deferred.resolve(res.value);
             }, function (err) {
-                var errMsg = 'Додаткові характеристики не завантажено',
-                    errDetail = serviceUtil.getErrorMessage(err);
-                if (errDetail) errMsg = errMsg + ' (' + errDetail + ')';
-                deferred.reject(errMsg);
+                err.description = 'Додаткові характеристики не завантажено';
+                deferred.reject(serviceUtil.getErrorMessage(err));
             });
             
             return deferred.promise;
