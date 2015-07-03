@@ -25,12 +25,11 @@ precinctControllers.controller("listPrecinctsController", ['$location', '$rootSc
             $scope.queryBy = 'Number';
         }
 
-        $rootScope.editInd = -1;
+        //$rootScope.editInd = -1;
         $scope.currentPage = serviceUtil.getRouteParam("currPage") || 1;
         $scope.pageSize = config.pageSize;
         $scope.totalItems = 0;
         $scope.pageSizeTS = config.pageSizeTabularSection;
-        //$scope.precincts = loadedPrecincts;
         
         setPrecinctsOnPage(($scope.currentPage - 1) * config.pageSize);
 
@@ -67,7 +66,7 @@ precinctControllers.controller("listPrecinctsController", ['$location', '$rootSc
 
         $scope.edit = function (precinct) {
             $rootScope.errorMsg = '';
-            $rootScope.editInd = $scope.getIndex(precinct);
+            //$rootScope.editInd = $scope.getIndex(precinct);
             $location.path('/precinct/' + precinct.Id + '/' + $scope.currentPage);
         };
 
@@ -130,7 +129,6 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
         if (resolvedData.precinct) {
             $scope.addMode = false;
             $scope.precinct = resolvedData.precinct;
-            //$scope.precinct.Number = resolvedData.precinct.Id;
             $scope.precinctAddresses = resolvedData.precinct.PrecinctAddresses;
             $scope.autocomplete.CityId = $scope.precinct.City.Id;
             $scope.autocomplete.City = $scope.precinct.City;
@@ -142,13 +140,11 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
             });
         }
         $scope.districts = resolvedData.districts;
-        //$scope.precincts = resolvedData.precincts;
         precinctData.getAllNotExpand(function (data) {
             $scope.precincts = data.value;
         }, function (err) {
-            var errDetails = serviceUtil.getErrorMessage(err);
-            $rootScope.errorMsg = "Дільниці не завантажено";
-            if (errDetails) $rootScope.errorMsg = $rootScope.errorMsg + ' (' + errDetails + ')';
+            err.description = "Дільниці не завантажено";
+            $rootScope.errorMsg = serviceUtil.getErrorMessage(err);
         });
 
         $scope.editAddress = function (address) {
@@ -223,7 +219,6 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
 
             serviceUtil.copyProperties($scope.precinct, precinct);
             if ($scope.addMode) {
-                //precinct.Id = $scope.precinct.Number;
                 precinctData.save(precinct, function (newItem) {
                     successHandler({ id: newItem.Id });
                 }, errorHandler);
@@ -232,21 +227,24 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
                     successHandler({ id: $scope.precinct.Id });
                 }, errorHandler);
             }
-            function successHandler(obj) {
-                precinctData.getById(obj, function (res) {
-                    $scope.saving = false;
-                    if ($scope.addMode) {
-                        $scope.addMode = false;
-                        $scope.precincts.push(res);
-                        $scope.precinct = res;
-                        //$scope.precinct.Number = res.Id;
-                        $rootScope.successMsg = 'Дільницю успішно створено!';
-                    } else {
-                        $scope.precincts[$rootScope.editInd] = res;
-                        $rootScope.successMsg = 'Зміни успішно збережено!';
-                    }
-                    $scope.precincts.sort(comparePrecinct);
-                }, errorHandler);
+            function successHandler(resp) {
+                $scope.saving = false;
+                if ($scope.addMode) {
+                    $scope.addMode = false;
+                    $scope.precinct.Id = resp.id;
+                    $rootScope.successMsg = 'Дільницю успішно створено!';
+                } else {
+                    //$scope.precincts[$rootScope.editInd] = res;
+                    $scope.precincts = $scope.precincts.map(function (precinct) {
+                        if (precinct.Id === $scope.precinct.Id) {
+                            return $scope.precinct;
+                        } else {
+                            return precinct;
+                        }
+                    });
+                    $rootScope.successMsg = 'Зміни успішно збережено!';
+                }
+                $scope.precincts.sort(comparePrecinct);
             };
         };
 
