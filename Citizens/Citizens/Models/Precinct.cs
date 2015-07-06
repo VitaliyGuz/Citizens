@@ -10,8 +10,10 @@ namespace Citizens.Models
 {
     public class Precinct
     {
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
+        
         public int Id { get; set; }
+
+        public int Number { get; set; }
           
         public int? CityId { get; set; }
 
@@ -19,15 +21,11 @@ namespace Citizens.Models
 
         [StringLength(10)]
         public string House { get; set; }
-
-        [Required]
-        public int DistrictId { get; set; }
+        
         public City City { get; set; }
 
         public Street Street { get; set; }
-
-        public District District { get; set; }
-
+        
         public int? RegionPartId { get; set; }        
 
         public RegionPart RegionPart { get; set; }

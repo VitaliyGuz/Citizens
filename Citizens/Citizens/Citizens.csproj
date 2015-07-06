@@ -229,6 +229,18 @@
     <Compile Include="Migrations\201506251423530_1.Designer.cs">
       <DependentUpon>201506251423530_1.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201507011048074_2.cs" />
+    <Compile Include="Migrations\201507011048074_2.Designer.cs">
+      <DependentUpon>201507011048074_2.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201507011656028_3.cs" />
+    <Compile Include="Migrations\201507011656028_3.Designer.cs">
+      <DependentUpon>201507011656028_3.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201507031256534_5.cs" />
+    <Compile Include="Migrations\201507031256534_5.Designer.cs">
+      <DependentUpon>201507031256534_5.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\CityRegionPart.cs" />
     <Compile Include="Models\District.cs" />
@@ -278,6 +290,15 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201506251423530_1.resx">
       <DependentUpon>201506251423530_1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201507011048074_2.resx">
+      <DependentUpon>201507011048074_2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201507011656028_3.resx">
+      <DependentUpon>201507011656028_3.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201507031256534_5.resx">
+      <DependentUpon>201507031256534_5.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

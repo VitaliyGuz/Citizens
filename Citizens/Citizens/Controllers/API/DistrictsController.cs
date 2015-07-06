@@ -147,12 +147,12 @@ namespace Citizens.Controllers.API
             return StatusCode(HttpStatusCode.NoContent);
         }
 
-        // GET: odata/Districts(5)/Precincts
-        [EnableQuery]
-        public IQueryable<Precinct> GetPrecincts([FromODataUri] int key)
-        {
-            return db.Districts.Where(m => m.Id == key).SelectMany(m => m.Precincts);
-        }
+        //// GET: odata/Districts(5)/Precincts
+        //[EnableQuery]
+        //public IQueryable<Precinct> GetPrecincts([FromODataUri] int key)
+        //{
+        //    return db.Districts.Where(m => m.Id == key).SelectMany(m => m.Precincts);
+        //}
 
         protected override void Dispose(bool disposing)
         {

@@ -86,10 +86,10 @@ namespace Citizens.Controllers.API
         // POST: odata/Precincts
         public async Task<IHttpActionResult> Post(Precinct precinct)
         {
-            if (precinct.DistrictId == 0)
-            {
-                precinct.DistrictId = 144;
-            }
+            //if (precinct.DistrictId == 0)
+            //{
+            //    precinct.DistrictId = 144;
+            //}
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -113,10 +113,10 @@ namespace Citizens.Controllers.API
 
             var textConflict = "";
 
-            if (precinct.DistrictId == 0)
-            {
-                precinct.DistrictId = 144;
-            }
+            //if (precinct.DistrictId == 0)
+            //{
+            //    precinct.DistrictId = 144;
+            //}
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -202,12 +202,12 @@ namespace Citizens.Controllers.API
             return SingleResult.Create(db.Precincts.Where(m => m.Id == key).Select(m => m.City));
         }
 
-        // GET: odata/Precincts(5)/District
-        [EnableQuery]
-        public SingleResult<District> GetDistrict([FromODataUri] int key)
-        {
-            return SingleResult.Create(db.Precincts.Where(m => m.Id == key).Select(m => m.District));
-        }
+        //// GET: odata/Precincts(5)/District
+        //[EnableQuery]
+        //public SingleResult<District> GetDistrict([FromODataUri] int key)
+        //{
+        //    return SingleResult.Create(db.Precincts.Where(m => m.Id == key).Select(m => m.District));
+        //}
 
         // GET: odata/Precincts(5)/PrecinctAddresses
         [EnableQuery]

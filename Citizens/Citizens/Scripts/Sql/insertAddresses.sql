@@ -1,4 +1,23 @@
-﻿INSERT INTO dbo.PrecinctAddresses (CityId, StreetId, House, PrecinctId)  
+﻿--IF NOT TYPE_ID(N'[PersonsTable]') is null DROP TYPE [dbo].[PersonsTable]
+IF TYPE_ID(N'[PersonsTable]') is null 
+
+CREATE TYPE dbo.PersonsTable AS TABLE
+(
+	FirstName nvarchar(20),
+	MidleName nvarchar(20),
+	LastName nvarchar(20),
+	Street nvarchar(50),
+	StreetType nvarchar(50),
+	City nvarchar(50),
+	CityType nvarchar(50),
+	House nvarchar(50),
+	Apartment int,
+	Gender int
+)
+
+--DECLARE @ExcelTable as dbo.PersonsTable
+
+INSERT INTO dbo.PrecinctAddresses (CityId, StreetId, House, PrecinctId)  
 SELECT Distinct cityNames.Id, streetNames.Id, ExcelTable.House, 
 PrecinctId = COALESCE(precinctAddressesWholeStreet.PrecinctId, precinctAddressesWholeCity.PrecinctId, 1)
 /*PrecinctId = isnull(precinctAddressesWholeStreet.PrecinctId, isnull(precinctAddressesWholeCity.PrecinctId, 1))

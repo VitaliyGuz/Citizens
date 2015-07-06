@@ -9,8 +9,8 @@ namespace Citizens.Migrations
     {
         public Configuration()
         {
-            AutomaticMigrationsEnabled = true;
-            //AutomaticMigrationDataLossAllowed = false;
+            AutomaticMigrationsEnabled = false;
+            AutomaticMigrationDataLossAllowed = true;
         }
 
         protected override void Seed(Citizens.Models.CitizenDbContext context)
