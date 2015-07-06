@@ -19,8 +19,8 @@ angular.module("precinctServices", ['ngResource'])
 		    'getFilteredPageItems': { method: 'GET', params: { skip: "@skip", filter: '@filter' }, url: urlOdata + baseExpand + "&$filter=:filter" + paginate + order },
 		    'saveAll': { method: 'PATCH', url: urlOdata },
 		    'update': { method: 'PUT', params: params, url: urlOdata + "(:id)" },
-			'save': { method: "POST", url: urlOdata },
-			'remove': { method: 'DELETE', params: params, url: urlOdata + "(:id)" }
+		    'save': { method: "POST", url: urlOdata },
+		    'remove': { method: 'DELETE', params: params, url: urlOdata + "(:id)" }
 		});
     }])
     .factory("districtData", ['$resource', 'config', function ($resource, config) {
@@ -28,11 +28,12 @@ angular.module("precinctServices", ['ngResource'])
             urlDistrictTypes = config.baseUrl + '/odata/DistrictTypes',
             urlDistrictPrecincts = config.baseUrl + '/odata/DistrictPrecincts',
             params = { id: "@id" },
-            paramKey = { districtId: "@districtId", precinctId: "@precinctId"},
+            paramKey = { districtId: "@districtId", precinctId: "@precinctId" },
             key = "(DistrictId=:districtId,PrecinctId=:precinctId)";
         return $resource('', {},
         {
             'query': { method: 'GET', params: params, url: urlOdata + "(:id)?$expand=DistrictType", cache: true },
+            'getById': { method: 'GET', params: params, url: urlOdata + "(:id)?$expand=DistrictType,DistrictPrecincts($expand=Precinct)" },
             'update': { method: 'PUT', params: params, url: urlOdata + "(:id)" },
             'save': { method: "POST", url: urlOdata },
             'remove': { method: 'DELETE', params: params, url: urlOdata + "(:id)" },
@@ -119,30 +120,68 @@ angular.module("precinctServices", ['ngResource'])
                 });
             }
         };
-    }])
-    .service('asyncLoadPrecincts', ['$q', 'precinctData', 'serviceUtil', function ($q, precinctData, serviceUtil) {
-        function getPrecinctsPromise() {
-            var deferred = $q.defer();
-            precinctData.getAll(function (res) {
-                deferred.resolve(res.value);
-            }, function (err) {
-                var errMsg = 'Дільниці не завантажено',
-                    errDetail = serviceUtil.getErrorMessage(err);
-                if (errDetail) errMsg = errMsg + ' (' + errDetail + ')';
-                deferred.reject(errMsg);
-            });
-            return deferred.promise;
-        };
+    }]).
+    factory('districtsHolder', ['districtData', function (districtData) {
+        var districts, index;
+        return {
+            get: function () {
+                return districts;
+            },
+            set: function (data) {
+                if (data && angular.isArray(data)) districts = data;
+            },
+            setEditIndex: function (ind) {
+                index = undefined;
+                if (ind != undefined && ind >= 0) index = ind;
+            },
+            updateElem: function (elem) {
+                if (index >=0 && elem) districts[index]= elem;
+            },
+            addElem: function (elem) {
+                if (districts && elem) districts.push(elem);
+            },
+            removeElem: function (elem) {
+                //if (districts && elem) districts.splice(districts.indexOf(elem), 1);
+                districts.splice(this.indexOf(elem), 1);
+            },
+            isEmpty: function () {
+                return districts ? districts.length <= 0 : true;
+            },
+            indexOf: function (elem) {
+                return elem && districts ? districts.indexOf(elem) : undefined;
+            },
+            sort: function () {
+                if (districts) {
+                    districts.sort(function (a, b) {
+                        return a.Number - b.Number;
+                    });
+                }
+            }
+        }
+    }]);
+    //.service('asyncLoadPrecincts', ['$q', 'precinctData', 'serviceUtil', function ($q, precinctData, serviceUtil) {
+    //    function getPrecinctsPromise() {
+    //        var deferred = $q.defer();
+    //        precinctData.getAll(function (res) {
+    //            deferred.resolve(res.value);
+    //        }, function (err) {
+    //            var errMsg = 'Дільниці не завантажено',
+    //                errDetail = serviceUtil.getErrorMessage(err);
+    //            if (errDetail) errMsg = errMsg + ' (' + errDetail + ')';
+    //            deferred.reject(errMsg);
+    //        });
+    //        return deferred.promise;
+    //    };
 
-        return function () {
-            var deferred = $q.defer();
-            function errorHandler(err) {
-                deferred.reject(err);
-            };
-            getPrecinctsPromise().then(function (precincts) {
-                deferred.resolve(precincts);
-            }, errorHandler);
+    //    return function () {
+    //        var deferred = $q.defer();
+    //        function errorHandler(err) {
+    //            deferred.reject(err);
+    //        };
+    //        getPrecinctsPromise().then(function (precincts) {
+    //            deferred.resolve(precincts);
+    //        }, errorHandler);
 
-            return deferred.promise;
-        };
-    }])
+    //        return deferred.promise;
+    //    };
+    //}])

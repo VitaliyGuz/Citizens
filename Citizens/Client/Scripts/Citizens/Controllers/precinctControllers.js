@@ -130,14 +130,18 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
             $scope.addMode = false;
             $scope.precinct = resolvedData.precinct;
             $scope.precinctAddresses = resolvedData.precinct.PrecinctAddresses;
-            $scope.autocomplete.CityId = $scope.precinct.City.Id;
-            $scope.autocomplete.City = $scope.precinct.City;
+            if (resolvedData.precinct.City) {
+                $scope.autocomplete.CityId = resolvedData.precinct.City.Id;
+                $scope.autocomplete.City = resolvedData.precinct.City;
+            }
             //$scope.precinctAddresses.sort(compareAddresses);
             sortAddresses($scope.precinctAddresses);
             $scope.precinctDistricts = resolvedData.precinct.DistrictPrecincts;
-            $scope.precinctDistricts.sort(function(a,b) {
-                return a.DistrictId - b.DistrictId;
-            });
+            if ($scope.precinctDistricts){
+                $scope.precinctDistricts.sort(function(a, b) {
+                    return a.DistrictId - b.DistrictId;
+                });
+            }
         }
         $scope.districts = resolvedData.districts;
         precinctData.getAllNotExpand(function (data) {
@@ -342,7 +346,7 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
                         $scope.precinctDistricts[ind] = res;
                     }
                     $scope.precinctDistricts.sort(function (a, b) {
-                        return a.DistrictId - b.DistrictId;
+                        return a.District.Number - b.District.Number;
                     });
                     $scope.resetPrecinctDistrict();
                 }, errorHandler);       

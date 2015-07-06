@@ -1,0 +1,47 @@
+﻿<h5 ng-show="loadingDistricts">Завантаження... <i class="fa fa-refresh fa-spin"></i></h5>
+<hr>
+<div class="row form-inline">
+    <div class="col-md-6">
+        <label>Пошук:</label>
+        <input ng-model="query[queryBy]" type="text" ng-change="onFilterQueryChange(true)" class="form-control" placeholder="Введіть слово">
+        <label>по:</label>
+        <select ng-model="queryBy" ng-change="onFilterQueryChange(false)" class="form-control">
+            <option value="Number">Округ</option>
+            <option value="DistrictType.Name">Тип</option>
+        </select>
+    </div>
+    <div class="col-md-6">
+        <button ng-click="addNew()" class="btn btn-success">
+            <span class="glyphicon glyphicon-plus"></span> Створити новий округ
+        </button>
+    </div>
+</div>
+<hr>
+<table class="table table-striped table-condensed">
+    <thead>
+        <tr>
+            <th ng-repeat="thName in tableHead">{{thName}}</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr dir-paginate="district in getDistricts() | filterByFirstChar: query | itemsPerPage: pageSize" current-page="currentPage" pagination-id="districtsPagination">
+            <td>{{ getIndex(district) + 1 }}</td>
+            <td>{{ district.Number }} {{ city.Name }}</td>
+            <td>{{ district.DistrictType.Name }}</td>
+            <td>
+                <button class="btn btn-xs" ng-click="edit(district,$index)" title="Редагувати">
+                    <span class="glyphicon glyphicon-edit"></span>
+                </button>
+                <button class="btn btn-xs" ng-click="delete(district)" title="Видалити">
+                    <span class="glyphicon glyphicon-trash"></span>
+                </button>
+            </td>
+        </tr>
+    </tbody>
+</table>
+<hr>
+<dir-pagination-controls boundary-links="true" on-page-change="onPageChange(newPageNumber)" pagination-id="districtsPagination"></dir-pagination-controls>
+
+
+
+

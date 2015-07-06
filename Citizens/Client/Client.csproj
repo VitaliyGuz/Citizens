@@ -160,6 +160,7 @@
     <None Include="Properties\PublishProfiles\poltava2015Client - FTP.pubxml" />
     <None Include="Properties\PublishProfiles\poltava2015Client - Web Deploy.pubxml" />
     <None Include="Scripts\jQuery\jquery-2.1.4.intellisense.js" />
+    <Content Include="Scripts\Citizens\Controllers\districtControllers.js" />
     <Content Include="Scripts\jQuery\jquery-2.1.4.js" />
     <Content Include="Scripts\jQuery\jquery-2.1.4.min.js" />
     <Content Include="Scripts\jQuery\jquery-2.1.4.min.map" />
@@ -210,9 +211,11 @@
     <Content Include="Views\AuthComplete.html" />
     <Content Include="Scripts\AngularUtils\directives\datepicker.tpl.html" />
     <Content Include="Views\EditCity.html" />
+    <Content Include="Views\EditDistrict.html" />
     <Content Include="Views\EditPerson.html" />
     <Content Include="Views\EditPrecinct.html" />
     <Content Include="Views\ListCities.html" />
+    <Content Include="Views\ListDistricts.html" />
     <Content Include="Views\ListPeople.html" />
     <Content Include="Views\ListPrecincts.html" />
     <Content Include="Views\Login.html" />

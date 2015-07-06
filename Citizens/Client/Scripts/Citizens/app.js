@@ -4,12 +4,12 @@ var app = angular.module("citizens",
     [
         'ngRoute', 'ngCookies',
         'angularUtils.directives.dirPagination','ui.bootstrap',
-        'peopleControllers', 'streetControllers', 'regionPartControllers', 'cityControllers', 'authControllers','precinctControllers','uploadXlsModule'
+        'peopleControllers', 'streetControllers', 'regionPartControllers', 'cityControllers', 'authControllers', 'precinctControllers', 'uploadXlsModule', 'districtControllers'
     ]
 );
 
 app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider', '$httpProvider', function ($routeProvider, $locationProvider, paginationTemplateProvider, $httpProvider) {
-    
+
     var routeListCities = {
             templateUrl: 'Views/ListCities.html',
             controller: 'listCitiesController',
@@ -74,6 +74,16 @@ app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider',
                     return dataForEditPrecinctPage.asyncLoad($route.current.params.id);
                 }
             }
+        },
+        routeListDistricts = {
+            templateUrl: 'Views/ListDistricts.html',
+            controller: 'listDistrictsController',
+            resolve: { genlData: function(genlData) { genlData.asyncLoad() } }
+        },
+        routeEditDistrict = {
+            templateUrl: 'Views/EditDistrict.html',
+            controller: 'editDistrictController',
+            resolve: { genlData: function(genlData) { genlData.asyncLoad() } }
         };
 
     $routeProvider.
@@ -98,6 +108,12 @@ app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider',
         when('/city/new/:currPage', routeEditCity).
         when('/city/:id', routeEditCity).
         when('/city/:id/:currPage', routeEditCity).
+        when('/districts', routeListDistricts).
+        when('/districts/:currPage', routeListDistricts).
+        when('/district/new', routeEditDistrict).
+        when('/district/new/:currPage', routeEditDistrict).
+        when('/district/:id', routeEditDistrict).
+        when('/district/:id/:currPage', routeEditDistrict).
         when('/uploadXls', {
             templateUrl: 'Views/UploadXls.html',
             controller: 'uploadXlsController'
@@ -332,7 +348,7 @@ app.filter("filterByFirstChar", function () {
 
         angular.forEach(input, function (item) {
             itemVal = getValue(item);
-            if (itemVal !== undefined) {
+            if (itemVal) {
                 itemVal = itemVal.toString().toLowerCase();
                 if (itemVal.indexOf(searchVal.toLowerCase()) === 0) {
                     result.push(item);
@@ -355,9 +371,8 @@ app.factory('genlData', ['$q', '$rootScope', 'cityData', 'streetData', 'regionPa
             $rootScope[param.propName] = res.value;
             deferred.resolve();
         }, function (err) {
-            var errMsg = param.desc + ' не завантажено';
-            if (err && err.length > 0) errMsg = errMsg + ' (' + serviceUtil.getErrorMessage(err) + ')';
-            deferred.reject(errMsg);
+            err.description = param.desc + ' не завантажено';
+            deferred.reject(serviceUtil.getErrorMessage(err));
         });
         return deferred.promise;
     };
