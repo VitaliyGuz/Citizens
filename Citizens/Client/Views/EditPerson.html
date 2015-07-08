@@ -17,7 +17,7 @@
         </div>
         <div class="form-group col-lg-2">
             <label>Дата народження</label>
-            <input ng-model="dateOfBirth" type="text" class="form-control" datepicker required>
+            <input ng-model="dateOfBirth" type="text" class="form-control" datepicker placeholder="дд.мм.рррр" required>
         </div>
         <div class="form-group col-lg-1">
             <label>Стать</label>
@@ -108,7 +108,7 @@
     <td ng-show="!addPropertyMode">{{ prop.key.Name }}</td>
     <td>
         <input ng-show="showPrimitiveInput()" class="form-control" type="{{ selected.property.Key.PropertyType.html }}" ng-model="selected.property.Value" />
-        <input ng-show="selected.property.Key.PropertyType.html === 'date'" class="form-control" type="text" datepicker ng-model="selected.property.Value" />
+        <input ng-show="selected.property.Key.PropertyType.html === 'date'" class="form-control" type="text" datepicker ng-model="selected.property.Value" placeholder="дд.мм.рррр" />
         <input ng-show="selected.property.Key.PropertyType.html === 'ref'" type="text" ng-change="selected.property.ValueId=0" typeahead-on-select="onSelectProperty($item, $model, $label)" ng-model="selected.property.Value"
                typeahead="p.Id as p.Value for p in propFilteredValues | filter: {Value:$viewValue} | orderByStartsWith:{Value:$viewValue} | limitTo:10" class="form-control">
         <input ng-show="selected.property.Key.PropertyType.html === 'refCity'" type="text" ng-change="selected.property.ValueId=0" typeahead-on-select="onSelectProperty($item, $model, $label)" ng-model="selected.property.Value"
