@@ -194,6 +194,10 @@ districtControllers.controller('editDistrictController', ['$rootScope', '$scope'
                 $rootScope.errorMsg = "Спочатку необхідно зберегти округ";
                 return;
             }
+            if (!$scope.selected.precinctId) {
+                $rootScope.errorMsg = "Не вірно вибрано дільницю";
+                return;
+            }
             $scope.savingPrecinct = true;
             var _precinctDistrict = {
                 "DistrictId": $scope.district.Id,
