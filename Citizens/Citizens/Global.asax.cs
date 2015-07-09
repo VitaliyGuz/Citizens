@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Configuration;
 using System.Web;
 using System.Web.Http;
 
@@ -13,7 +14,7 @@ namespace Citizens
 
         protected void Application_BeginRequest(object sender, EventArgs e)
         {
-            HttpContext.Current.Response.AddHeader("Access-Control-Allow-Origin", "http://localhost:36561");// http://poltava2015client.azurewebsites.net http://localhost:36561 http://citizens2015.azurewebsites.net #Deploy
+            HttpContext.Current.Response.AddHeader("Access-Control-Allow-Origin", ConfigurationManager.AppSettings["AccessControlAllowOrigin"]);// http://poltava2015client.azurewebsites.net http://localhost:36561 http://citizens2015.azurewebsites.net #Deploy
             HttpContext.Current.Response.AddHeader("Access-Control-Allow-Credentials", "true");
             HttpContext.Current.Response.AddHeader("Arr-Disable-Session-Affinity", "True");
 

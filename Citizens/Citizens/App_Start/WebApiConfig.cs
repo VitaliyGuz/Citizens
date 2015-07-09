@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using Citizens.Infrastructure;
@@ -31,7 +32,7 @@ namespace Citizens
                 defaults: new { id = RouteParameter.Optional }
             );
 
-            config.Filters.Add(new AuthorizeAttribute());            
+            config.Filters.Add(new AuthorizeAttribute() { Roles = "Operators" });            
             // Web API configuration and services
             ODataConventionModelBuilder builder = new ODataConventionModelBuilder();
             builder.EntitySet<City>("Cities");
@@ -56,9 +57,9 @@ namespace Citizens
 
             builder.EntitySet<ApplicationUser>("Users");
             //builder.EntitySet<IdentityUserClaim>("Claims");
-            builder.EntitySet<Role>("Roles");
+            builder.EntitySet<ApplicationRole>("Roles");
             //builder.EntitySet<IdentityUserRole>("UserRoles");
-            //builder.EntitySet<IdentityUserLogin>("Logins");
+            //builder.EntitySet<ApplicationUserLogin>("Logins");
             //var conventions = ODataRoutingConventions.CreateDefault();
             //conventions.Insert(0, new CompositeKeyRoutingConvention());
             //conventions.Insert(0, new UnEncodeOdataUri());
@@ -177,4 +178,26 @@ namespace Citizens
     //        return action;
     //    }
     //}
+    
+    //public class LoggerAttribute : AuthorizationFilterAttribute 
+    public class LoggerAttribute : AuthorizeAttribute 
+    {
+        
+        //public override void OnAuthorization(HttpActionContext actionContext)
+        //{
+        //    if (actionContext.Request.RequestUri.Scheme != Uri.UriSchemeHttps)
+        //    {
+        //        actionContext.Response = new HttpResponseMessage(HttpStatusCode.Forbidden) { Content = new StringContent("SSL required") };
+        //    } 
+        //}
+        protected override void HandleUnauthorizedRequest(HttpActionContext ctx)
+        {
+            if (!ctx.RequestContext.Principal.Identity.IsAuthenticated)
+                base.HandleUnauthorizedRequest(ctx);
+            else
+            {                
+                ctx.Response = new HttpResponseMessage(System.Net.HttpStatusCode.Forbidden);
+            }
+        }
+    }
 }
