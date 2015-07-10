@@ -1,0 +1,31 @@
+﻿<!--h3>Геокодування дільниць</h3>
+<hr/>-->
+<div class="row">
+    <div class="col-md-3">
+        <div class="input-group">
+            <input type="text" ng-change="selected.RegionPartId=0" typeahead-on-select="onSelectRegionPart($item, $model, $label)" ng-model="selected.RegionPart" placeholder="Enter region"
+                   typeahead="r.Id as r.Name for r in regionParts | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control">
+            <span class="input-group-btn">
+                <button type="button" class="btn btn-primary" ng-click="showMarkers()">
+                    <i ng-show="!isMarkering" class="glyphicon glyphicon-map-marker"></i>
+                    <i ng-show="isMarkering" class="fa fa-refresh fa-spin"></i>
+                </button>
+            </span>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <button type="button" class="btn btn-primary" ng-click="startGeociding()" ng-disabled="geocoging.progressNow<100 && geocoging.isProgress">
+            Start geocoding
+            <i ng-show="geocoging.isLoading" class="fa fa-refresh fa-spin"></i>
+        </button>
+    </div>
+    <div class="col-md-7">
+        <div class="progress" ng-show="geocoging.isProgress">
+            <div class="progress-bar" role="progressbar" aria-valuenow="{{geocoging.progressNow}}" aria-valuemin="0" aria-valuemax="100" ng-style="{width : ( geocoging.progressNow + '%' ) }">
+                {{geocoging.progressNow}}%
+            </div>
+        </div>
+    </div>
+</div>
+<hr />
+<div id="map" style="width:1142px;height:720px;"></div>

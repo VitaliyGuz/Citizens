@@ -208,12 +208,15 @@
     <Content Include="Scripts\AngularJS\angular-mocks.js" />
     <Content Include="Scripts\npm.js" />
     <None Include="Scripts\_references.js" />
+    <Content Include="Views\Admin\EditUser.html" />
+    <Content Include="Views\Admin\Users.html" />
     <Content Include="Views\AuthComplete.html" />
     <Content Include="Scripts\AngularUtils\directives\datepicker.tpl.html" />
     <Content Include="Views\EditCity.html" />
     <Content Include="Views\EditDistrict.html" />
     <Content Include="Views\EditPerson.html" />
     <Content Include="Views\EditPrecinct.html" />
+    <Content Include="Views\Admin\GeocodingPrecincts.html" />
     <Content Include="Views\ListCities.html" />
     <Content Include="Views\ListDistricts.html" />
     <Content Include="Views\ListPeople.html" />
@@ -222,7 +225,7 @@
     <Content Include="Views\RegionParts.html" />
     <Content Include="Views\Register.html" />
     <Content Include="Views\Streets.html" />
-    <Content Include="Views\UploadXls.html" />
+    <Content Include="Views\Admin\UploadXls.html" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>

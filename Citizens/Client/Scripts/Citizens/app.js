@@ -115,8 +115,13 @@ app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider',
         when('/district/:id', routeEditDistrict).
         when('/district/:id/:currPage', routeEditDistrict).
         when('/uploadXls', {
-            templateUrl: 'Views/UploadXls.html',
+            templateUrl: 'Views/Admin/UploadXls.html',
             controller: 'uploadXlsController'
+        }).
+        when('/geocoding-precincts', {
+            templateUrl: 'Views/Admin/GeocodingPrecincts.html',
+            controller: 'geocodingController',
+            resolve: { genlData: function (genlData) { genlData.asyncLoad() } }
         }).
         when('/login', {
             templateUrl: 'Views/Login.html',
@@ -261,6 +266,7 @@ app.run(["$rootScope", "$timeout", '$location', 'Credentials', function ($rootSc
 
     $rootScope.$on('$routeChangeSuccess', function (event, current, previous) {
         $rootScope.errorMsg = '';
+        $rootScope.pageTitle = '';
         $rootScope.loading = false;
     });
 
@@ -436,6 +442,10 @@ app.directive('datepicker', function () {
                     }
                 });
             });
+            //scope.$watch(ngModelCtrl.$viewValue, function (val1,val2) {
+            //    var date = new Date(val1);
+            //    //element.datepicker("setDate", date);
+            //});
         }
     }
 });

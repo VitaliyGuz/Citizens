@@ -6,7 +6,7 @@ precinctControllers.controller("listPrecinctsController", ['$location', '$rootSc
     function ($location, $rootScope, $scope, config, serviceUtil, precinctData, filterSettings) {
         
         $rootScope.pageTitle = 'Дільниці';
-        $scope.tableHead = ['№', 'Дільниця', 'Адреса', 'Дії'];
+        $scope.tableHead = ['№', 'Дільниця', 'Адреса','LatLng','Location type', 'Дії'];
 
         //$scope.options = [
         //      { value: "Number", desc: "Дільниця"},
@@ -217,8 +217,10 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
                 "CityId": 0,
                 "StreetId": 0,
                 "House": '',
-                //"DistrictId": 0,
-                "RegionPartId": 0
+                "RegionPartId": 0,
+                "lat": 0,
+                "lng": 0,
+                "location_type": ''
             };
 
             serviceUtil.copyProperties($scope.precinct, precinct);
@@ -597,3 +599,183 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
             $scope.editAddress(copiedAddress);
         };
     }]);
+
+precinctControllers.controller('geocodingController', ['$scope', '$rootScope', '$timeout', 'precinctData', 'serviceUtil', 'refreshToken', function ($scope, $rootScope, $timeout, precinctData, serviceUtil, refreshToken) {
+    var precincts,
+        length,
+        nextPrecinct,
+        delay, // delay geocoding
+        iter, // for calculate percent progress
+        geocoder = new google.maps.Geocoder(),
+        infowindow = new google.maps.InfoWindow(),
+        mapOptions = {
+            zoom: 8,
+            center: new google.maps.LatLng(49.5880818, 34.5539573)
+            //mapTypeId: google.maps.MapTypeId.ROADMAP
+        },
+        map = new google.maps.Map(document.getElementById("map"), mapOptions),
+        bounds = new google.maps.LatLngBounds(),
+        poltavaRegionBounds = new google.maps.LatLngBounds(
+            new google.maps.LatLng(48.658972672150036, 31.977831054687613),
+            new google.maps.LatLng(50.675018227028374, 35.661003906250016)
+        );
+
+    function createMarker(add, lat, lng) {
+        var contentString = add;
+        var marker = new google.maps.Marker({
+            position: new google.maps.LatLng(lat, lng),
+            map: map
+        });
+
+        google.maps.event.addListener(marker, 'click', function () {
+            infowindow.setContent(contentString);
+            infowindow.open(map, marker);
+        });
+
+        bounds.extend(marker.position);
+        
+    };
+
+    function Delay (delay, stepIncrement, stepDecrement) {
+        var initialVal = delay && delay > 0 ? delay : 0,
+        value = initialVal, countInc = 0,
+        stepInc = stepIncrement && stepIncrement > 0 ? stepIncrement : 0,
+        stepDec = stepDecrement && stepDecrement > 0 ? stepDecrement : 0;
+        this.increment = function () {
+            countInc++;
+            value += stepInc * countInc;
+        };
+        this.decrement = function () {
+            if (value > initialVal) value -= stepDec * countInc;
+        };
+        this.getValue = function () {
+            return value;
+        };
+    };
+
+    function geocode(precinct, next) {
+        var address;
+        if (precinct && precinct.Street && precinct.City) {
+            address = precinct.Street.StreetType.Name + precinct.Street.Name + "," + precinct.House + "," + precinct.City.CityType.Name + precinct.City.Name + "," + precinct.City.RegionPart.Name + " район,Полтавська область,Україна";
+        } else {
+            next();
+            return;
+        }
+        geocoder.geocode({ 'address': address, 'bounds': poltavaRegionBounds, 'region': 'ua' }, function (results, status) {
+            if (status === google.maps.GeocoderStatus.OK) {
+                var location = results[0].geometry.location;
+                precinct.lat = location.lat();
+                precinct.lng = location.lng();
+                precinct.location_type = results[0].geometry.location_type;
+            } else {
+                console.debug(precinct.Id + " [" + new Date().toLocaleString() + "] status: " + status);
+                if (status === google.maps.GeocoderStatus.OVER_QUERY_LIMIT) {
+                    nextPrecinct--;
+                    delay.increment();
+                    next();
+                } else {
+                    precinct.location_type = "NOT FOUND: " + status;
+                }
+            }
+            if (status === google.maps.GeocoderStatus.OK) {
+                var raw = {
+                    "Id": 0,
+                    "Number": 0,
+                    "CityId": 0,
+                    "StreetId": 0,
+                    "House": '',
+                    "RegionPartId": 0,
+                    "lat": 0,
+                    "lng": 0,
+                    "location_type": ''
+                };
+                serviceUtil.copyProperties(precinct, raw);
+                precinctData.update({ id: precinct.Id }, raw, function () {
+                    $rootScope.geocoging.progressNow = Math.round(iter++ / length * 100);
+                    console.debug(precinct.Id + " [" + new Date().toLocaleString() + "] delay: " + delay.getValue());
+                    delay.decrement();
+                    next();
+                }, function (err) {
+                    err.description = "Геокодування дільниці " + precinct.Number + " не записано";
+                    $rootScope.errorMsg = serviceUtil.getErrorMessage(err);
+                });
+            }
+            //next();
+        });
+    };
+
+    function getNextPrecinct() {
+        if (nextPrecinct < length) {
+            $timeout(function () {
+                geocode(precincts[nextPrecinct], getNextPrecinct);
+            }, delay.getValue());
+            nextPrecinct++;
+        }
+        //if (nextPrecinct < precincts.length) {
+        //    geocode(precincts[++nextPrecinct]);
+        //    if (delay > initialDelay) delay -= decD;
+        //}
+    };
+
+    function refreshTokenOnTimeout() {
+        if (nextPrecinct < length) {
+            refreshToken(function(res) {
+                if (res.success) {
+                    console.info("refresh token on timeout");
+                    $timeout(function() {
+                        refreshTokenOnTimeout();
+                    }, 840000); // 14 minutes
+                } else {
+                    if (res.error) {
+                        res.error.description = "Оновлення даних авторизації не відбулося";
+                        $rootScope.errorMsg = serviceUtil.getErrorMessage(res.error);
+                    }
+                }
+            });
+        }
+    };
+
+    $scope.startGeociding = function () {
+        $rootScope.geocoging = {};
+        $rootScope.geocoging.isLoading = true;
+        $rootScope.geocoging.progressNow = 0;
+        precincts = [], length = 0, nextPrecinct = 0, iter = 1;
+        precinctData.getAll(function (data) {
+            precincts = data.value;
+            length = precincts.length;
+            refreshTokenOnTimeout();
+            $rootScope.geocoging.isLoading = false;
+            $rootScope.geocoging.isProgress = true;
+            delay = new Delay(2000, 60000, 60000);
+            geocode(precincts[0], getNextPrecinct);
+        }, function(error) {
+            $rootScope.geocoging.isLoading = false;
+            error.description = 'Геокодування дільниць не виконано';
+            $rootScope.errorMsg = serviceUtil.getErrorMessage(error);
+        });
+    };
+
+    $scope.showMarkers = function () {
+        if (!$scope.selected.RegionPartId) return;
+        $scope.isMarkering = true;
+        var precincts = [];
+        precinctData.getByRegionPartId({ regionPartId: $scope.selected.RegionPartId }, function (data) {
+            $scope.isMarkering = false;
+            precincts = data.value;
+            precincts.forEach(function (item) {
+                var address = item.Street.StreetType.Name + item.Street.Name + ", " + item.House + ", " + item.City.CityType.Name + item.City.Name + ", " + item.City.RegionPart.Name + " р-н";
+                createMarker(address, item.lat, item.lng);
+            });
+            map.fitBounds(bounds);
+        }, function (error) {
+            $scope.isMarkering = false;
+            error.description = 'Маркування дільниць не виконано';
+            $rootScope.errorMsg = serviceUtil.getErrorMessage(error);
+        });
+    };
+
+    $scope.onSelectRegionPart = function ($item, $model, $label) {
+        $scope.selected.RegionPart = $item;
+        $scope.selected.RegionPartId = $model;
+    };
+}]);

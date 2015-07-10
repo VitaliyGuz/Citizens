@@ -47,6 +47,8 @@
     <script src="Scripts/Citizens/Controllers/userControllers.js"></script>
     <script src="Scripts/Citizens/Controllers/uploadXlsController.js"></script>
     <script src="Scripts/Citizens/Controllers/districtControllers.js"></script>
+    <!-- GECODE -->
+    <script src="https://maps.googleapis.com/maps/api/js?sensor=false&language=uk&key=AIzaSyD5rEzPHikmpU-4W2Nu__A7CeJgTYEe_lg"></script>
     <title>Citizens</title>
 </head>
 <body>
@@ -67,7 +69,17 @@
                     <li><a href="/cities">Населені пункти</a></li>
                     <li><a href="/region-parts">Райони</a></li>
                     <li><a href="/districts">Округи</a></li>
-                    <li><a href="/uploadXls">Завантажити Excel</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" >
+                            Адміністрування
+                            <span class="caret"></span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a href="/uploadXls">Завантажити Excel</a></li>
+                            <li><a href="/geocoding-precincts">Геокодування дільниць</a></li>
+                            <li><a href="/users">Користувачі</a></li>
+                        </ul>
+                    </li>
                 </ul>
                 <ul class="list-inline navbar-text navbar-right">
                     <li ng-if="UserInfo">{{UserInfo.UserName}}</li>

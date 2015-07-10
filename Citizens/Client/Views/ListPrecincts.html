@@ -13,6 +13,7 @@
                 <option value="City/Name">Населений пункт</option>
                 <option value="Street/Name">Вулиця</option>
                 <option value="House">Буд</option>
+                <option value="location_type">location_type</option>
             </select>
             <button type="submit" class="btn btn-success" title="Виконати пошук">
                 <span class="glyphicon glyphicon-search"></span>
@@ -38,6 +39,8 @@
             <td>{{ precinct.Number }}</td>
             <td>{{ precinct.Street.StreetType.Name }}{{ precinct.Street.Name }}, {{ precinct.House }}, {{ precinct.City.CityType.Name }}{{ precinct.City.Name }}, {{ precinct.City.RegionPart.Name }} р-н.</td>
             <!--<td>{{ precinct.District.Id }}</td>-->
+            <td>({{ precinct.lat }},{{ precinct.lng }})</td>
+            <td>{{ precinct.location_type }}</td>
             <td>
                 <button class="btn btn-xs" ng-click="edit(precinct)" title="Редагувати">
                     <span class="glyphicon glyphicon-edit"></span>

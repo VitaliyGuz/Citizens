@@ -116,6 +116,17 @@ authServices.service('Registration', ['$http', 'Credentials', 'config', 'Success
 
 }]);
 
+authServices.service('refreshToken', ['$http', '$rootScope', 'Credentials', 'config', function ($http, $rootScope, Credentials, config) {
+    return function (callback) {
+        $http.get(config.baseUrl + '/api/Account/RefreshToken').success(function (resp) {
+            Credentials.set(resp.token_type + ' ' + resp.access_token, resp.expires_in, $rootScope.UserInfo);
+            callback({success: true});
+        }).error(function (e) {
+            callback({ success: false, error: e });
+        });
+    }
+}]);
+
 authServices.factory('authInterceptor', ['$q', '$location', '$rootScope', '$injector', 'Credentials', 'config', 'serviceUtil',function ($q, $location, $rootScope, $injector, Credentials, config, serviceUtil) {
 
     var refreshingToken = false;
@@ -141,22 +152,22 @@ authServices.factory('authInterceptor', ['$q', '$location', '$rootScope', '$inje
                 if (authData.expireDate) {
                     var currDate = new Date(),
                         expireDate = new Date(authData.expireDate);
-                    diff = Math.abs((expireDate.getTime() - currDate.getTime()) / 1000);
+                    //diff = Math.round((expireDate.getTime() - currDate.getTime()) / 1000);
+                    diff = (expireDate.getTime() - currDate.getTime()) / 1000;
                 }
                 configReq.headers.Authorization = authData.accessToken;
             }
             if (diff <= 30 && !refreshingToken && authData) {
                 refreshingToken = true;
-                var $http = $injector.get('$http'); // cannot inject $http servise in interceptor provider
-                $http.get(config.baseUrl + '/api/Account/RefreshToken').success(function(resp) {
+                var refreshToken = $injector.get('refreshToken'); // cannot inject $http servise in interceptor provider
+                refreshToken(function(result) {
                     refreshingToken = false;
-                    Credentials.set(resp.token_type + ' ' + resp.access_token, resp.expires_in, $rootScope.UserInfo);
-                }).error(function (e) {
-                    refreshingToken = false;
-                    e.description = 'Оновлення даних авторизації не відбулося';
-                    $rootScope.errorMsg = serviceUtil.getErrorMessage(e);
+                    if (!result.success) {
+                        result.error.description = 'Оновлення даних авторизації не відбулося';
+                        $rootScope.errorMsg = serviceUtil.getErrorMessage(result.error);
+                    }
+                    //console.info('refresh token ' + diff);
                 });
-                //console.info('refresh token');
             }
             return configReq;
         },

@@ -15,6 +15,7 @@ angular.module("precinctServices", ['ngResource'])
 		    'getById': { method: 'GET', params: params, url: urlOdata + "(:id)" + baseExpand + "," + addressesExpand + "," + districtsExpand },
 		    'getByIdNotExpand': { method: 'GET', params: params, url: urlOdata + "(:id)" },
 		    'getAllNotExpand': { method: 'GET', url: urlOdata + "?$orderby=Number asc", cache: false },
+		    'getByRegionPartId': { method: 'GET', params: { regionPartId: '@regionPartId' }, url: urlOdata + baseExpand + "&$filter=RegionPartId eq :regionPartId", cache: false },
 		    'getPageItems': { method: 'GET', params: { skip: "@skip" }, url: urlOdata + baseExpand + paginate + order },
 		    'getFilteredPageItems': { method: 'GET', params: { skip: "@skip", filter: '@filter' }, url: urlOdata + baseExpand + "&$filter=:filter" + paginate + order },
 		    'saveAll': { method: 'PATCH', url: urlOdata },
