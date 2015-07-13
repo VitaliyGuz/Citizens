@@ -11,7 +11,7 @@ angular.module("precinctServices", ['ngResource'])
             params = { id: "@id" };
         return $resource('', {},
 		{
-		    'getAll': { method: 'GET', url: urlOdata + baseExpand + order, cache: false },
+		    'getAll': { method: 'GET', params: { filter: '@filter'}, url : urlOdata + baseExpand + ":filter" +order, cache: false },
 		    'getById': { method: 'GET', params: params, url: urlOdata + "(:id)" + baseExpand + "," + addressesExpand + "," + districtsExpand },
 		    'getByIdNotExpand': { method: 'GET', params: params, url: urlOdata + "(:id)" },
 		    'getAllNotExpand': { method: 'GET', url: urlOdata + "?$orderby=Number asc", cache: false },
@@ -122,7 +122,7 @@ angular.module("precinctServices", ['ngResource'])
             }
         };
     }]).
-    factory('districtsHolder', ['districtData', function (districtData) {
+    factory('districtsHolder', function () {
         var districts, index;
         return {
             get: function () {
@@ -142,7 +142,6 @@ angular.module("precinctServices", ['ngResource'])
                 if (districts && elem) districts.push(elem);
             },
             removeElem: function (elem) {
-                //if (districts && elem) districts.splice(districts.indexOf(elem), 1);
                 districts.splice(this.indexOf(elem), 1);
             },
             isEmpty: function () {
@@ -159,7 +158,7 @@ angular.module("precinctServices", ['ngResource'])
                 }
             }
         }
-    }]);
+    });
     //.service('asyncLoadPrecincts', ['$q', 'precinctData', 'serviceUtil', function ($q, precinctData, serviceUtil) {
     //    function getPrecinctsPromise() {
     //        var deferred = $q.defer();

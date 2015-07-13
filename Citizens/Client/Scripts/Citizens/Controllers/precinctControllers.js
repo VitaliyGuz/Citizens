@@ -740,7 +740,7 @@ precinctControllers.controller('geocodingController', ['$scope', '$rootScope', '
         $rootScope.geocoging.isLoading = true;
         $rootScope.geocoging.progressNow = 0;
         precincts = [], length = 0, nextPrecinct = 0, iter = 1;
-        precinctData.getAll(function (data) {
+        precinctData.getAll({ filter: '&$filter=lat eq null and lng eq null' }, function (data) {
             precincts = data.value;
             length = precincts.length;
             refreshTokenOnTimeout();
