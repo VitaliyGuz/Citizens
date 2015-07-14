@@ -6,18 +6,16 @@ districtControllers.controller("listDistrictsController", ['$rootScope', '$locat
     function ($rootScope, $location, $scope, config, serviceUtil, districtData, filterSettings, districtsHolder) {
 
         $rootScope.pageTitle = 'Округи';
-        $rootScope.editInd = -1;
         $scope.currentPage = serviceUtil.getRouteParam("currPage") || 1;
         $scope.pageSize = config.pageSize;
 
         $scope.tableHead = ['№', '№ округу', 'Тип', 'Дії'];
 
-        // todo: get data before load page
+        // todo: get data before load page (see listUsersController )
         if (districtsHolder.isEmpty()) {
             $scope.loadingDistricts = true;
             districtData.query(function (res) {
                 $scope.loadingDistricts = false;
-                //$scope.districts = res.value;
                 districtsHolder.set(res.value);
                 districtsHolder.sort();
             }, function (err) {
@@ -90,7 +88,7 @@ districtControllers.controller('editDistrictController', ['$rootScope', '$scope'
         $scope.tableHead = ['№', 'Дільниця'];
         $scope.selected = { precinct: undefined };
         $scope.districtPrecincts = [];
-        // todo: get all data before load page
+        // todo: get all data before load page (see listUsersController )
         var id = serviceUtil.getRouteParam("id");
         if (id) {
             addMode = false;
