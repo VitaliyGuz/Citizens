@@ -57,7 +57,7 @@ angular.module("precinctServices", ['ngResource'])
             'remove': { method: 'DELETE', params: params, url: urlOdata + key }
         });
     }])
-    .factory('dataForEditPrecinctPage', ['$q', 'serviceUtil', 'precinctData', 'districtData', function ($q, serviceUtil, precinctData, districtData) {
+    .factory('dataForEditPrecinctPage', ['$q', 'serviceUtil', 'precinctData', 'districtData', 'userData', 'usersHolder', function ($q, serviceUtil, precinctData, districtData, userData, usersHolder) {
 
         function getPrecinctPromise(routeParam) {
             var deferred = $q.defer();
@@ -80,6 +80,32 @@ angular.module("precinctServices", ['ngResource'])
                 deferred.resolve(res.value);
             }, function (err) {
                 err.description = 'Округи не завантажено',
+                deferred.reject(serviceUtil.getErrorMessage(err));
+            });
+            return deferred.promise;
+        };
+
+        function getUserPrecintcsPromise(precinctId) {
+            var deferred = $q.defer();
+            userData.getUserPrecinctsByPrecinctId({ precinctId: precinctId }, function (res) {
+                function mappedUsers(users) {
+                    if (users && users.length > 0) {
+                        res.value = res.value.map(function(userPrecinct) {
+                            userPrecinct.User = users.filter(function(user) {
+                                return userPrecinct.UserId === user.Id;
+                            })[0];
+                            return userPrecinct;
+                        });
+                    }
+                    deferred.resolve(res.value);
+                };
+                if (usersHolder.isEmpty()) {
+                    usersHolder.asyncLoad().then(function () { mappedUsers(usersHolder.get()) }, function (err) { deferred.reject(serviceUtil.getErrorMessage(err)) });
+                } else {
+                    mappedUsers(usersHolder.get());
+                }
+            }, function (err) {
+                err.description = 'Користувачі не завантажено',
                 deferred.reject(serviceUtil.getErrorMessage(err));
             });
             return deferred.promise;
@@ -116,7 +142,8 @@ angular.module("precinctServices", ['ngResource'])
                 //return deferred.promise;
                 return $q.all({
                     precinct: getPrecinctPromise(routeParam),
-                    districts: getDistrictsPromise()
+                    districts: getDistrictsPromise(),
+                    userPrecincts: getUserPrecintcsPromise(routeParam)
                     //precincts: getPrecinctsPromise() // precincts async loading in controller
                 });
             }
@@ -159,29 +186,3 @@ angular.module("precinctServices", ['ngResource'])
             }
         }
     });
-    //.service('asyncLoadPrecincts', ['$q', 'precinctData', 'serviceUtil', function ($q, precinctData, serviceUtil) {
-    //    function getPrecinctsPromise() {
-    //        var deferred = $q.defer();
-    //        precinctData.getAll(function (res) {
-    //            deferred.resolve(res.value);
-    //        }, function (err) {
-    //            var errMsg = 'Дільниці не завантажено',
-    //                errDetail = serviceUtil.getErrorMessage(err);
-    //            if (errDetail) errMsg = errMsg + ' (' + errDetail + ')';
-    //            deferred.reject(errMsg);
-    //        });
-    //        return deferred.promise;
-    //    };
-
-    //    return function () {
-    //        var deferred = $q.defer();
-    //        function errorHandler(err) {
-    //            deferred.reject(err);
-    //        };
-    //        getPrecinctsPromise().then(function (precincts) {
-    //            deferred.resolve(precincts);
-    //        }, errorHandler);
-
-    //        return deferred.promise;
-    //    };
-    //}])

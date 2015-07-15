@@ -179,15 +179,15 @@
                 <th>Округ</th>
                 <th>Тип</th>
                 <th>
-                    <button ng-click="addNewPrecinctDistrict()" class="btn btn-sm btn-success" title="Створити нову округ">
-                        <span class="glyphicon glyphicon-plus"></span> Додати округ
+                    <button ng-click="addNewPrecinctDistrict()" class="btn btn-sm btn-success" title="Додати новий округ">
+                        <span class="glyphicon glyphicon-plus"></span> Додати
                     </button>
                 </th>
             </tr>
             </thead>
             <tbody>
-                <tr ng-show="addDistrictMode" ng-include="'editDistrict'"></tr>
-                <tr ng-repeat="precinctDistrict in precinctDistricts" ng-include="getTemplateDistricts(precinctDistrict)"></tr>
+            <tr ng-show="addDistrictMode" ng-include="'editDistrict'"></tr>
+            <tr ng-repeat="precinctDistrict in precinctDistricts" ng-include="getTemplateDistricts(precinctDistrict)"></tr>
             </tbody>
         </table>
         <script type="text/ng-template" id="displayDistrict">
@@ -218,6 +218,59 @@
                     <i ng-show="savingPrecinctDistrict" class="fa fa-refresh fa-spin"></i>
                 </button>
                 <button class="btn btn-sm btn-success" ng-click="resetPrecinctDistrict()" title="Відмінити зміни">
+                    <span class="glyphicon glyphicon-remove"></span>
+                </button>
+            </td>
+        </script>
+    </tab>
+    <tab heading="Користувачі">
+        <br />
+        <table class="table table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th>№</th>
+                    <th>Користувач</th>
+                    <th>Ролі</th>
+                    <th>
+                        <button ng-click="addNewUserPrecinct()" class="btn btn-sm btn-success" title="Додати нового користувача">
+                            <span class="glyphicon glyphicon-plus"></span> Додати
+                        </button>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-show="addUserMode" ng-include="'editUser'"></tr>
+                <tr ng-repeat="userPrecinct in userPrecincts" ng-include="getTemplateUsers(userPrecinct)"></tr>
+            </tbody>
+        </table>
+        <script type="text/ng-template" id="displayUser">
+            <td>{{ $index + 1 }}</td>
+            <td>{{ userPrecinct.User.FirstName }}</td>
+            <td>{{ userRolesToString(userPrecinct.User) }}</td>
+            <td>
+                <button class="btn btn-xs" ng-click="editUserPrecinct(userPrecinct)" title="Редагувати">
+                    <span class="glyphicon glyphicon-edit"></span>
+                </button>
+                <button class="btn btn-xs" ng-click="deleteUserPrecinct(userPrecinct,$index)" title="Видалити">
+                    <span class="glyphicon glyphicon-trash"></span>
+                </button>
+            </td>
+        </script>
+        <script type="text/ng-template" id="editUser">
+            <td>{{ $index + 1 }}</td>
+            <td>
+                <select class="form-control" ng-options="u.Id as u.FirstName for u in users"
+                        ng-model="selected.userPrecinct.UserId">
+                    <option value='' disabled>-Вибрати-</option>
+                </select>
+            </td>
+            <td>{{ userRolesToString(userPrecinct.User) }}</td>
+            <td>
+                <button ng-click="saveUserPrecinct(userPrecinct,$index)" class="btn btn-sm btn-success" title="Зберегти зміни">
+                    <span class="glyphicon glyphicon-save"></span>
+                    <i ng-show="savingUserPrecinct" class="fa fa-refresh fa-spin"></i>
+                </button>
+                <button class="btn btn-sm btn-success" ng-click="resetUserPrecinct()" title="Відмінити зміни">
                     <span class="glyphicon glyphicon-remove"></span>
                 </button>
             </td>

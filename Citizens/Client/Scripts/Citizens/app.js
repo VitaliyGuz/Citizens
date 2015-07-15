@@ -4,7 +4,7 @@ var app = angular.module("citizens",
     [
         'ngRoute', 'ngCookies',
         'angularUtils.directives.dirPagination','ui.bootstrap',
-        'peopleControllers', 'streetControllers', 'regionPartControllers', 'cityControllers', 'authControllers', 'precinctControllers', 'uploadXlsModule', 'districtControllers'
+        'peopleControllers', 'streetControllers', 'regionPartControllers', 'cityControllers', 'authControllers', 'precinctControllers', 'uploadXlsModule', 'districtControllers', 'userControllers'
     ]
 );
 
@@ -84,6 +84,22 @@ app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider',
             templateUrl: 'Views/EditDistrict.html',
             controller: 'editDistrictController',
             resolve: { genlData: function(genlData) { genlData.asyncLoad() } }
+        },
+        routeEditUser = {
+            templateUrl: 'Views/Admin/EditUser.html',
+            controller: 'editUserController',
+            resolve: {
+                genlData: function (genlData) { genlData.asyncLoad() },
+                resolvedUser: function ($route, usersHolder) { return usersHolder.asyncLoadById($route.current.params.id) }
+            }
+        },
+        routeUsers = {
+            templateUrl: 'Views/Admin/Users.html',
+            controller: 'listUsersController',
+            resolve: {
+                genlData: function (genlData) { genlData.asyncLoad() },
+                resolvedUsers: function (usersHolder) { usersHolder.asyncLoad() }
+            }
         };
 
     $routeProvider.
@@ -114,6 +130,10 @@ app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider',
         when('/district/new/:currPage', routeEditDistrict).
         when('/district/:id', routeEditDistrict).
         when('/district/:id/:currPage', routeEditDistrict).
+        when('/users', routeUsers).
+        when('/users/:currPage', routeUsers).
+        when('/user/:id', routeEditUser).
+        when('/user/:id/:currPage', routeEditUser).
         when('/uploadXls', {
             templateUrl: 'Views/Admin/UploadXls.html',
             controller: 'uploadXlsController'

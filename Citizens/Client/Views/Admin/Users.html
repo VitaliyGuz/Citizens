@@ -23,7 +23,7 @@
             <td>{{ getIndex(user) + 1 }}</td>
             <td>{{ user.FirstName }}</td>
             <td>{{ user.Email }}</td>
-            <td>{{ user.Roles.toString() }}</td>
+            <td>{{ userRolesToString(user) }}</td>
             <td>
                 <button class="btn btn-xs" ng-click="edit(user,$index)" title="Редагувати">
                     <span class="glyphicon glyphicon-edit"></span>

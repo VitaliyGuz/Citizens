@@ -1,17 +1,15 @@
-﻿<h5 ng-show="loadingUser">Завантаження... <i class="fa fa-refresh fa-spin"></i></h5>
+﻿<h5 ng-show="load.loadingData">Завантаження... <i class="fa fa-refresh fa-spin"></i></h5>
 <hr />
 <form ng-submit="saveUser()" class="form-horizontal">
-    <div class="row container">
-        <div class="form-group col-lg-4">
-            <label>П.І.Б.</label>
-            <input ng-model="user.FirstName" type="text" class="form-control" required>
-        </div>
-    </div>
     <div class="row">
-        <div class="col-lg-12">
+        <div class=" col-lg-4">
+            <!--<label>П.І.Б.</label>-->
+            <input ng-model="user.FirstName" type="text" class="form-control" placeholder="П.І.Б." required>
+        </div>
+        <div class="col-lg-8">
             <button type="submit" class="btn btn-sm btn-success" title="Зберегти зміни">
                 <span class="glyphicon glyphicon-save"></span> Зберегти
-                <i ng-show="saving" class="fa fa-refresh fa-spin"></i>
+                <i ng-show="saving.user" class="fa fa-refresh fa-spin"></i>
             </button>
             <button type="button" class="btn btn-sm btn-success" ng-click="backToList()" title="Повернутися до списку користувачів">
                 <span class="glyphicon glyphicon-arrow-left"></span> Завершити
@@ -19,4 +17,129 @@
         </div>
     </div>
 </form>
-<hr />
+<hr/>
+<div class="form-horizontal">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            Дільниці
+            <button ng-hide="isEditingUserPrecincts" class="btn btn-xs btn-default" ng-click="onEditUserPrecincts()" title="Редагувати">
+                <span class="glyphicon glyphicon-pencil"></span>
+            </button>
+            <i ng-show="load.editingUserPrecincts" class="fa fa-spinner fa-spin"></i>
+            <button ng-hide="!isEditingUserPrecincts" class="btn btn-xs btn-default" ng-click="completeEditingUserPrecincts()" title="Завершити редагування">
+                <span class="glyphicon glyphicon-saved"></span>
+            </button>
+            <i ng-show="load.loadingUserPrecincts" class="fa fa-spinner fa-spin"></i>
+        </div>
+        <div class="panel-body">
+            <div ng-if="isEditingUserPrecincts" class="row">
+                <div class="col-xs-6">
+                    <div class="input-group">
+                        <input type="text" ng-change="selected.regionPartId=undefined" typeahead-on-select="onSelectRegionPart($item, $model, $label)" ng-model="selected.regionPart"
+                               typeahead="r.Id as r.Name for r in regionParts | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control" placeholder="Райoн">
+                        <span class="input-group-btn">
+                            <button type="button" class="btn btn-primary" ng-click="clearInputRegionPart()">
+                                <span class="glyphicon glyphicon-remove"></span>
+                            </button>
+                        </span>
+                    </div>
+                </div>
+                <div class="col-xs-6">
+                    <button class="btn btn-sm btn-success" ng-click="saveUserPrecinctChanges()">
+                        Зберегти зміни
+                        <i ng-show="saving.userPrecincts" class="fa fa-refresh fa-spin"></i>
+                    </button>
+                    <button class="btn btn-sm btn-success" ng-click="checkAllUserPrecincts()" title="Відмітити всі дільниці">
+                        <span class="glyphicon glyphicon-check"></span>
+                    </button>
+                    <button class="btn btn-sm btn-success" ng-click="uncheckAllUserPrecincts()" title="Зняти всі відмітки">
+                        <span class="glyphicon glyphicon-unchecked"></span>
+                    </button>
+                    <input type="checkbox" ng-model="selected.onlyUserPrecincts" />Показати тільки дільниці користувача
+                </div>
+            </div>
+            <div ng-if="isEditingUserPrecincts">
+                <br/>
+                <ul class="list-group list-inline">
+                    <li ng-repeat="precinct in precincts | filter: getFilterExpression(): true">
+                        <span class="btn-sm {{ markUserPrecinct(precinct) }}"><input type="checkbox" class="checkbox-inline" ng-click="toggleSelection('precincts',precinct)" ng-checked="checkedItem('precincts',precinct)" /> {{precinct.Number}}</span>
+                    </li>
+                </ul>
+            </div>
+            <div ng-if="!isEditingUserPrecincts">
+                <br />
+                <ul class="list-group list-inline">
+                    <li ng-repeat="userPrecinct in userPrecincts">
+                        <span class="btn-sm btn-primary"> {{userPrecinct.Precinct.Number}}</span>
+                    </li>
+                </ul>
+            </div>
+            <!--<ul class="list-group">
+                <li class="list-group-item" ng-repeat="userPrecinct in userPrecincts">
+                    <div class="row">
+                        <div class="col-sm-10">
+                            <h4 class="list-group-item-heading"> <input class="checkbox-inline" type="checkbox" ng-click="toggleSelection(userPrecinct)" ng-checked="checkedUserPrecinct(userPrecinct)"/> {{userPrecinct.Precinct.Number}}</h4>
+                            <p class="list-group-item-text">Precinct address</p>
+                        </div>
+                        <div class="col-sm-offset-1">
+                            <button class="btn btn-xs ">remove</button>
+                        </div>
+                    </div>
+                </li>
+            </ul>-->
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    Ролі
+                    <button ng-hide="isEditingUserRoles" class="btn btn-xs btn-default" ng-click="onEditUserRoles()" title="Редагувати">
+                        <span class="glyphicon glyphicon-pencil"></span>
+                    </button>
+                    <i ng-show="load.editingUserRoles" class="fa fa-spinner fa-spin"></i>
+                    <button ng-hide="!isEditingUserRoles" class="btn btn-xs btn-default" ng-click="completeEditingUserRoles()" title="Завершити редагування">
+                        <span class="glyphicon glyphicon-saved"></span>
+                    </button>
+                    <i ng-show="load.loadingUserRoles" class="fa fa-spinner fa-spin"></i>
+                </div>
+                <div ng-if="isEditingUserRoles" class="panel-body">
+                    <button class="btn btn-sm btn-success" ng-click="saveUserRolesChanges()">
+                        Зберегти зміни
+                        <i ng-show="saving.userRoles" class="fa fa-refresh fa-spin"></i>
+                    </button>
+                    <button class="btn btn-sm btn-success" ng-click="checkAllRoles()" title="Відмітити всі ролі">
+                        <span class="glyphicon glyphicon-check"></span>
+                    </button>
+                    <button class="btn btn-sm btn-success" ng-click="uncheckAllRoles()" title="Зняти всі відмітки">
+                        <span class="glyphicon glyphicon-unchecked"></span>
+                    </button>
+                </div>
+                <ul ng-if="isEditingUserRoles" class="list-group">
+                    <li class="list-group-item {{ markUserRole(role) }}" ng-repeat="role in roles">
+                        <h5 class="list-group-item-heading"> <input class="checkbox-inline" type="checkbox" ng-click="toggleSelection('roles',role)" ng-checked="checkedItem('roles',role)" /> {{role.Name}}</h5>
+                    </li>
+                </ul>
+                <ul ng-if="!isEditingUserRoles" class="list-group">
+                    <li class="list-group-item" ng-repeat="userRole in userRoles">
+                        <h5 class="list-group-item-heading"> {{userRole.Role.Name}}</h5>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <!--<div class="col-lg-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">Logins</div>
+                <div class="panel-body">
+                    <p>=== add here buttons ===</p>
+                </div>
+                <ul class="list-group">
+                    <li class="list-group-item">Login</li>
+                    <li class="list-group-item">Login</li>
+                    <li class="list-group-item">Login</li>
+                </ul>
+            </div>
+        </div>-->
+    </div>
+</div>
