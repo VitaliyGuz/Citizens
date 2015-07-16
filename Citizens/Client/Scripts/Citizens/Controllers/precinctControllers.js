@@ -110,8 +110,7 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
     function ($location, $rootScope, $scope, $routeParams, serviceUtil, config, precinctData, districtData, precinctAddressesData, resolvedData, userData, usersHolder) {
         var copyAddressMode, editableAddress, editablePrecinctDistrict, editableUserPrecinct;
         $rootScope.pageTitle = 'Дільниця';
-        $scope.saving = false;
-        $scope.savingAddress = false;
+        $scope.saving = {};
         $scope.changingPresinct = false;
         $scope.addMode = true;
 
@@ -235,7 +234,7 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
                 return;
             }
             $rootScope.errorMsg = '';
-            $scope.saving = true;
+            $scope.saving.precinct = true;
             var precinct = {
                 "Id": 0,
                 "Number": 0,
@@ -259,7 +258,7 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
                 }, errorHandler);
             }
             function successHandler(resp) {
-                $scope.saving = false;
+                $scope.saving.precinct = false;
                 if ($scope.addMode) {
                     $scope.addMode = false;
                     $scope.precinct.Id = resp.id;
@@ -297,7 +296,7 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
                 return;
             }
             $rootScope.errorMsg = '';
-            $scope.savingAddress = true;
+            $scope.saving.address = true;
             // todo: factory method
             var address = {
                 "CityId": 0,
@@ -320,8 +319,8 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
                 precinctAddressesData.save(data,
                     function (saved) {
                         precinctAddressesData.query(serviceUtil.getAddressKey(saved), function (res) {
-                            $scope.savingAddress = false;
-                            $scope.savingAddresses = false;
+                            $scope.saving.address = false;
+                            $scope.saving.autocompleteAddresses = false;
                             if (i == undefined) {
                                 $scope.precinctAddresses.push(res);
                             } else {
@@ -345,7 +344,7 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
             }
 
             $rootScope.errorMsg = '';
-            $scope.savingPrecinctDistrict = true;
+            $scope.saving.precinctDistrict = true;
             // todo: factory method
             var precinctDistrict = {
                 "DistrictId": $scope.selected.precinctDistrict.DistrictId,
@@ -360,7 +359,7 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
 
             function successHandler(data) {
                 districtData.getPrecinctDistricts({ districtId: data.DistrictId, precinctId: data.PrecinctId }, function(res) {
-                    $scope.savingPrecinctDistrict = false;
+                    $scope.saving.precinctDistrict = false;
                     if ($scope.addDistrictMode) {
                         $scope.precinctDistricts.push(res);
                     } else {
@@ -393,7 +392,7 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
             }
 
             $rootScope.errorMsg = '';
-            $scope.savingUserPrecinct = true;
+            $scope.saving.userPrecinct = true;
             // todo: factory method
             var raw = {
                 "UserId": $scope.selected.userPrecinct.UserId,
@@ -408,7 +407,7 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
 
             function successHandler(res) {
                 res.User = $scope.users.filter(function (user) { return res.UserId === user.Id })[0];
-                $scope.savingUserPrecinct = false;
+                $scope.saving.userPrecinct = false;
                 if ($scope.addUserMode) {
                     $scope.userPrecincts.push(res);
                 } else {
@@ -502,12 +501,7 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
 
         function errorHandler(e) {
             $rootScope.errorMsg = '';
-            $scope.saving = false;
-            $scope.savingAddress = false;
-            $scope.savingAddresses = false;
-            $scope.savingPrecinctDistrict = false;
-            $scope.savingUserPrecinct = false;
-            $scope.savingUserPrecincts = false;
+            $scope.saving = {};
             $scope.resetAddress();
             $scope.resetPrecinctDistrict();
             $scope.resetUserPrecinct();
@@ -562,10 +556,10 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
                 return arr;
             };
 
-            $scope.savingAddresses = true;
+            $scope.saving.autocompleteAddresses = true;
             precinctData.saveAll({ PrecinctAddresses: getArrayAddresses() }, function () {
                 precinctData.getById({ id: $scope.precinct.Id }, function (res) {
-                    $scope.savingAddresses = false;
+                    $scope.saving.autocompleteAddresses = false;
                     $scope.precinctAddresses = res.PrecinctAddresses;
                     //$scope.precinctAddresses.sort(compareAddresses);
                     sortAddresses($scope.precinctAddresses);
@@ -576,18 +570,30 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
         $scope.autoCompleteUserPrecincts = function () {
             if (!checkPrecinct()) return;
             $rootScope.errorMsg = '';
-            var ok = confirm("Додати користувачів з ролью " + $scope.selected.role.Name + "?");
+            var ok = confirm("Додати користувачів з роллю '" + $scope.autocomplete.role.Name + "'?");
             if (!ok) return;
-            usersHolder.getByRole($scope.selected.role).forEach(function (user) {
-                $scope.savingUserPrecincts = true;
-                userData.saveUserPrecinct({ "UserId": user.Id, "PrecinctId": $scope.precinct.Id }, function (success) {
-                    $scope.savingUserPrecincts = false;
-                    success.User = user;
-                    $scope.userPrecincts.push(success);
+            var conflictUserNames = [];
+            usersHolder.getByRole($scope.autocomplete.role).forEach(function (user) {
+                $scope.saving.autocompleteUserPrecincts = true;
+                userData.saveUserPrecinct({ "UserId": user.Id, "PrecinctId": $scope.precinct.Id }, function (savedUserPrecinct) {
+                    $scope.saving.autocompleteUserPrecincts = false;
+                    savedUserPrecinct.User = user;
+                    $scope.userPrecincts.push(savedUserPrecinct);
                     $scope.userPrecincts.sort(function (a, b) {
                         return a.User.FirstName.localeCompare(b.User.FirstName);
                     });
-                }, errorHandler);
+                }, function(err) {
+                    $scope.saving.autocompleteUserPrecincts = false;
+                    if (err && err.status && err.status === 409) {
+                        conflictUserNames.push(user.FirstName);
+                        if (conflictUserNames.length > 1 ) {
+                            err.description = "Користувачі " + conflictUserNames.join(", ") + " вже закріплені за даною дільницею";
+                        } else {
+                            err.description = "Користувач " + conflictUserNames[0]+ " вже закріплений за даною дільницею";
+                        }
+                    }
+                    $rootScope.errorMsg = serviceUtil.getErrorMessage(err);
+                });
             });
         };
 
@@ -681,12 +687,12 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
                 "House": '',
                 "PrecinctId": 0
             };
-            $scope.savingAddress = true;
+            $scope.saving.address = true;
             serviceUtil.copyProperties(selectedAddress, address);
             address.PrecinctId = $scope.selected.newPrecinctId;
             precinctAddressesData.changePrecinct(serviceUtil.getAddressKey(address), address, function () {
                 $scope.changingPresinct = false;
-                $scope.savingAddress = false;
+                $scope.saving.address = false;
                 $scope.resetAddress();
                 $scope.precinctAddresses.splice(ind, 1);
             }, errorHandler);

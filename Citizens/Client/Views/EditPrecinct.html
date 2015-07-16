@@ -46,7 +46,7 @@
     <div class="container row">
         <button type="submit" class="btn btn-sm btn-success" title="Зберегти зміни">
             <span class="glyphicon glyphicon-save"></span> Зберегти
-            <i ng-show="saving" class="fa fa-refresh fa-spin"></i>
+            <i ng-show="saving.precinct" class="fa fa-refresh fa-spin"></i>
         </button>
         <button type="button" class="btn btn-sm btn-success" ng-click="backToList()" title="Повернутися до списку дільниць">
             <span class="glyphicon glyphicon-arrow-left"></span> Завершити
@@ -78,8 +78,8 @@
                     </div>
                     <div class="form-group col-lg-2">
                         <button type="submit" class="btn btn-sm btn-success">
-                            <span ng-show="!savingAddresses" class="glyphicon glyphicon-list"></span> Додати адреси
-                            <i ng-show="savingAddresses" class="fa fa-refresh fa-spin"></i>
+                            <span ng-show="!saving.autocompleteAddresses" class="glyphicon glyphicon-list"></span> Додати адреси
+                            <i ng-show="saving.autocompleteAddresses" class="fa fa-refresh fa-spin"></i>
                         </button>
                     </div>
                 </form>
@@ -141,7 +141,7 @@
             <td>
                 <button ng-click="saveChangesPrecinct(address,$index)" class="btn btn-sm btn-success" title="Зберегти зміни">
                     <span class="glyphicon glyphicon-save"></span>
-                    <i ng-show="savingAddress" class="fa fa-refresh fa-spin"></i>
+                    <i ng-show="saving.address" class="fa fa-refresh fa-spin"></i>
                 </button>
                 <button class="btn btn-sm btn-success" ng-click="resetAddress()" title="Відмінити зміни">
                     <span class="glyphicon glyphicon-remove"></span>
@@ -162,7 +162,7 @@
             <td>
                 <button ng-click="saveAddress(address,$index)" class="btn btn-sm btn-success" title="Зберегти зміни">
                     <span class="glyphicon glyphicon-save"></span>
-                    <i ng-show="savingAddress" class="fa fa-refresh fa-spin"></i>
+                    <i ng-show="saving.address" class="fa fa-refresh fa-spin"></i>
                 </button>
                 <button class="btn btn-sm btn-success" ng-click="resetAddress()" title="Відмінити зміни">
                     <span class="glyphicon glyphicon-remove"></span>
@@ -215,7 +215,7 @@
             <td>
                 <button ng-click="savePrecinctDistrict(precinctDistrict,$index)" class="btn btn-sm btn-success" title="Зберегти зміни">
                     <span class="glyphicon glyphicon-save"></span>
-                    <i ng-show="savingPrecinctDistrict" class="fa fa-refresh fa-spin"></i>
+                    <i ng-show="saving.precinctDistrict" class="fa fa-refresh fa-spin"></i>
                 </button>
                 <button class="btn btn-sm btn-success" ng-click="resetPrecinctDistrict()" title="Відмінити зміни">
                     <span class="glyphicon glyphicon-remove"></span>
@@ -230,14 +230,14 @@
             <form ng-submit="autoCompleteUserPrecincts()">
                 <div class="form-group col-lg-3">
                     <select class="form-control" ng-options="role as role.Name for role in roles"
-                            ng-model="selected.role" required>
-                        <option value='' disabled>-Вибрати ролі-</option>
+                            ng-model="autocomplete.role" required>
+                        <option value='' disabled>-Вибрати роль-</option>
                     </select>
                 </div>
                 <div class="form-group col-lg-2">
                     <button type="submit" class="btn btn-sm btn-success">
-                        <span ng-show="!savingUserPrecincts" class="glyphicon glyphicon-list"></span> Додати користувачів
-                        <i ng-show="savingUserPrecincts" class="fa fa-refresh fa-spin"></i>
+                        <span ng-show="!saving.autocompleteUserPrecincts" class="glyphicon glyphicon-list"></span> Додати користувачів
+                        <i ng-show="saving.autocompleteUserPrecincts" class="fa fa-refresh fa-spin"></i>
                     </button>
                 </div>
             </form>
@@ -285,7 +285,7 @@
             <td>
                 <button ng-click="saveUserPrecinct(userPrecinct,$index)" class="btn btn-sm btn-success" title="Зберегти зміни">
                     <span class="glyphicon glyphicon-save"></span>
-                    <i ng-show="savingUserPrecinct" class="fa fa-refresh fa-spin"></i>
+                    <i ng-show="saving.userPrecinct" class="fa fa-refresh fa-spin"></i>
                 </button>
                 <button class="btn btn-sm btn-success" ng-click="resetUserPrecinct()" title="Відмінити зміни">
                     <span class="glyphicon glyphicon-remove"></span>
