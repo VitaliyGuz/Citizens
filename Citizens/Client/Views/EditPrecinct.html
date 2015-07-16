@@ -225,6 +225,23 @@
     </tab>
     <tab heading="Користувачі">
         <br />
+        <label>Автоматичне заповнення користувачів:</label>
+        <div class="row">
+            <form ng-submit="autoCompleteUserPrecincts()">
+                <div class="form-group col-lg-3">
+                    <select class="form-control" ng-options="role as role.Name for role in roles"
+                            ng-model="selected.role" required>
+                        <option value='' disabled>-Вибрати ролі-</option>
+                    </select>
+                </div>
+                <div class="form-group col-lg-2">
+                    <button type="submit" class="btn btn-sm btn-success">
+                        <span ng-show="!savingUserPrecincts" class="glyphicon glyphicon-list"></span> Додати користувачів
+                        <i ng-show="savingUserPrecincts" class="fa fa-refresh fa-spin"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
         <table class="table table-striped table-bordered">
             <thead>
                 <tr>

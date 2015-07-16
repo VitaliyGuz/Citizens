@@ -97,6 +97,9 @@ angular.module("precinctServices", ['ngResource'])
                             return userPrecinct;
                         });
                     }
+                    res.value.sort(function (a, b) {
+                        return a.User.FirstName.localeCompare(b.User.FirstName);
+                    });
                     deferred.resolve(res.value);
                 };
                 if (usersHolder.isEmpty()) {

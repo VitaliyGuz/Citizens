@@ -88,6 +88,13 @@ angular.module("userServices", ['ngResource'])
             get: function () {
                 return users;
             },
+            getByRole: function (role) {
+                return users.filter(function (user) {
+                    return user.Roles.some(function (userRole) {
+                        return userRole.RoleId === role.Id;
+                    });
+                });
+            },
             set: function (data) {
                 if (data && angular.isArray(data)) users = data;
             },

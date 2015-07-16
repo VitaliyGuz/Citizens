@@ -152,7 +152,9 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
             err.description = "Дільниці не завантажено";
             $rootScope.errorMsg = serviceUtil.getErrorMessage(err);
         });
-
+        userData.getRoles(function (roles) {
+            $scope.roles = roles.value;
+        });
         $scope.editAddress = function (address) {
             $rootScope.errorMsg = '';
             editableAddress = address;
@@ -505,6 +507,7 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
             $scope.savingAddresses = false;
             $scope.savingPrecinctDistrict = false;
             $scope.savingUserPrecinct = false;
+            $scope.savingUserPrecincts = false;
             $scope.resetAddress();
             $scope.resetPrecinctDistrict();
             $scope.resetUserPrecinct();
@@ -518,10 +521,8 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
         };
 
         $scope.autoCompleteAddresses = function () {
-            if (!$scope.precinct.Id) {
-                $rootScope.errorMsg = "Спочатку необхідно зберегти дільницю";
-                return;
-            }
+
+            if (!checkPrecinct()) return;
 
             if (!$scope.autocomplete.CityId) {
                 $rootScope.errorMsg = "Населений пункт '" + $scope.autocomplete.City + "' не знайдено";
@@ -570,6 +571,24 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
                     sortAddresses($scope.precinctAddresses);
                 }, errorHandler);
             }, errorHandler);
+        };
+
+        $scope.autoCompleteUserPrecincts = function () {
+            if (!checkPrecinct()) return;
+            $rootScope.errorMsg = '';
+            var ok = confirm("Додати користувачів з ролью " + $scope.selected.role.Name + "?");
+            if (!ok) return;
+            usersHolder.getByRole($scope.selected.role).forEach(function (user) {
+                $scope.savingUserPrecincts = true;
+                userData.saveUserPrecinct({ "UserId": user.Id, "PrecinctId": $scope.precinct.Id }, function (success) {
+                    $scope.savingUserPrecincts = false;
+                    success.User = user;
+                    $scope.userPrecincts.push(success);
+                    $scope.userPrecincts.sort(function (a, b) {
+                        return a.User.FirstName.localeCompare(b.User.FirstName);
+                    });
+                }, errorHandler);
+            });
         };
 
         function sortAddresses(addresses) {
