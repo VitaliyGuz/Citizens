@@ -6,7 +6,7 @@ precinctControllers.controller("listPrecinctsController", ['$location', '$rootSc
     function ($location, $rootScope, $scope, config, serviceUtil, precinctData, filterSettings) {
         
         $rootScope.pageTitle = 'Дільниці';
-        $scope.tableHead = ['№', 'Дільниця', 'Адреса','LatLng','Location type', 'Дії'];
+        $scope.tableHead = ['№', 'Дільниця', 'Адреса', 'Дії'];
 
         //$scope.options = [
         //      { value: "Number", desc: "Дільниця"},
