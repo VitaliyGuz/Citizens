@@ -61,7 +61,7 @@
             <div ng-if="isEditingUserPrecincts">
                 <br/>
                 <ul class="list-group list-inline">
-                    <li ng-repeat="precinct in precincts | filter: getFilterExpression(): true">
+                    <li ng-repeat="precinct in precincts | filter: getFilterExpression(): true" style="margin-bottom: 5px;">
                         <span class="btn-sm {{ markUserPrecinct(precinct) }}"><input type="checkbox" class="checkbox-inline" ng-click="toggleSelection('precincts',precinct)" ng-checked="checkedItem('precincts',precinct)" /> {{precinct.Number}}</span>
                     </li>
                 </ul>
@@ -69,7 +69,7 @@
             <div ng-if="!isEditingUserPrecincts">
                 <br />
                 <ul class="list-group list-inline">
-                    <li ng-repeat="userPrecinct in userPrecincts">
+                    <li ng-repeat="userPrecinct in userPrecincts" style="margin-bottom: 5px;">
                         <span class="btn-sm btn-primary"> {{userPrecinct.Precinct.Number}}</span>
                     </li>
                 </ul>
