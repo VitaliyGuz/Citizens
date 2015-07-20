@@ -66,8 +66,8 @@ userControllers.controller('listUsersController', ['$rootScope', '$location', '$
 
 }]);
 
-userControllers.controller('editUserController', ['$rootScope', '$scope', '$location', '$filter', 'serviceUtil', 'userData', 'config', 'precinctData', 'usersHolder', 'resolvedUser',
-    function ($rootScope, $scope, $location, $filter, serviceUtil, userData, config, precinctData, usersHolder, resolvedUser) {
+userControllers.controller('editUserController', ['$rootScope', '$scope', '$location', '$filter','$q', 'serviceUtil', 'userData', 'config', 'precinctData', 'usersHolder', 'resolvedUser',
+    function ($rootScope, $scope, $location, $filter, $q, serviceUtil, userData, config, precinctData, usersHolder, resolvedUser) {
         var selectedItems = {}, deleteItems = {};
         $rootScope.pageTitle = 'Користувач';
         $scope.saving = {};
@@ -194,74 +194,129 @@ userControllers.controller('editUserController', ['$rootScope', '$scope', '$loca
 
         $scope.saveUserPrecinctChanges = function () {
             $rootScope.errorMsg = '';
-            deleteItems.precincts.forEach(function (item) {
-                $scope.saving.userPrecincts = true;
-                userData.removeUserPrecinct({ userId: $scope.user.Id, precinctId: item.Id }, function() {
-                    $scope.saving.userPrecincts = false;
+            //function syncRemoveUserPrecincts(item) {
+            //    if (!item) return;
+            //    $scope.saving.userPrecincts = true;
+            //    userData.removeUserPrecinct({ userId: $scope.user.Id, precinctId: item.Id }, function () {
+            //        $scope.saving.userPrecincts = false;
+            //        item.isUser = false;
+            //        //deleteItems.precincts.splice(deleteItems.precincts.indexOf(item), 1);
+            //        selectedItems.precincts.splice(selectedItems.precincts.indexOf(item), 1);
+            //        var nextItem = deleteItems.precincts.pop();
+            //        if (nextItem) syncRemoveUserPrecincts(nextItem);
+            //    }, errorHandler);
+            //};
+            //syncRemoveUserPrecincts(deleteItems.precincts.pop());
+
+            function asyncRemoveUserPrecinct(item) {
+                var def = $q.defer();
+                userData.removeUserPrecinct({ userId: $scope.user.Id, precinctId: item.Id }, function () {
                     item.isUser = false;
-                    deleteItems.precincts.splice(deleteItems.precincts.indexOf(item), 1);
-                }, errorHandler);
-            });
-            selectedItems.precincts.forEach(function (item) {
-                if (!item.isUser) {
-                    $scope.saving.userPrecincts = true;
-                    userData.saveUserPrecinct({ UserId: $scope.user.Id, PrecinctId: item.Id }, function () {
-                        $scope.saving.userPrecincts = false;
-                        item.isUser = true;
-                    }, errorHandler);
+                    var ind = selectedItems.precincts.indexOf(item);
+                    if (ind >= 0) selectedItems.precincts.splice(ind, 1);
+                    def.resolve();
+                }, function(err) {
+                    errorHandler(err);
+                    def.reject();
+                });
+                return def.promise;
+            };
+
+            function waitForDeleting() {
+                var promises = [];
+                while (deleteItems.precincts.length > 0) {
+                    promises.push(asyncRemoveUserPrecinct(deleteItems.precincts.pop()));
                 }
-            });
+                return $q.all(promises);
+            };
+            
+            $scope.saving.userPrecincts = true;
+            waitForDeleting().then(function() {
+                $scope.saving.userPrecincts = false;
+                selectedItems.precincts.forEach(function (item) {
+                    if (!item.isUser) {
+                        $scope.saving.userPrecincts = true;
+                        userData.saveUserPrecinct({ UserId: $scope.user.Id, PrecinctId: item.Id }, function () {
+                            $scope.saving.userPrecincts = false;
+                            item.isUser = true;
+                        }, errorHandler);
+                    }
+                });
+            }, errorHandler);
         };
 
         $scope.saveUserRolesChanges = function() {
             $rootScope.errorMsg = '';
-            deleteItems.roles.forEach(function (role) {
-                $scope.saving.userRoles = true;
-                userData.removeUserRole({ UserId: $scope.user.Id, RoleName: role.Name }, function () {
-                    $scope.saving.userRoles = false;
-                    role.isUser = false;
-                    deleteItems.roles.splice(deleteItems.roles.indexOf(role), 1);
-                }, errorHandler);
-            });
-            selectedItems.roles.forEach(function (role) {
-                if (!role.isUser) {
-                    $scope.saving.userRoles = true;
-                    userData.saveUserRole({ UserId: $scope.user.Id, RoleName: role.Name }, function () {
-                        $scope.saving.userRoles = false;
-                        role.isUser = true;
-                    }, errorHandler);
+            function asyncRemoveUserRole(item) {
+                var def = $q.defer();
+                userData.removeUserRole({ UserId: $scope.user.Id, RoleName: item.Name }, function () {
+                    item.isUser = false;
+                    var ind = selectedItems.roles.indexOf(item);
+                    if (ind >= 0) selectedItems.roles.splice(ind, 1);
+                    def.resolve();
+                }, function (err) {
+                    errorHandler(err);
+                    def.reject();
+                });
+                return def.promise;
+            };
+
+            function waitForDeleting() {
+                var promises = [];
+                while (deleteItems.roles.length > 0) {
+                    promises.push(asyncRemoveUserRole(deleteItems.roles.pop()));
                 }
+                return $q.all(promises);
+            };
+
+            $scope.saving.userRoles = true;
+            waitForDeleting().then(function() {
+                $scope.saving.userRoles = false;
+                selectedItems.roles.forEach(function (role) {
+                    if (!role.isUser) {
+                        $scope.saving.userRoles = true;
+                        userData.saveUserRole({ UserId: $scope.user.Id, RoleName: role.Name }, function () {
+                            $scope.saving.userRoles = false;
+                            role.isUser = true;
+                        }, errorHandler);
+                    }
+                });
+            }, errorHandler);
+            
+        };
+
+        function checkAll(checkedArray, propName) {
+            checkedArray.forEach(function (item) {
+                var ind = deleteItems[propName].indexOf(item);
+                if (ind >= 0) deleteItems[propName].splice(ind, 1);
+            });
+            selectedItems[propName] = selectedItems[propName].concat(checkedArray.filter(function (item) {
+                return selectedItems[propName].indexOf(item) < 0;
+            }));
+        };
+
+        function uncheckAll(checkedArray, propName) {
+            checkedArray.forEach(function (item) {
+                if (item.isUser && deleteItems[propName].indexOf(item) < 0) deleteItems[propName].push(item);
+                var ind = selectedItems[propName].indexOf(item);
+                if (ind >= 0) selectedItems[propName].splice(ind, 1);
             });
         };
 
         $scope.checkAllUserPrecincts = function () {
-            var filteredPrecincts = getFilteredPrecincts();
-            filteredPrecincts.forEach(function(item) {
-                deleteItems.precincts.splice(deleteItems.precincts.indexOf(item), 1);
-            });
-            selectedItems.precincts = selectedItems.precincts.concat(filteredPrecincts);
+            checkAll(getFilteredPrecincts(), 'precincts');
         };
 
         $scope.checkAllRoles = function () {
-            $scope.roles.forEach(function (item) {
-                deleteItems.roles.splice(deleteItems.roles.indexOf(item), 1);
-            });
-            selectedItems.roles = selectedItems.roles.concat($scope.roles);
+            checkAll($scope.roles, 'roles');
         };
 
         $scope.uncheckAllUserPrecincts = function () {
-            var filteredPrecincts = getFilteredPrecincts();
-            filteredPrecincts.forEach(function (item) {
-                if (item.isUser) deleteItems.precincts.push(item);
-                selectedItems.precincts.splice(selectedItems.precincts.indexOf(item), 1);
-            }); 
+            uncheckAll(getFilteredPrecincts(), 'precincts');
         };
 
         $scope.uncheckAllRoles = function() {
-            $scope.roles.forEach(function (item) {
-                if (item.isUser) deleteItems.roles.push(item);
-                selectedItems.roles.splice(selectedItems.roles.indexOf(item), 1);
-            });
+            uncheckAll($scope.roles, 'roles');
         };
 
         function getFilteredPrecincts () {
