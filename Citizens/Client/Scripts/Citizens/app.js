@@ -91,7 +91,8 @@ app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider',
             resolve: {
                 genlData: function (genlData) { genlData.asyncLoad() },
                 resolvedUser: function ($route, usersHolder) { return usersHolder.asyncLoadById($route.current.params.id) }
-            }
+            },
+            access: { requiredRoles: ['SuperAdministrators', 'Administrators'] }
         },
         routeUsers = {
             templateUrl: 'Views/Admin/Users.html',
@@ -99,7 +100,8 @@ app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider',
             resolve: {
                 genlData: function (genlData) { genlData.asyncLoad() },
                 resolvedUsers: function (usersHolder) { usersHolder.asyncLoad() }
-            }
+            },
+            access: { requiredRoles: ['SuperAdministrators', 'Administrators'] }
         };
 
     $routeProvider.
@@ -136,12 +138,14 @@ app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider',
         when('/user/:id/:currPage', routeEditUser).
         when('/uploadXls', {
             templateUrl: 'Views/Admin/UploadXls.html',
-            controller: 'uploadXlsController'
+            controller: 'uploadXlsController',
+            access: { requiredRoles: ['SuperAdministrators'] }
         }).
         when('/geocoding-precincts', {
             templateUrl: 'Views/Admin/GeocodingPrecincts.html',
             controller: 'geocodingController',
-            resolve: { genlData: function (genlData) { genlData.asyncLoad() } }
+            resolve: { genlData: function (genlData) { genlData.asyncLoad() } },
+            access: { requiredRoles: ['SuperAdministrators', 'Administrators'] }
         }).
         when('/login', {
             templateUrl: 'Views/Login.html',
@@ -158,6 +162,9 @@ app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider',
                     $location.path('/login');
                 }
             }
+        }).
+        when('/error-forbidden', {
+            templateUrl: 'Views/ErrorPages/403.tpl.html'
         }).
         otherwise({
             redirectTo: '/'
@@ -241,12 +248,9 @@ app.factory("serviceUtil", ["$filter", '$routeParams', '$location', function ($f
     };
 }]);
 
-app.run(["$rootScope", "$timeout", '$location', 'Credentials', function ($rootScope, $timeout, $location, Credentials) {
+app.run(["$rootScope", "$timeout", '$location', 'Credentials', 'checkPermissions', function ($rootScope, $timeout, $location, Credentials, checkPermissions) {
     var authData = Credentials.get();
-    if (authData) {
-        $rootScope.UserInfo = authData.userInfo;
-        //$http.defaults.headers.common['Authorization'] = authData.accessToken;
-    }
+    if (authData) $rootScope.UserInfo = authData.userInfo;
 
     $rootScope.$watch("successMsg", function (newValue) {
         if (newValue && newValue.length > 0) {
@@ -257,28 +261,44 @@ app.run(["$rootScope", "$timeout", '$location', 'Credentials', function ($rootSc
     });
 
     $rootScope.$on('$routeChangeStart', function (event, current, previous) {
-        var changeUrl = $location.path(),
-            restrictedPage = $.inArray(changeUrl, ['/login', '/register']) === -1;
+        var nextUrl = $location.path(),
+            checkRestrictedPage = function(url) {
+                return $.inArray(url, ['/login', '/register']) === -1;
+            },
+        restrictedPage = checkRestrictedPage(nextUrl);
         if (restrictedPage && !$rootScope.UserInfo) {
-            if (changeUrl) {
-                $location.path('/login').search('backUrl', changeUrl);
+            if (nextUrl) {
+                $location.path('/login').search('backUrl', nextUrl);
             } else {
                 $location.path('/login');
             }
             return;
         };
-        if (changeUrl === '/register') {
+        if (nextUrl === '/register') {
             var backUrl;
             if (previous) {
                 backUrl = previous.params.backUrl;
             }
             if (backUrl) {
-                $location.path(changeUrl).search('backUrl', backUrl);
+                $location.path(nextUrl).search('backUrl', backUrl);
             } else {
-                $location.path(changeUrl);
+                $location.path(nextUrl);
             }
             return;
         };
+        
+        if (current.$$route && current.$$route.access) {
+            var requiredRoles = current.$$route.access.requiredRoles;
+            if (requiredRoles && !checkPermissions(requiredRoles)) {
+                var returnUrl = '/error-forbidden';
+                if (previous && previous.$$route && checkRestrictedPage(previous.$$route.originalPath)) {
+                    returnUrl = previous.$$route.originalPath;
+                    $rootScope.errorMsg = "У Вас недостатньо прав доступу";
+                }
+                $location.path(returnUrl);
+                return;
+            }
+        }
         if (current.$$route && current.$$route.resolve) {
             $rootScope.loading = true;
         }
@@ -469,6 +489,21 @@ app.directive('datepicker', function () {
         }
     }
 });
+
+app.directive('accessPermissions', ['checkPermissions', function (checkPermissions) {
+    return {
+        restrict: 'A',
+        link: function (scope, element, attrs) {
+            var requiredRoles = attrs.accessPermissions.split(','),
+            isMakeVisible = checkPermissions(requiredRoles);
+            if (isMakeVisible) {
+                element.removeClass('hidden');
+            } else {
+                element.addClass('hidden');
+            }
+        }
+    };
+}]);
 
 //app.directive('myDatepicker', ['serviceUtil',function (serviceUtil) {
 //    return {      

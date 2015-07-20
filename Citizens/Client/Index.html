@@ -69,13 +69,13 @@
                     <li><a href="/cities">Населені пункти</a></li>
                     <li><a href="/region-parts">Райони</a></li>
                     <li><a href="/districts">Округи</a></li>
-                    <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" >
+                    <li access-permissions="Administrators,SuperAdministrators" class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                             Адміністрування
                             <span class="caret"></span>
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a href="/uploadXls">Завантажити Excel</a></li>
+                            <li access-permissions="SuperAdministrators"><a href="/uploadXls">Завантажити Excel</a></li>
                             <li><a href="/geocoding-precincts">Геокодування дільниць</a></li>
                             <li><a href="/users">Користувачі</a></li>
                         </ul>

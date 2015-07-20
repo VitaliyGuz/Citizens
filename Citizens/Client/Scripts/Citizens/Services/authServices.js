@@ -19,24 +19,33 @@ authServices.service('Login', ['$http', 'Credentials', 'config', 'SuccessTokenHa
     }
 }]);
 
-authServices.service('SuccessTokenHandler', ['GetUserInfo', 'Credentials', function (GetUserInfo, Credentials) {
+authServices.service('SuccessTokenHandler', ['GetUserInfo', 'Credentials', 'GetManageInfo', function (GetUserInfo, Credentials, GetManageInfo) {
     return function (response, callback) {
         var token = response.token_type + ' ' + response.access_token;
-        GetUserInfo(token).success(function (userInfo) {
-            Credentials.set(token, response.expires_in, userInfo);
-            if (callback) callback({ success: true });
-        }).error(function (e) {
+        var errorHandler = function(e) {
             if (callback) callback({ success: false, error: e });
-        });
+        };
+        GetUserInfo(token).success(function (userInfo) {
+            GetManageInfo(token).success(function (manageInfo) {
+                userInfo.roles = manageInfo.Roles;
+                Credentials.set(token, response.expires_in, userInfo);
+                if (callback) callback({ success: true });
+            }).error(errorHandler);
+        }).error(errorHandler);
     }
 }]);
 
 authServices.service('GetUserInfo', ['$http', 'config', function ($http, config) {
-        return function(accessToken) {
-            return $http.get(config.baseUrl + '/api/Account/UserInfo', { headers: { 'Authorization': accessToken } });
-        };
-    }
-]);
+    return function(accessToken) {
+        return $http.get(config.baseUrl + '/api/Account/UserInfo', { headers: { 'Authorization': accessToken } });
+    };
+}]);
+
+authServices.service('GetManageInfo', ['$http', 'config', function ($http, config) {
+    return function (accessToken) {
+        return $http.get(config.baseUrl + '/api/Account/ManageInfo?returnUrl=%2F&generateState=true', { headers: { 'Authorization': accessToken } });
+    };
+}]);
 
 authServices.factory('Credentials', ['$rootScope', '$cookies', function ($rootScope, $cookies) {
     return {
@@ -131,8 +140,8 @@ authServices.factory('authInterceptor', ['$q', '$location', '$rootScope', '$inje
 
     var refreshingToken = false;
 
-    function checkAuthorization(status) {
-        if (status === 401) {
+    function checkSecurity(error) {
+        if (error.status === 401) {
             Credentials.clear();
             var currentUrl = $location.path();
             if (currentUrl) {
@@ -140,6 +149,9 @@ authServices.factory('authInterceptor', ['$q', '$location', '$rootScope', '$inje
             } else {
                 $location.path('/login');
             }
+        }
+        if (error.status === 403) {
+            error.data = { description: 'У Вас недостатньо прав доступу' };
         }
     };
 
@@ -172,12 +184,27 @@ authServices.factory('authInterceptor', ['$q', '$location', '$rootScope', '$inje
             return configReq;
         },
         response: function (response) {
-            checkAuthorization(response.status);
+            if (response && response.status) checkSecurity(response);
             return response || $q.when(response);
         },
         responseError: function (rejection) {
-            if (rejection && rejection.status) checkAuthorization(rejection.status);
+            if (rejection && rejection.status) checkSecurity(rejection);
             return $q.reject(rejection);
         }
     };
+}]);
+
+authServices.service('checkPermissions', ['$rootScope', function ($rootScope) {
+    return function (permissions) {
+        if (angular.isArray(permissions) && permissions.length > 0) {
+            var loweredPermissions = [];
+            angular.forEach($rootScope.UserInfo.roles, function (role) {
+                loweredPermissions.push(role.Name.toLowerCase());
+            });
+            return permissions.some(function (permission) {
+                return loweredPermissions.indexOf(permission.toLowerCase()) >= 0;
+            });
+        }
+        return true;
+    }
 }]);

@@ -217,6 +217,7 @@
     <Content Include="Views\EditPerson.html" />
     <Content Include="Views\EditPrecinct.html" />
     <Content Include="Views\Admin\GeocodingPrecincts.html" />
+    <Content Include="Views\ErrorPages\403.tpl.html" />
     <Content Include="Views\ListCities.html" />
     <Content Include="Views\ListDistricts.html" />
     <Content Include="Views\ListPeople.html" />
