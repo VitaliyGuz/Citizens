@@ -482,10 +482,6 @@ app.directive('datepicker', function () {
                     }
                 });
             });
-            //scope.$watch(ngModelCtrl.$viewValue, function (val1,val2) {
-            //    var date = new Date(val1);
-            //    //element.datepicker("setDate", date);
-            //});
         }
     }
 });

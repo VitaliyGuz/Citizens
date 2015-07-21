@@ -235,7 +235,9 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
             if (resolvedData.person) {
                 addMode = false;
                 $scope.person = resolvedData.person;
-                $scope.dateOfBirth = serviceUtil.formatDate(new Date(resolvedData.person.DateOfBirth),'dd.MM.yyyy');
+                if (resolvedData.person.DateOfBirth) {
+                    $scope.dateOfBirth = serviceUtil.formatDate(new Date(resolvedData.person.DateOfBirth), 'dd.MM.yyyy');
+                }
                 $scope.person.PrecinctId = resolvedData.person.PrecinctAddress.PrecinctId;
                 $scope.person.Precinct = resolvedData.person.PrecinctAddress.Precinct;
                 $scope.additionalProperties = getPropertyPairs(resolvedData.person.PersonAdditionalProperties);
@@ -543,16 +545,5 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
             additionalPropsData.remove({ personId: $scope.person.Id, propertyKeyId: prop.key.Id }, function () {
                 $scope.additionalProperties.splice(ind, 1);
             }, errorHandler);
-        };
-
-        $scope.showPrimitiveInput = function () {
-            if ($scope.selected.property.Key) {
-                if ($scope.selected.property.Key.PropertyType.html === "date") {
-                    return false;
-                }
-                return $scope.isPrimitive;
-            } else {
-                return false;
-            }
         };
     }]);
