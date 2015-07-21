@@ -195,6 +195,39 @@ authServices.factory('authInterceptor', ['$q', '$location', '$rootScope', '$inje
 }]);
 
 authServices.service('checkPermissions', ['$rootScope', function ($rootScope) {
+    //check permissions with roles hierarchy
+    //var rolesHierarchy = {
+    //    SuperAdministrators: ['Administrators'],
+    //    Administrators: ['Operators'],
+    //    Operators: ['ReadOnly'],
+    //    ReadOnly: null
+    //};
+    //var rootHierarchy = 'SuperAdministrators';
+    //function permit(permission, role) {
+    //    if (permission === role) return true;
+    //    var childRoles = rolesHierarchy[role];
+    //    if (!childRoles) return false;
+    //    return childRoles.some(function (childRole) {
+    //        return permit(permission,childRole);
+    //    });
+    //};
+    
+    //return function (permissions) {
+    //    if (angular.isArray(permissions) && permissions.length > 0) {
+    //        var userPermissions = [];
+    //        angular.forEach($rootScope.UserInfo.roles, function (role) {
+    //            userPermissions.push(role.Name);
+    //        });
+    //        return permissions.some(function (permission) {
+    //            return userPermissions.some(function (userPermission) {
+    //                if (rootHierarchy === userPermission) return true;
+    //                return permit(permission, userPermission);
+    //            });
+    //        });
+    //    }
+    //    return true;
+    //}
+
     return function (permissions) {
         if (angular.isArray(permissions) && permissions.length > 0) {
             var loweredPermissions = [];
