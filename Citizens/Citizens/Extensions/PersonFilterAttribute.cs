@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
@@ -20,8 +21,8 @@ namespace Citizens.Extensions
         public override void OnActionExecuting(HttpActionContext actionContext)
         {
             var uri = actionContext.Request.RequestUri.OriginalString;
-            //if (actionContext.Request.Headers.From == "self@com.com")
-            if (uri.IndexOf("filteredByUserPrecinct", StringComparison.Ordinal) > 0)
+            //if (uri.IndexOf("filteredByUserPrecinct", StringComparison.Ordinal) > 0)
+            if (actionContext.Request.Headers.From == "self@com.com")
             {
                 //actionContext.Response.Headers.Remove();
                 base.OnActionExecuting(actionContext);
@@ -78,9 +79,9 @@ namespace Citizens.Extensions
                 //    "?$Filter=PrecinctAddress/Precinct/UserPrecincts/any(userprecinct:userprecinct/UserId eq '438ff3a5-ef30-4931-8bfa-bf388f76c0fd')");
             }
 
-            HttpContext ctx = HttpContext.Current;
-            ctx.Response.Redirect(pathBuilder.ToString());
-            //actionContext.Response = GetPeople(pathBuilder.ToString(), actionContext.Request.Headers.Authorization.Parameter).Result;
+            //HttpContext ctx = HttpContext.Current;
+            //ctx.Response.RedirectPermanent(pathBuilder.ToString());
+            actionContext.Response = GetPeople(pathBuilder.ToString(), actionContext.Request.Headers.Authorization.Parameter).Result;
 
         }
 
@@ -92,7 +93,7 @@ namespace Citizens.Extensions
             pathBuilder.Append(userId);
             pathBuilder.Append("')");
             pathBuilder.Append(postUri);
-            pathBuilder.Append("&filteredByUserPrecinct");
+            //pathBuilder.Append("&filteredByUserPrecinct");
         }
 
         private async Task<HttpResponseMessage> GetPeople(string path, string authorization)
