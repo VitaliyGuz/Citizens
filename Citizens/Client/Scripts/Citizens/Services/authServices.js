@@ -144,6 +144,7 @@ authServices.factory('authInterceptor', ['$q', '$location', '$rootScope', '$inje
         if (error.status === 401) {
             Credentials.clear();
             var currentUrl = $location.path();
+            if (currentUrl === '/login') currentUrl = '';
             if (currentUrl) {
                 $location.path('/login').search('backUrl', currentUrl);
             } else {
@@ -202,13 +203,13 @@ authServices.service('checkPermissions', ['$rootScope', function ($rootScope) {
     //    Operators: ['ReadOnly'],
     //    ReadOnly: null
     //};
-    //var rootHierarchy = 'SuperAdministrators';
-    //function permit(permission, role) {
+    
+    //function allow(permission, role) {
     //    if (permission === role) return true;
     //    var childRoles = rolesHierarchy[role];
     //    if (!childRoles) return false;
     //    return childRoles.some(function (childRole) {
-    //        return permit(permission,childRole);
+    //        return allow(permission,childRole);
     //    });
     //};
     
@@ -220,8 +221,7 @@ authServices.service('checkPermissions', ['$rootScope', function ($rootScope) {
     //        });
     //        return permissions.some(function (permission) {
     //            return userPermissions.some(function (userPermission) {
-    //                if (rootHierarchy === userPermission) return true;
-    //                return permit(permission, userPermission);
+    //                return allow(permission, userPermission);
     //            });
     //        });
     //    }
