@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
@@ -18,13 +19,15 @@ namespace Citizens.Extensions
     {
         public override void OnActionExecuting(HttpActionContext actionContext)
         {
-            if (actionContext.Request.Headers.From == "self@com.com")
+            var uri = actionContext.Request.RequestUri.OriginalString;
+            //if (actionContext.Request.Headers.From == "self@com.com")
+            if (uri.IndexOf("filteredByUserPrecinct", StringComparison.Ordinal) > 0)
             {
                 //actionContext.Response.Headers.Remove();
                 base.OnActionExecuting(actionContext);
                 return;
             }
-            var uri = actionContext.Request.RequestUri.OriginalString;
+            
             var pathBuilder = new StringBuilder();            
 
             var queryStringIndex = uri.IndexOf('?');
@@ -75,8 +78,9 @@ namespace Citizens.Extensions
                 //    "?$Filter=PrecinctAddress/Precinct/UserPrecincts/any(userprecinct:userprecinct/UserId eq '438ff3a5-ef30-4931-8bfa-bf388f76c0fd')");
             }
 
-
-            actionContext.Response = GetPeople(pathBuilder.ToString(), actionContext.Request.Headers.Authorization.Parameter);
+            HttpContext ctx = HttpContext.Current;
+            ctx.Response.Redirect(pathBuilder.ToString());
+            //actionContext.Response = GetPeople(pathBuilder.ToString(), actionContext.Request.Headers.Authorization.Parameter).Result;
 
         }
 
@@ -88,9 +92,10 @@ namespace Citizens.Extensions
             pathBuilder.Append(userId);
             pathBuilder.Append("')");
             pathBuilder.Append(postUri);
+            pathBuilder.Append("&filteredByUserPrecinct");
         }
 
-        private HttpResponseMessage GetPeople(string path, string authorization)
+        private async Task<HttpResponseMessage> GetPeople(string path, string authorization)
         {
             var client = new HttpClient();
             client.DefaultRequestHeaders.Clear();
@@ -98,7 +103,7 @@ namespace Citizens.Extensions
             client.DefaultRequestHeaders.Accept.Clear();
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             client.DefaultRequestHeaders.From = "self@com.com";
-            var response = client.GetAsync(path).Result;
+            var response =  await client.GetAsync(path).ConfigureAwait(false);
             return response;
             //var response = client.GetAsync(path).Result.Content.ReadAsAsync<IEnumerable<Person>>().Result;
             //response.Content.Headers.ContentType = new MediaTypeHeaderValue("Application/json");
