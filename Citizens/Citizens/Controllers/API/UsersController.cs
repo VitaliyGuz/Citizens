@@ -42,12 +42,14 @@ namespace Citizens.Controllers.API
 
         // GET: odata/Users(5)
         [EnableQuery]
+        [ODataRoute("Users(Id={key})")]
         public SingleResult<ApplicationUser> GetUser([FromODataUri] string key)
         {
             return SingleResult.Create(db.Users.Where(user => user.Id == key));
         }
 
         // PUT: odata/Users(5)
+        [ODataRoute("Users(Id={key})")]
         public async Task<IHttpActionResult> Put([FromODataUri] string key, Delta<ApplicationUser> patch)
         {
             Validate(patch.GetEntity());
@@ -85,6 +87,7 @@ namespace Citizens.Controllers.API
         }
 
         // POST: odata/Users
+        [ODataRoute("Users(Id={key})")]
         public async Task<IHttpActionResult> Post(ApplicationUser user)
         {
             if (!ModelState.IsValid)
@@ -115,6 +118,7 @@ namespace Citizens.Controllers.API
 
         // PATCH: odata/Users(5)
         [AcceptVerbs("PATCH", "MERGE")]
+        [ODataRoute("Users(Id={key})")]
         public async Task<IHttpActionResult> Patch([FromODataUri] string key, Delta<ApplicationUser> patch)
         {
             Validate(patch.GetEntity());
@@ -152,6 +156,7 @@ namespace Citizens.Controllers.API
         }
 
         // DELETE: odata/Users(5)
+        [ODataRoute("Users(Id={key})")]
         public async Task<IHttpActionResult> Delete([FromODataUri] string key)
         {
             ApplicationUser user = db.Users.Find(key);
@@ -166,29 +171,33 @@ namespace Citizens.Controllers.API
             return StatusCode(HttpStatusCode.NoContent);
         }
 
-        // GET: odata/Users(5)/Claims
-        [EnableQuery]
-        public IQueryable<IdentityUserClaim> GetClaims([FromODataUri] string key)
-        {
-            return db.Users.Where(m => m.Id == key).SelectMany(m => m.Claims);
-        }
+        //// GET: odata/Users(5)/Claims
+        //[EnableQuery]
+        //[ODataRoute("Users(Id={key})/Claims")]
+        //public IQueryable<IdentityUserClaim> GetClaims([FromODataUri] string key)
+        //{
+        //    return db.Users.Where(m => m.Id == key).SelectMany(m => m.Claims);
+        //}
 
-        // GET: odata/Users(5)/Logins
-        [EnableQuery]
-        public IQueryable<IdentityUserLogin> GetLogins([FromODataUri] string key)
-        {
-            return db.Users.Where(m => m.Id == key).SelectMany(m => m.Logins);
-        }
+        //// GET: odata/Users(5)/Logins
+        //[EnableQuery]
+        //[ODataRoute("Users(Id={key})/Logins")]
+        //public IQueryable<IdentityUserLogin> GetLogins([FromODataUri] string key)
+        //{
+        //    return db.Users.Where(m => m.Id == key).SelectMany(m => m.Logins);
+        //}
 
         // GET: odata/Users(5)/Roles
         [EnableQuery]
-        public IQueryable<IdentityUserRole> GetRoles([FromODataUri] string key)
+        [ODataRoute("Users(Id={key})/Roles")]
+        public IQueryable<ApplicationUserRole> GetRoles([FromODataUri] string key)
         {
             return db.Users.Where(m => m.Id == key).SelectMany(m => m.Roles);
         }
 
         // GET: odata/Users(5)/UserPrecincts
         [EnableQuery]
+        [ODataRoute("Users(Id={key})/UserPrecincts")]
         public IQueryable<UserPrecinct> GetUserPrecincts([FromODataUri] string key)
         {
             return db.Users.Where(m => m.Id == key).SelectMany(m => m.UserPrecincts);

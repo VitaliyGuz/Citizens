@@ -89,4 +89,10 @@ namespace Citizens.Models
         public string user_id { get; set; }
         public string app_id { get; set; }
     }
+
+    public class AddToRoleBindingModel
+    {
+        public string UserId { get; set; }
+        public string RoleName { get; set; }
+    }
 }

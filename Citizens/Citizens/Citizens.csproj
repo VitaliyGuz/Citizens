@@ -209,6 +209,7 @@
     <Compile Include="Controllers\API\AccountController.cs" />
     <Compile Include="Controllers\API\NamesController.cs" />
     <Compile Include="Extensions\PathAndSlashEscapeODataPathHandler.cs" />
+    <Compile Include="Extensions\PersonFilterAttribute.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -240,6 +241,10 @@
     <Compile Include="Migrations\201507031256534_5.cs" />
     <Compile Include="Migrations\201507031256534_5.Designer.cs">
       <DependentUpon>201507031256534_5.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201507080908435_6.cs" />
+    <Compile Include="Migrations\201507080908435_6.Designer.cs">
+      <DependentUpon>201507080908435_6.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\CityRegionPart.cs" />
@@ -300,6 +305,12 @@
     <EmbeddedResource Include="Migrations\201507031256534_5.resx">
       <DependentUpon>201507031256534_5.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201507080908435_6.resx">
+      <DependentUpon>201507080908435_6.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
@@ -25,24 +26,24 @@ namespace Citizens.Controllers.API
     public class AccountController : ApiController
     {
         private const string LocalLoginProvider = "Local";
-        private StoreUserManager _userManager;
+        private ApplicationUserManager _userManager;
 
         public AccountController()
         {
         }
 
-        public AccountController(StoreUserManager userManager,
+        public AccountController(ApplicationUserManager userManager,
             ISecureDataFormat<AuthenticationTicket> accessTokenFormat)
         {
             UserManager = userManager;
             AccessTokenFormat = accessTokenFormat;
         }
 
-        public StoreUserManager UserManager
+        public ApplicationUserManager UserManager
         {
             get
             {
-                return _userManager ?? Request.GetOwinContext().GetUserManager<StoreUserManager>();
+                return _userManager ?? Request.GetOwinContext().GetUserManager<ApplicationUserManager>();
             }
             private set
             {
@@ -96,7 +97,7 @@ namespace Citizens.Controllers.API
         [ActionName("ManageInfo")]
         public async Task<ManageInfoViewModel> GetManageInfo(string returnUrl, bool generateState = false)
         {
-            IdentityUser user = await UserManager.FindByIdAsync(User.Identity.GetUserId());
+            ApplicationUser user = await UserManager.FindByIdAsync(User.Identity.GetUserId());
 
             if (user == null)
             {
@@ -117,11 +118,21 @@ namespace Citizens.Controllers.API
                 });
             }
 
+            var roleMgr = HttpContext.Current
+                .GetOwinContext().Get<ApplicationRoleManager>();
+
+            List<UserRoleInfoViewModel> roles = user.Roles.Select(role => new UserRoleInfoViewModel
+            {
+                Id = role.RoleId, Name = roleMgr.FindById(role.RoleId).Name
+            }).ToList();
+            
+
             return new ManageInfoViewModel
             {
                 LocalLoginProvider = LocalLoginProvider,
                 Email = user.UserName,
                 Logins = logins,
+                Roles = roles,
                 ExternalLoginProviders = GetExternalLogins(returnUrl, generateState)
             };
         }
@@ -166,6 +177,56 @@ namespace Citizens.Controllers.API
 
             return Ok();
         }
+
+        // POST api/Account/AddToRole
+        [Route("AddToRole")]
+        [ActionName("AddToRole")]
+        public async Task<IHttpActionResult> AddToRole(AddToRoleBindingModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }                        
+
+            IdentityResult result = await UserManager.AddToRoleAsync(model.UserId, model.RoleName);
+
+            if (!result.Succeeded)
+            {
+                return GetErrorResult(result);
+            }
+
+            return Ok();
+        }
+
+        // POST api/Account/RemoveFromRole
+        [Route("RemoveFromRole")]
+        [ActionName("RemoveFromRole")]
+        public async Task<IHttpActionResult> RemoveFromRole(AddToRoleBindingModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            IdentityResult result = await UserManager.RemoveFromRoleAsync(model.UserId, model.RoleName);
+
+            if (!result.Succeeded)
+            {
+                return GetErrorResult(result);
+            }
+
+            return Ok();
+        }
+
+        // POST api/Account/GetRoles
+        [Route("GetRoles")]
+        [ActionName("GetRoles")]
+        [HttpGet]
+        public async Task<IList<string>> GetRoles(string userId)
+        {
+            IList<string> result = await UserManager.GetRolesAsync(userId);
+            return result;
+        }        
 
         // POST api/Account/AddExternalLogin
         [Route("AddExternalLogin")]
@@ -426,7 +487,7 @@ namespace Citizens.Controllers.API
             //IdentityUser user = await _userManager.FindAsync(loginInfo);
             //IdentityUser user = await _repo.FindAsync(new UserLoginInfo(provider, verifiedAccessToken.user_id));
 
-            IdentityUser user = await UserManager.FindAsync(new UserLoginInfo(provider, verifiedAccessToken.user_id));
+            ApplicationUser user = await UserManager.FindAsync(new UserLoginInfo(provider, verifiedAccessToken.user_id));
 
             bool hasRegistered = user != null;
 
@@ -458,7 +519,7 @@ namespace Citizens.Controllers.API
         private async Task<JObject> GenerateLocalAccessTokenResponse(string userName)
         {
 
-            var tokenExpiration = TimeSpan.FromMinutes(15);
+            var tokenExpiration = TimeSpan.FromMinutes(Convert.ToDouble(ConfigurationManager.AppSettings["AccessTokenExpireTimeSpanMinutes"]));
 
             ApplicationUser user = await UserManager.FindByNameAsync(userName);
 

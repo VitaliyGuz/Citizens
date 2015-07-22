@@ -32,20 +32,22 @@ namespace Citizens.Controllers.API
 
         // GET: odata/Roles
         [EnableQuery]
-        public IQueryable<Role> GetRoles()
+        public IQueryable<ApplicationRole> GetRoles()
         {
             return db.Roles;
         }
 
         // GET: odata/Roles(5)
         [EnableQuery]
-        public SingleResult<Role> GetRole([FromODataUri] string key)
+        [ODataRoute("Roles(Id={key})")]
+        public SingleResult<ApplicationRole> GetRole([FromODataUri] string key)
         {
             return SingleResult.Create(db.Roles.Where(role => role.Id == key));
         }
 
         // PUT: odata/Roles(5)
-        public async Task<IHttpActionResult> Put([FromODataUri] string key, Delta<Role> patch)
+        [ODataRoute("Roles(Id={key})")]
+        public async Task<IHttpActionResult> Put([FromODataUri] string key, Delta<ApplicationRole> patch)
         {
             Validate(patch.GetEntity());
 
@@ -54,7 +56,7 @@ namespace Citizens.Controllers.API
                 return BadRequest(ModelState);
             }
 
-            Role role = await db.Roles.FindAsync(key);
+            ApplicationRole role = db.Roles.Find(key);
             if (role == null)
             {
                 return NotFound();
@@ -82,7 +84,7 @@ namespace Citizens.Controllers.API
         }
 
         // POST: odata/Roles
-        public async Task<IHttpActionResult> Post(Role role)
+        public async Task<IHttpActionResult> Post(ApplicationRole role)
         {
             if (!ModelState.IsValid)
             {
@@ -112,7 +114,8 @@ namespace Citizens.Controllers.API
 
         // PATCH: odata/Roles(5)
         [AcceptVerbs("PATCH", "MERGE")]
-        public async Task<IHttpActionResult> Patch([FromODataUri] string key, Delta<Role> patch)
+        [ODataRoute("Roles(Id={key})")]
+        public async Task<IHttpActionResult> Patch([FromODataUri] string key, Delta<ApplicationRole> patch)
         {
             Validate(patch.GetEntity());
 
@@ -121,7 +124,7 @@ namespace Citizens.Controllers.API
                 return BadRequest(ModelState);
             }
 
-            Role role = await db.Roles.FindAsync(key);
+            ApplicationRole role = db.Roles.Find(key);
             if (role == null)
             {
                 return NotFound();
@@ -149,9 +152,10 @@ namespace Citizens.Controllers.API
         }
 
         // DELETE: odata/Roles(5)
+        [ODataRoute("Roles(Id={key})")]
         public async Task<IHttpActionResult> Delete([FromODataUri] string key)
         {
-            Role role = await db.Roles.FindAsync(key);
+            ApplicationRole role = db.Roles.Find(key);
             if (role == null)
             {
                 return NotFound();
@@ -165,7 +169,8 @@ namespace Citizens.Controllers.API
 
         // GET: odata/Roles(5)/Users
         [EnableQuery]
-        public IQueryable<IdentityUserRole> GetUsers([FromODataUri] string key)
+        [ODataRoute("Roles(Id={key})/Users")]
+        public IQueryable<ApplicationUserRole> GetUsers([FromODataUri] string key)
         {
             return db.Roles.Where(m => m.Id == key).SelectMany(m => m.Users);
         }

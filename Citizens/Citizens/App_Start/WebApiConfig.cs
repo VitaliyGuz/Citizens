@@ -1,8 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Threading.Tasks;
+using System.Web;
 using System.Web.Http;
 using Citizens.Infrastructure;
 
@@ -17,6 +22,9 @@ using System.Web.OData.Routing.Conventions;
 using System.Web.OData.Routing;
 using System.Web.OData.Extensions;
 using Citizens.Extensions;
+using Microsoft.AspNet.Identity;
+using Microsoft.AspNet.Identity.Owin;
+using Microsoft.Owin.Security;
 
 namespace Citizens
 {
@@ -32,7 +40,7 @@ namespace Citizens
                 defaults: new { id = RouteParameter.Optional }
             );
 
-            config.Filters.Add(new AuthorizeAttribute() { Roles = "Operators" });            
+            config.Filters.Add(new LoggerAttribute() { Roles = "Operators, Administrators, SuperAdministrators, ReadOnly" });            
             // Web API configuration and services
             ODataConventionModelBuilder builder = new ODataConventionModelBuilder();
             builder.EntitySet<City>("Cities");
@@ -200,4 +208,120 @@ namespace Citizens
             }
         }
     }
+
+    //public class PersonFilterAttribute : ActionFilterAttribute
+    //{
+    //    public override void OnActionExecuting(HttpActionContext actionContext)
+    //    {
+    //        if (actionContext.Request.Headers.From == "self@com.com")
+    //        {
+    //            base.OnActionExecuting(actionContext);
+    //            return;
+    //        }
+    //        var uri = actionContext.Request.RequestUri.OriginalString;
+    //        var pathBuilder = new StringBuilder();
+    //        var client = new HttpClient();
+
+    //        var queryStringIndex = uri.IndexOf('?');
+            
+    //        var userMgr = HttpContext.Current.GetOwinContext().GetUserManager<ApplicationUserManager>();
+            
+    //        var userId = userMgr.FindByName(HttpContext.Current.User.Identity.Name).Id;
+
+
+    //        if (queryStringIndex != -1)
+    //        {
+    //            var queryFilterIndex = uri.IndexOf("$Filter", StringComparison.OrdinalIgnoreCase);
+    //            if (queryFilterIndex != -1)
+    //            {
+    //                var queryAndIndex = uri.Substring(queryFilterIndex).IndexOf("&", StringComparison.OrdinalIgnoreCase);
+    //                if (queryAndIndex != -1)
+    //                //append between $Filter and &
+    //                {
+    //                    queryAndIndex = queryAndIndex + queryFilterIndex;
+    //                    pathBuilder.Append(uri.Substring(0, queryAndIndex));
+    //                    pathBuilder.Append(
+    //                        " and PrecinctAddress/Precinct/UserPrecincts/any(userprecinct:userprecinct/UserId eq '438ff3a5-ef30-4931-8bfa-bf388f76c0fd')");
+    //                    pathBuilder.Append(uri.Substring(queryAndIndex));
+    //                }
+    //                else
+    //                //append at the and
+    //                {
+    //                    pathBuilder.Append(uri);
+    //                    pathBuilder.Append(
+    //                        " and PrecinctAddress/Precinct/UserPrecincts/any(userprecinct:userprecinct/UserId eq '438ff3a5-ef30-4931-8bfa-bf388f76c0fd')");
+    //                }
+    //            }
+    //            else
+    //            {
+    //                pathBuilder.Append(uri);
+    //                pathBuilder.Append(
+    //                    "&$Filter=PrecinctAddress/Precinct/UserPrecincts/any(userprecinct:userprecinct/UserId eq '438ff3a5-ef30-4931-8bfa-bf388f76c0fd')");
+    //            }
+    //        }
+    //        else
+    //        {
+    //            pathBuilder.Append(uri);
+    //            pathBuilder.Append(
+    //                "?$Filter=PrecinctAddress/Precinct/UserPrecincts/any(userprecinct:userprecinct/UserId eq '438ff3a5-ef30-4931-8bfa-bf388f76c0fd')");
+    //        }
+
+
+    //        actionContext.Response = GetPeople(pathBuilder.ToString(), actionContext.Request.Headers.Authorization.Parameter);
+
+    //    }
+
+    //    private HttpResponseMessage appendString(StringBuilder pathBuilder, string preUri, string addString, string userId, string postUri)
+    //    {            
+    //        pathBuilder.Append(preUri);
+    //        pathBuilder.Append(addString);
+    //        pathBuilder.Append("PrecinctAddress/Precinct/UserPrecincts/any(userprecinct:userprecinct/UserId eq '");
+    //        pathBuilder.Append(userId);
+    //        pathBuilder.Append("')");
+    //        pathBuilder.Append(postUri);
+    //    }
+
+    //    private HttpResponseMessage GetPeople(string path, string authorization)
+    //    {
+    //        var client = new HttpClient();
+    //        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", authorization);
+    //        client.DefaultRequestHeaders.From = "self@com.com";            
+    //        var response = client.GetAsync(path).Result;
+    //        return response;
+    //    }
+    //}
+
+    
+
+    //class PersonFilterHandler : DelegatingHandler
+    //{
+    //    StreamWriter _writer;
+
+    //    public LoggingHandler(Stream stream)
+    //    {
+    //        _writer = new StreamWriter(stream);
+    //    }
+
+    //    protected override async Task<HttpResponseMessage> SendAsync(
+    //        HttpRequestMessage request, System.Threading.CancellationToken cancellationToken)
+    //    {
+    //        var response = await base.SendAsync(request, cancellationToken);
+
+    //        if (!response.IsSuccessStatusCode)
+    //        {
+    //            _writer.WriteLine("{0}\t{1}\t{2}", request.RequestUri,
+    //                (int)response.StatusCode, response.Headers.Date);
+    //        }
+    //        return response;
+    //    }
+
+    //    protected override void Dispose(bool disposing)
+    //    {
+    //        if (disposing)
+    //        {
+    //            _writer.Dispose();
+    //        }
+    //        base.Dispose(disposing);
+    //    }
+    //}
 }

@@ -10,8 +10,11 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.ModelBinding;
 using System.Web.OData;
+using System.Web.OData.Query;
 using System.Web.OData.Routing;
+using Citizens.Extensions;
 using Citizens.Models;
+using Microsoft.AspNet.Identity;
 
 namespace Citizens.Controllers.API
 {
@@ -32,42 +35,111 @@ namespace Citizens.Controllers.API
 
         // GET: odata/People
         [EnableQuery(MaxNodeCount = 200)]
-        public IQueryable<Person> GetPeople()
+        [PersonFilter]
+        public IQueryable<Person> GetPeople(ODataQueryOptions opts)
+        //public IQueryable<Person> GetPeople()
         {
-            //var dbQuery =
-            //from People in db.People
-            //join PrecinctAddresses in db.PrecinctAddresses
-            //      on new { People.CityId, StreetId = People.StreetId, People.House }
-            //  equals new { PrecinctAddresses.CityId, StreetId = PrecinctAddresses.StreetId, PrecinctAddresses.House } into PrecinctAddresses_join
-            //from PrecinctAddresses in PrecinctAddresses_join.DefaultIfEmpty()
-            //join Precincts in db.Precincts on new { PrecinctId = PrecinctAddresses.PrecinctId } equals new { PrecinctId = Precincts.Id } into Precincts_join
-            //from Precincts in Precincts_join.DefaultIfEmpty()
-            //select new Person
-            //{
-            //    Id = People.Id,
-            //    FirstName = People.FirstName,
-            //    MidleName = People.MidleName,
-            //    LastName = People.LastName,
-            //    DateOfBirth = People.DateOfBirth,
-            //    Gender = People.Gender,
-            //    CityId = People.CityId,
-            //    StreetId = People.StreetId,
-            //    House = People.House,
-            //    Apartment = People.Apartment
-            //};
+            //var UserId = User.Identity.GetUserId();
+            //IQueryable<Person> dbQuery;
+            ////dbQuery =
+            ////    db.People.Join(db.PrecinctAddresses,
+            ////        People => new {People.CityId, StreetId = Convert.ToInt32(People.StreetId), People.House},
+            ////        PrecinctAddresses =>
+            ////            new {PrecinctAddresses.CityId, StreetId = PrecinctAddresses.StreetId, PrecinctAddresses.House},
+            ////        (People, PrecinctAddresses) => new {People, PrecinctAddresses})
+            ////        .Join(db.UserPrecincts, @t => PrecinctAddresses.PrecinctId,
+            ////            UserPrecincts => UserPrecincts.PrecinctId, (@t, UserPrecincts) => new {@t, UserPrecincts})
+            ////        .Where(
+            ////            @t => UserPrecincts.UserId == Convert.ToString(new Guid("438ff3a5-ef30-4931-8bfa-bf388f76c0fd")))
+            ////        .Select(@t => new
+            ////        {
+            ////            People.Id,
+            ////            CityId = (System.Int32?) People.CityId,
+            ////            StreetId = (System.Int32?) People.StreetId,
+            ////            People.House,
+            ////            People.FirstName,
+            ////            People.MidleName,
+            ////            People.LastName,
+            ////            People.DateOfBirth,
+            ////            People.Gender,
+            ////            People.Apartment
+            ////        })
+
+            ////dbQuery =
+            ////    db.People.GroupJoin(db.PrecinctAddresses,
+            ////        People => new { People.CityId, StreetId = People.StreetId, People.House },
+            ////        PrecinctAddresses =>
+            ////            new { PrecinctAddresses.CityId, StreetId = PrecinctAddresses.StreetId, PrecinctAddresses.House },
+            ////        (People, PrecinctAddresses_join) => new { People, PrecinctAddresses_join })
+            ////        .SelectMany(@t => @t.PrecinctAddresses_join, (@t, PrecinctAddresses) => new { @t, PrecinctAddresses })
+            ////        .GroupJoin(db.UserPrecincts.Where(UserPrecincts => UserPrecincts.UserId == UserId), @t => new { PrecinctId = @t.PrecinctAddresses.PrecinctId },
+            ////            UserPrecincts => new { PrecinctId = UserPrecincts.PrecinctId },
+            ////            (@t, UserPrecincts_join) => new { @t, UserPrecincts_join })
+            ////        .SelectMany(@t => @t.UserPrecincts_join, (@t, UserPrecincts) => @t.@t.@t.People);
+
+            //dbQuery =
+            //    db.People.GroupJoin(db.PrecinctAddresses,
+            //        People => new { People.CityId, StreetId = People.StreetId, People.House },
+            //        PrecinctAddresses =>
+            //            new { PrecinctAddresses.CityId, StreetId = PrecinctAddresses.StreetId, PrecinctAddresses.House },
+            //        (People, PrecinctAddresses_join) => new { People, PrecinctAddresses_join })
+            //        .SelectMany(@t => @t.PrecinctAddresses_join, (@t, PrecinctAddresses) => new { @t, PrecinctAddresses })
+            //        .GroupJoin(db.UserPrecincts.Where(UserPrecincts => UserPrecincts.UserId == UserId), @t => new { PrecinctId = @t.PrecinctAddresses.PrecinctId },
+            //            UserPrecincts => new { PrecinctId = UserPrecincts.PrecinctId },
+            //            (@t, UserPrecincts_join) => new { @t, UserPrecincts_join })
+            //        .SelectMany(@t => @t.UserPrecincts_join, (@t, UserPrecincts) => @t.@t.@t.People);
+
+            ////new Person()
+            ////    {
+            ////        Id = @t.@t.@t.People.Id,
+            ////        FirstName = @t.@t.@t.People.FirstName,
+            ////        MidleName = @t.@t.@t.People.MidleName,
+            ////        LastName = @t.@t.@t.People.LastName,
+            ////        DateOfBirth = @t.@t.@t.People.DateOfBirth,
+            ////        Gender = @t.@t.@t.People.Gender,
+            ////        CityId = @t.@t.@t.People.CityId,
+            ////        StreetId = @t.@t.@t.People.StreetId,
+            ////        House = @t.@t.@t.People.House,
+            ////        Apartment = @t.@t.@t.People.Apartment
+            ////    }
+
+            ////new Person()
+            ////{
+            ////    Id = People.Id,
+            ////    FirstName = People.FirstName,
+            ////    MidleName = People.MidleName,
+            ////    LastName = People.LastName,
+            ////    DateOfBirth = People.DateOfBirth,
+            ////    Gender = People.Gender,
+            ////    CityId = People.CityId,
+            ////    StreetId = People.StreetId,
+            ////    House = People.House,
+            ////    Apartment = People.Apartment
+            ////};
 
 
-            //,
-            //    Precinct = new Precinct
-            //    {
-            //        Id = Precincts.Id,
-            //        Number = Precincts.Number,
-            //        Street = Precincts.Street
-            //    }
+            ////,
+            ////    Precinct = new Precinct
+            ////    {
+            ////        Id = Precincts.Id,
+            ////        Number = Precincts.Number,
+            ////        Street = Precincts.Street
+            ////    }
 
-            //return db.Database.SqlQuery<Person>("SELECT * FROM People as People left join PrecinctAddresses as PrecinctAddresses on People.CityId = PrecinctAddresses.CityId "
-            //    + " and People.StreetId = PrecinctAddresses.StreetId and People.House = PrecinctAddresses.House ").AsQueryable();
-            //return dbQuery.AsQueryable<Person>();
+            ////return db.Database.SqlQuery<Person>("SELECT * FROM People as People left join PrecinctAddresses as PrecinctAddresses on People.CityId = PrecinctAddresses.CityId "
+            ////    + " and People.StreetId = PrecinctAddresses.StreetId and People.House = PrecinctAddresses.House ").AsQueryable();
+
+            ////var settings = new ODataValidationSettings()
+            ////{
+            ////    // Initialize settings as needed.
+            ////    AllowedFunctions = AllowedFunctions.All
+            ////};
+
+            ////opts.Validate(settings);
+
+            //IQueryable results = opts.ApplyTo(dbQuery.AsQueryable());
+            ////IQueryable results = opts.ApplyTo(db.People.Where(person => person.House == "4-1").AsQueryable());
+            //return results.AsQueryable() as IQueryable<Person>;
             return db.People;
 
         }

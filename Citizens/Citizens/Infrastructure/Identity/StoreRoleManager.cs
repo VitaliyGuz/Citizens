@@ -9,12 +9,19 @@ using Microsoft.Owin;
 
 namespace Citizens.Models
 {
-    public class StoreRoleManager : RoleManager<Role>
+    public class ApplicationRoleManager  : RoleManager<ApplicationRole>
     {
-        public StoreRoleManager(RoleStore<Role> store) : base(store) { }
-        public static StoreRoleManager Create(IdentityFactoryOptions<StoreRoleManager> options, IOwinContext context)
+        public ApplicationRoleManager(IRoleStore<ApplicationRole, string> roleStore)
+            : base(roleStore)
         {
-            return new StoreRoleManager(new RoleStore<Role>(context.Get<CitizenDbContext>()));
+        }
+ 
+        public static ApplicationRoleManager Create(
+            IdentityFactoryOptions<ApplicationRoleManager> options, 
+            IOwinContext context)
+        {
+            return new ApplicationRoleManager(
+                new ApplicationRoleStore(context.Get<CitizenDbContext>()));
         }
     }
 }

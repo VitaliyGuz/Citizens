@@ -41,20 +41,29 @@ namespace Citizens.Controllers.API
 
         // GET: odata/UserPrecincts(5)
         [EnableQuery]
-        public SingleResult<UserPrecinct> GetUserPrecinct([FromODataUri] string key)
+        [ODataRoute("UserPrecincts(UserId={userId}, PrecinctId={precinctId})")]
+        public SingleResult<UserPrecinct> GetUserPrecinct([FromODataUri] string userId, [FromODataUri] int precinctId)
         {
-            return SingleResult.Create(db.UserPrecincts.Where(userPrecinct => userPrecinct.UserId == key));
+            return SingleResult.Create(db.UserPrecincts.Where(userPrecinct => userPrecinct.UserId == userId && userPrecinct.PrecinctId == precinctId));
         }
 
         // PUT: odata/UserPrecincts(5)
-        public async Task<IHttpActionResult> Put([FromODataUri] string key, Delta<UserPrecinct> patch)
+        [ODataRoute("UserPrecincts(UserId={userId}, PrecinctId={precinctId})")]
+        public async Task<IHttpActionResult> Put([FromODataUri] string userId, [FromODataUri] int precinctId, Delta<UserPrecinct> patch)
         {
-            Validate(patch.GetEntity());
+            UserPrecinct dbEntity = patch.GetEntity();
+
+            Validate(dbEntity);
 
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
+
+            object[] key = new object[2];
+
+            key[0] = userId;
+            key[1] = precinctId; 
 
             UserPrecinct userPrecinct = await db.UserPrecincts.FindAsync(key);
             if (userPrecinct == null)
@@ -62,7 +71,9 @@ namespace Citizens.Controllers.API
                 return NotFound();
             }
 
-            patch.Put(userPrecinct);
+            //patch.Put(userPrecinct);
+            db.UserPrecincts.Remove(userPrecinct);
+            db.UserPrecincts.Add(dbEntity);
 
             try
             {
@@ -70,7 +81,7 @@ namespace Citizens.Controllers.API
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!UserPrecinctExists(key))
+                if (!UserPrecinctExists(dbEntity.UserId, dbEntity.PrecinctId))
                 {
                     return NotFound();
                 }
@@ -99,7 +110,7 @@ namespace Citizens.Controllers.API
             }
             catch (DbUpdateException)
             {
-                if (UserPrecinctExists(userPrecinct.UserId))
+                if (UserPrecinctExists(userPrecinct.UserId, userPrecinct.PrecinctId))
                 {
                     return Conflict();
                 }
@@ -114,7 +125,7 @@ namespace Citizens.Controllers.API
 
         // PATCH: odata/UserPrecincts(5)
         [AcceptVerbs("PATCH", "MERGE")]
-        public async Task<IHttpActionResult> Patch([FromODataUri] string key, Delta<UserPrecinct> patch)
+        public async Task<IHttpActionResult> Patch([FromODataUri] string userId, [FromODataUri] int precinctId, Delta<UserPrecinct> patch)
         {
             Validate(patch.GetEntity());
 
@@ -122,6 +133,11 @@ namespace Citizens.Controllers.API
             {
                 return BadRequest(ModelState);
             }
+
+            object[] key = new object[2];
+
+            key[0] = userId;
+            key[1] = precinctId;
 
             UserPrecinct userPrecinct = await db.UserPrecincts.FindAsync(key);
             if (userPrecinct == null)
@@ -137,7 +153,7 @@ namespace Citizens.Controllers.API
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!UserPrecinctExists(key))
+                if (!UserPrecinctExists(userId, precinctId))
                 {
                     return NotFound();
                 }
@@ -151,8 +167,15 @@ namespace Citizens.Controllers.API
         }
 
         // DELETE: odata/UserPrecincts(5)
-        public async Task<IHttpActionResult> Delete([FromODataUri] string key)
+        [ODataRoute("UserPrecincts(UserId={userId}, PrecinctId={precinctId})")]
+        public async Task<IHttpActionResult> Delete([FromODataUri] string userId, [FromODataUri] int precinctId)
         {
+
+            object[] key = new object[2];
+
+            key[0] = userId;
+            key[1] = precinctId;
+
             UserPrecinct userPrecinct = await db.UserPrecincts.FindAsync(key);
             if (userPrecinct == null)
             {
@@ -167,16 +190,16 @@ namespace Citizens.Controllers.API
 
         // GET: odata/UserPrecincts(5)/Precinct
         [EnableQuery]
-        public SingleResult<Precinct> GetPrecinct([FromODataUri] string key)
+        public SingleResult<Precinct> GetPrecinct([FromODataUri] string userId, [FromODataUri] int precinctId)
         {
-            return SingleResult.Create(db.UserPrecincts.Where(m => m.UserId == key).Select(m => m.Precinct));
+            return SingleResult.Create(db.UserPrecincts.Where(userPrecinct => userPrecinct.UserId == userId && userPrecinct.PrecinctId == precinctId).Select(m => m.Precinct));
         }
 
         // GET: odata/UserPrecincts(5)/User
         [EnableQuery]
-        public SingleResult<ApplicationUser> GetUser([FromODataUri] string key)
+        public SingleResult<ApplicationUser> GetUser([FromODataUri] string userId, [FromODataUri] int precinctId)
         {
-            return SingleResult.Create(db.UserPrecincts.Where(m => m.UserId == key).Select(m => m.User));
+            return SingleResult.Create(db.UserPrecincts.Where(userPrecinct => userPrecinct.UserId == userId && userPrecinct.PrecinctId == precinctId).Select(m => m.User));
         }
 
         protected override void Dispose(bool disposing)
@@ -188,9 +211,9 @@ namespace Citizens.Controllers.API
             base.Dispose(disposing);
         }
 
-        private bool UserPrecinctExists(string key)
+        private bool UserPrecinctExists(string userId,  int precinctId)
         {
-            return db.UserPrecincts.Count(e => e.UserId == key) > 0;
+            return db.UserPrecincts.Count(userPrecinct => userPrecinct.UserId == userId && userPrecinct.PrecinctId == precinctId) > 0;
         }
     }
 }

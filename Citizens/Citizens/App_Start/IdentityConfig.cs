@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
@@ -35,8 +36,8 @@ namespace Citizens
         {
             // Configure the db context and user manager to use a single instance per request
             app.CreatePerOwinContext(CitizenDbContext.Create);
-            app.CreatePerOwinContext<StoreUserManager>(StoreUserManager.Create);
-            app.CreatePerOwinContext<StoreRoleManager>(StoreRoleManager.Create);
+            app.CreatePerOwinContext<ApplicationUserManager>(ApplicationUserManager.Create);
+            app.CreatePerOwinContext<ApplicationRoleManager>(ApplicationRoleManager.Create);
             
 
 
@@ -51,8 +52,8 @@ namespace Citizens
             OAuthOptions = new OAuthAuthorizationServerOptions
             {
                 TokenEndpointPath = new PathString("/Token"),
-                Provider = new ApplicationOAuthProvider(PublicClientId),                
-                AccessTokenExpireTimeSpan = TimeSpan.FromMinutes(15),
+                Provider = new ApplicationOAuthProvider(PublicClientId),
+                AccessTokenExpireTimeSpan = TimeSpan.FromMinutes(Convert.ToDouble(ConfigurationManager.AppSettings["AccessTokenExpireTimeSpanMinutes"])),
                 AllowInsecureHttp = true
             };
 
@@ -75,8 +76,8 @@ namespace Citizens
 
             GoogleAuthOptions = new GoogleOAuth2AuthenticationOptions()
             {
-                ClientId = "1076913514687-bhrksa4k05elvb08uecoeul1s92q2t2m.apps.googleusercontent.com",
-                ClientSecret = "G0aPsqu7qqcqBwyT9xFMV3X2",
+                ClientId = ConfigurationManager.AppSettings["GoogleAuthOptionsClientId"],
+                ClientSecret = ConfigurationManager.AppSettings["GoogleAuthOptionsClientSecret"],
                 //ClientId = "1076913514687-90t2mcv9atf6o4eukhsqa0e4kntkegr4.apps.googleusercontent.com",
                 //ClientSecret = "3N3QraNkWYWgIzE_Aof9fqy1",
                 //ClientId = "1076913514687-l4pfivi8annt8suev3mrvlploi9lk9mv.apps.googleusercontent.com",

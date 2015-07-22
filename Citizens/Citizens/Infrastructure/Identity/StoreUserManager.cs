@@ -9,21 +9,29 @@ using Microsoft.Owin;
 
 namespace Citizens.Models
 {
-    public class StoreUserManager : UserManager<ApplicationUser>
+    public class ApplicationUserManager
+        : UserManager<ApplicationUser, string>
     {
-        public StoreUserManager(IUserStore<ApplicationUser> store) : base(store) {
+        public ApplicationUserManager(IUserStore<ApplicationUser, string> store) : base(store)
+        {
         }
-        public static StoreUserManager Create(
-            IdentityFactoryOptions<StoreUserManager> options, IOwinContext context)
+
+        public static ApplicationUserManager Create(IdentityFactoryOptions<ApplicationUserManager> options, IOwinContext context)
         {
             CitizenDbContext dbContext = context.Get<CitizenDbContext>();
-            StoreUserManager manager = new StoreUserManager(new UserStore<ApplicationUser>(dbContext));
+            ApplicationUserManager manager = new ApplicationUserManager(
+                new UserStore<ApplicationUser, ApplicationRole, string,
+                    ApplicationUserLogin, ApplicationUserRole,
+                    ApplicationUserClaim>(dbContext));
+
+            // Configure validation logic for usernames
             manager.UserValidator = new UserValidator<ApplicationUser>(manager)
             {
                 AllowOnlyAlphanumericUserNames = false,
                 RequireUniqueEmail = true
             };
-            
+
+            // Configure validation logic for passwords
             manager.PasswordValidator = new PasswordValidator
             {
                 RequiredLength = 1,

@@ -23,6 +23,9 @@ namespace Citizens.Models
         public IEnumerable<UserLoginInfoViewModel> Logins { get; set; }
 
         public IEnumerable<ExternalLoginViewModel> ExternalLoginProviders { get; set; }
+
+        public IEnumerable<UserRoleInfoViewModel> Roles { get; set; }
+
     }
 
     public class UserInfoViewModel
@@ -39,5 +42,11 @@ namespace Citizens.Models
         public string LoginProvider { get; set; }
 
         public string ProviderKey { get; set; }
+    }
+
+    public class UserRoleInfoViewModel
+    {
+        public string Id { get; set; }
+        public string Name { get; set; }
     }
 }

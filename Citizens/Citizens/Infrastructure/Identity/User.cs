@@ -8,11 +8,25 @@ using System.Threading.Tasks;
 using System.Security.Claims;
 using Microsoft.AspNet.Identity;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 
 namespace Citizens.Models
 {
-    public class ApplicationUser : IdentityUser
+    public class ApplicationUserLogin : IdentityUserLogin<string> { }
+    public class ApplicationUserClaim : IdentityUserClaim<string> { }
+    public class ApplicationUserRole : IdentityUserRole<string> { }
+
+    public class ApplicationUser
+    : IdentityUser<string, ApplicationUserLogin,
+    ApplicationUserRole, ApplicationUserClaim>
     {
+        public ApplicationUser()
+        {
+            Id = Guid.NewGuid().ToString();
+
+            // Add any custom User properties/code here
+        }
+
         [NotMapped]
         public string Password { get; set; }
 
@@ -29,7 +43,7 @@ namespace Citizens.Models
 
 
 
-        public async Task<ClaimsIdentity> GenerateUserIdentityAsync(UserManager<ApplicationUser> manager, string authenticationType)
+        public async Task<ClaimsIdentity> GenerateUserIdentityAsync(ApplicationUserManager manager, string authenticationType)
         {
             // Note the authenticationType must match the one defined in CookieAuthenticationOptions.AuthenticationType
             var userIdentity = await manager.CreateIdentityAsync(this, authenticationType);
@@ -37,20 +51,39 @@ namespace Citizens.Models
             return userIdentity;
         }
     }
-    public class ExternalLoginListViewModel
-    {
-        public string ReturnUrl { get; set; }
-    }
-    
-    public class ExternalLoginConfirmationViewModel
-    {
-        [Required]
-        [Display(Name = "Email")]
-        public string Email { get; set; }
 
-        [Display(Name = "Hometown")]
-        public string Hometown { get; set; }
+    public class ApplicationUserStore
+    : UserStore<ApplicationUser, ApplicationRole, string,
+        ApplicationUserLogin, ApplicationUserRole,
+        ApplicationUserClaim>, IUserStore<ApplicationUser, string>,
+    IDisposable
+    {
+        public ApplicationUserStore()
+            : this(new IdentityDbContext())
+        {
+            base.DisposeContext = true;
+        }
+
+        public ApplicationUserStore(DbContext context)
+            : base(context)
+        {
+        }
     }
+
+    //public class ExternalLoginListViewModel
+    //{
+    //    public string ReturnUrl { get; set; }
+    //}
+    
+    //public class ExternalLoginConfirmationViewModel
+    //{
+    //    [Required]
+    //    [Display(Name = "Email")]
+    //    public string Email { get; set; }
+
+    //    [Display(Name = "Hometown")]
+    //    public string Hometown { get; set; }
+    //}
 
     //public class SendCodeViewModel
     //{
@@ -60,19 +93,19 @@ namespace Citizens.Models
     //    public bool RememberMe { get; set; }
     //}
 
-    public class VerifyCodeViewModel
-    {
-        [Required]
-        public string Provider { get; set; }
+    //public class VerifyCodeViewModel
+    //{
+    //    [Required]
+    //    public string Provider { get; set; }
 
-        [Required]
-        [Display(Name = "Code")]
-        public string Code { get; set; }
-        public string ReturnUrl { get; set; }
+    //    [Required]
+    //    [Display(Name = "Code")]
+    //    public string Code { get; set; }
+    //    public string ReturnUrl { get; set; }
 
-        [Display(Name = "Remember this browser?")]
-        public bool RememberBrowser { get; set; }
+    //    [Display(Name = "Remember this browser?")]
+    //    public bool RememberBrowser { get; set; }
 
-        public bool RememberMe { get; set; }
-    }
+    //    public bool RememberMe { get; set; }
+    //}
 }

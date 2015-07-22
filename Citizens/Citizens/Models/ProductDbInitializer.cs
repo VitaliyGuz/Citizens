@@ -8,6 +8,7 @@ using Microsoft.AspNet.Identity;
 using System.IO;
 using System.Data.SqlClient;
 using System.Data;
+using Microsoft.AspNet.Identity.Owin;
 
 namespace Citizens.Models
 {
@@ -15,9 +16,12 @@ namespace Citizens.Models
     {
         protected override void Seed(CitizenDbContext context)
         {
+            
+            var userMgr = HttpContext.Current
+                .GetOwinContext().GetUserManager<ApplicationUserManager>();
 
-            StoreUserManager userMgr = new StoreUserManager(new UserStore<ApplicationUser>(context));
-            StoreRoleManager roleMgr = new StoreRoleManager(new RoleStore<Role>(context));
+            var roleMgr = HttpContext.Current
+                .GetOwinContext().Get<ApplicationRoleManager>();
 
             string roleName = "Administrators";
             string userName = "Admin";
@@ -26,7 +30,7 @@ namespace Citizens.Models
 
             if (!roleMgr.RoleExists(roleName))
             {
-                roleMgr.Create(new Role(roleName));
+                roleMgr.Create(new ApplicationRole(roleName));
             }
             ApplicationUser userAdmin = userMgr.FindByName(userName);
             if (userAdmin == null)
@@ -52,7 +56,7 @@ namespace Citizens.Models
 
             if (!roleMgr.RoleExists(roleName))
             {
-                roleMgr.Create(new Role(roleName));
+                roleMgr.Create(new ApplicationRole(roleName));
             }
             ApplicationUser userOperator = userMgr.FindByName(userName);
             if (userOperator == null)

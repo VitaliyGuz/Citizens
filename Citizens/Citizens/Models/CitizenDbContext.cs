@@ -13,7 +13,8 @@ using System.Web.Http;
 
 namespace Citizens.Models
 {
-    public class CitizenDbContext : IdentityDbContext<ApplicationUser>
+    public class CitizenDbContext : IdentityDbContext<ApplicationUser, ApplicationRole,
+    string, ApplicationUserLogin, ApplicationUserRole, ApplicationUserClaim>
     {
         public CitizenDbContext() : base("CitizensDb")
         {
@@ -69,28 +70,19 @@ namespace Citizens.Models
 
         //protected override void OnModelCreating(DbModelBuilder modelBuilder)
         //{
-        //    //modelBuilder.Entity<Precinct>()
-        //    //    .HasRequired(c => c.City)
-        //    //    .WithMany()
-        //    //    .WillCascadeOnDelete(false);
-
-        //    //modelBuilder.Entity<PrecinctAddress>()
-        //    //    .HasRequired(c => c.City)
-        //    //    .WithMany()
-        //    //    .WillCascadeOnDelete(false);
-        //    //modelBuilder.Conventions.Remove<OneToManyCascadeDeleteConvention>();
+        //    base.OnModelCreating(modelBuilder);
         //    modelBuilder.Entity<IdentityUserLogin>().HasKey<string>(l => l.UserId);
         //    modelBuilder.Entity<Role>().HasKey<string>(r => r.Id);
         //    modelBuilder.Entity<IdentityUserRole>().HasKey(r => new { r.RoleId, r.UserId });
         //}
 
-        
 
 
-        public DbSet<UserRole> UserRoles { get; set; }
-        public new DbSet<Role> Roles { get; set; }
-        public DbSet<IdentityUserClaim> Claims { get; set; }
-        public DbSet<IdentityUserLogin> Logins { get; set; }
+
+        public DbSet<ApplicationUserRole> UserRoles { get; set; }
+        //public DbSet<ApplicationRole> ApplicationRoles { get; set; }
+        public DbSet<ApplicationUserClaim> Claims { get; set; }
+        public DbSet<ApplicationUserLogin> Logins { get; set; }
 
         
     }
