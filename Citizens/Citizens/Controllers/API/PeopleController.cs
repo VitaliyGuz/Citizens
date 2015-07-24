@@ -146,6 +146,7 @@ namespace Citizens.Controllers.API
 
         // GET: odata/People(5)
         [EnableQuery]
+        [PersonFilter]
         public SingleResult<Person> GetPerson([FromODataUri] int key)
         {
             return SingleResult.Create(db.People.Where(person => person.Id == key));

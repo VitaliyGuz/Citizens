@@ -1,116 +1,48 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Data.SqlClient;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Formatting;
-using System.Net.Http.Headers;
-using System.Text;
-using System.Threading.Tasks;
-using System.Web;
 using System.Web.Http.Controllers;
-using System.Web.Http.Filters;
-using Citizens.Models;
-using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Identity.Owin;
 
 namespace Citizens.Extensions
 {
-    public class PersonFilterAttribute : ActionFilterAttribute
+    public class PersonFilterAttribute : BaseActionFilter
     {
         public override void OnActionExecuting(HttpActionContext actionContext)
         {
-            var uri = actionContext.Request.RequestUri.OriginalString;
-            //if (uri.IndexOf("filteredByUserPrecinct", StringComparison.Ordinal) > 0)
-            if (actionContext.Request.Headers.From == "self@com.com")
+            var entryId = getEntryId(actionContext);
+
+            if (entryId == null)
             {
-                //actionContext.Response.Headers.Remove();
+                actionContext.Response = new HttpResponseMessage(HttpStatusCode.NotFound);
+                return;
+            }
+
+            if (string.IsNullOrEmpty(entryId))
+            {
+                setFilterString("PrecinctAddress/Precinct");
                 base.OnActionExecuting(actionContext);
                 return;
             }
-            
-            var pathBuilder = new StringBuilder();            
 
-            var queryStringIndex = uri.IndexOf('?');
-
-            var userMgr = HttpContext.Current.GetOwinContext().GetUserManager<ApplicationUserManager>();
-
-            var userId = userMgr.FindByName(HttpContext.Current.User.Identity.Name).Id;
-
-
-            if (queryStringIndex != -1)
+            var userId = getUserId();
+            if (string.IsNullOrEmpty(userId))
             {
-                var queryFilterIndex = uri.IndexOf("$Filter", StringComparison.OrdinalIgnoreCase);
-                if (queryFilterIndex != -1)
-                {
-                    var queryAndIndex = uri.Substring(queryFilterIndex).IndexOf("&", StringComparison.OrdinalIgnoreCase);
-                    if (queryAndIndex != -1)
-                    //append between $Filter and &
-                    {
-                        queryAndIndex = queryAndIndex + queryFilterIndex;
-                        appendString(pathBuilder, uri.Substring(0, queryAndIndex), " and ", userId, uri.Substring(queryAndIndex));
-                        //pathBuilder.Append(uri.Substring(0, queryAndIndex));
-                        //pathBuilder.Append(
-                        //    " and PrecinctAddress/Precinct/UserPrecincts/any(userprecinct:userprecinct/UserId eq '438ff3a5-ef30-4931-8bfa-bf388f76c0fd')");
-                        //pathBuilder.Append(uri.Substring(queryAndIndex));
-                    }
-                    else
-                    //append at the and
-                    {
-                        appendString(pathBuilder, uri, " and ", userId, "");
-                        //pathBuilder.Append(uri);
-                        //pathBuilder.Append(
-                        //    " and PrecinctAddress/Precinct/UserPrecincts/any(userprecinct:userprecinct/UserId eq '438ff3a5-ef30-4931-8bfa-bf388f76c0fd')");
-                    }
-                }
-                else
-                {
-                    appendString(pathBuilder, uri, "&$Filter=", userId, "");
-                    //pathBuilder.Append(uri);
-                    //pathBuilder.Append(
-                    //    "&$Filter=PrecinctAddress/Precinct/UserPrecincts/any(userprecinct:userprecinct/UserId eq '438ff3a5-ef30-4931-8bfa-bf388f76c0fd')");
-                }
-            }
-            else
-            {
-                appendString(pathBuilder, uri, "?$Filter=", userId, "");
-                //pathBuilder.Append(uri);
-                //pathBuilder.Append(
-                //    "?$Filter=PrecinctAddress/Precinct/UserPrecincts/any(userprecinct:userprecinct/UserId eq '438ff3a5-ef30-4931-8bfa-bf388f76c0fd')");
+                actionContext.Response = new HttpResponseMessage(HttpStatusCode.NotFound);
+                return;
             }
 
-            //HttpContext ctx = HttpContext.Current;
-            //ctx.Response.RedirectPermanent(pathBuilder.ToString());
-            actionContext.Response = GetPeople(pathBuilder.ToString(), actionContext.Request.Headers.Authorization.Parameter).Result;
-
-        }
-
-        private void appendString(StringBuilder pathBuilder, string preUri, string addString, string userId, string postUri)
-        {
-            pathBuilder.Append(preUri);
-            pathBuilder.Append(addString);
-            pathBuilder.Append("PrecinctAddress/Precinct/UserPrecincts/any(userprecinct:userprecinct/UserId eq '");
-            pathBuilder.Append(userId);
-            pathBuilder.Append("')");
-            pathBuilder.Append(postUri);
-            //pathBuilder.Append("&filteredByUserPrecinct");
-        }
-
-        private async Task<HttpResponseMessage> GetPeople(string path, string authorization)
-        {
-            var client = new HttpClient();
-            client.DefaultRequestHeaders.Clear();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", authorization);
-            client.DefaultRequestHeaders.Accept.Clear();
-            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            client.DefaultRequestHeaders.From = "self@com.com";
-            var response =  await client.GetAsync(path).ConfigureAwait(false);
-            return response;
-            //var response = client.GetAsync(path).Result.Content.ReadAsAsync<IEnumerable<Person>>().Result;
-            //response.Content.Headers.ContentType = new MediaTypeHeaderValue("Application/json");
-            //var message = new HttpResponseMessage();
-            //message.Content = new ObjectContent(typeof(Person), response, new JsonMediaTypeFormatter());
-            //return message;
+            var count = db.Database.SqlQuery<int>(
+                @"SELECT TOP 1 dbo.People.Id as Id
+                      FROM dbo.People
+                      INNER JOIN dbo.PrecinctAddresses ON dbo.People.CityId = dbo.PrecinctAddresses.CityId
+                        AND dbo.People.StreetId = dbo.PrecinctAddresses.StreetId
+                        AND dbo.People.House = dbo.PrecinctAddresses.House
+                            INNER JOIN dbo.UserPrecincts ON dbo.PrecinctAddresses.PrecinctId = dbo.UserPrecincts.PrecinctId
+                      WHERE dbo.People.Id = @personId AND dbo.UserPrecincts.UserId = @userId",
+                new SqlParameter("personId", entryId), new SqlParameter("userId", userId)
+            ).CountAsync().Result;
+            if (count == 0) actionContext.Response = new HttpResponseMessage(HttpStatusCode.NotFound);
+                
         }
     }
 }

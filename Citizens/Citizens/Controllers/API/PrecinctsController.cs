@@ -11,6 +11,7 @@ using System.Web.Http;
 using System.Web.Http.ModelBinding;
 using System.Web.OData;
 using System.Web.OData.Routing;
+using Citizens.Extensions;
 using Citizens.Models;
 
 namespace Citizens.Controllers.API
@@ -33,7 +34,8 @@ namespace Citizens.Controllers.API
         private CitizenDbContext db = new CitizenDbContext();
 
         // GET: odata/Precincts
-        [EnableQuery(MaxExpansionDepth = 3)]        
+        [EnableQuery(MaxExpansionDepth = 3)]
+        [PrecinctFilter]
         public IQueryable<Precinct> GetPrecincts()
         {
             return db.Precincts;
@@ -41,6 +43,7 @@ namespace Citizens.Controllers.API
 
         // GET: odata/Precincts(5)
         [EnableQuery(MaxExpansionDepth = 3)]
+        [PrecinctFilter]
         public SingleResult<Precinct> GetPrecinct([FromODataUri] int key)
         {
             return SingleResult.Create(db.Precincts.Where(precinct => precinct.Id == key));

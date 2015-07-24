@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
+﻿using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
-using System.Web.Http.ModelBinding;
 using System.Web.OData;
 using System.Web.OData.Routing;
+using Citizens.Extensions;
 using Citizens.Models;
 
 namespace Citizens.Controllers.API
@@ -33,6 +28,7 @@ namespace Citizens.Controllers.API
 
         // GET: odata/PrecinctAddresses
         [EnableQuery]
+        [PrecinctAddressesFilter]
         public IQueryable<PrecinctAddress> GetPrecinctAddresses()
         {
             return db.PrecinctAddresses;
@@ -41,6 +37,7 @@ namespace Citizens.Controllers.API
         // GET: odata/PrecinctAddresses(5)
         [EnableQuery]
         [ODataRoute("PrecinctAddresses(CityId={cityId}, StreetId={streetId}, House={house})")]
+        [PrecinctAddressesFilter]
         public SingleResult<PrecinctAddress> GetPrecinctAddresses([FromODataUri] int cityId, [FromODataUri] int? streetId, [FromODataUri] string house)
         {
             return SingleResult.Create(db.PrecinctAddresses.Where(precinctAddress => precinctAddress.CityId == cityId && precinctAddress.StreetId == streetId && precinctAddress.House == house));
