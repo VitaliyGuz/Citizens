@@ -45,6 +45,10 @@ angular.module("userServices", ['ngResource'])
         return {
             asyncLoad: function () {
                 var deferred = $q.defer();
+                if (!this.isEmpty()) {
+                    deferred.resolve();
+                    return deferred.promise;
+                }
                 userData.getAll(function (res) {
                     userData.getRoles(function (roles) {
                         users = res.value.map(function(user) {

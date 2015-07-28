@@ -16,7 +16,7 @@
             <label>Дільниця</label>
             <input ng-model="precinct.Number" type="text" class="form-control" required>
         </div>
-        <div class="form-group col-lg-4">
+        <div class="form-group col-sm-3">
             <label>Населений пункт</label>
             <input type="text" ng-change="precinct.CityId=0" typeahead-on-select="onSelectCity($item, $model, $label,precinct)" ng-model="precinct.City"
                    typeahead="c.Id as c.CityType.Name +' '+c.Name + ' (' + c.RegionPart.Name + ' р-н)' for c in cities | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control" required>
@@ -30,9 +30,14 @@
             <label>Буд.</label>
             <input ng-model="precinct.House" type="text" class="form-control" required>
         </div>
-        <div class="form-group col-lg-3">
+        <div class="form-group col-lg-2">
+            <label>Мікрорайон</label>
+            <input type="text" ng-change="precinct.NeighborhoodId=0" typeahead-on-select="onSelectNeighborhood($item, $model, $label)" ng-model="precinct.Neighborhood"
+                   typeahead="n.Id as n.Name for n in neighborhoods | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control">
+        </div>
+        <div class="form-group">
             <label>Район</label>
-            <input type="text" ng-change="precinct.RegionPartId=0" typeahead-on-select="onSelectRegionPart($item, $model, $label)" ng-model="precinct.RegionPart"
+            <input style="width: 20%" type="text" ng-change="precinct.RegionPartId=0" typeahead-on-select="onSelectRegionPart($item, $model, $label)" ng-model="precinct.RegionPart"
                    typeahead="r.Id as r.Name +' ('+ r.RegionPartType +')' for r in regionParts | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control" required>
         </div>
         <!--<div class="form-group col-lg-2">

@@ -3,7 +3,7 @@
 angular.module("precinctServices", ['ngResource'])
     .factory("precinctData", ['$resource', 'config', function ($resource, config) {
         var urlOdata = config.baseUrl + '/odata/Precincts',
-            baseExpand = "?$expand=City($expand=CityType,RegionPart),Street($expand=StreetType),RegionPart",
+            baseExpand = "?$expand=City($expand=CityType,RegionPart),Street($expand=StreetType),RegionPart,Neighborhood",
             addressesExpand = "PrecinctAddresses($expand=City($expand=CityType)),PrecinctAddresses($expand=Street($expand=StreetType))",
             districtsExpand = 'DistrictPrecincts($expand = District($expand = DistrictType))',
             order = "&$orderby=Number asc",
@@ -87,6 +87,11 @@ angular.module("precinctServices", ['ngResource'])
 
         function getUserPrecintcsPromise(precinctId) {
             var deferred = $q.defer();
+            //if (usersHolder.isEmpty()) usersHolder.asyncLoad();
+            if (!precinctId) {
+                deferred.resolve();
+                return deferred.promise;
+            }
             userData.getUserPrecinctsByPrecinctId({ precinctId: precinctId }, function (res) {
                 function mappedUsers(users) {
                     if (users && users.length > 0) {

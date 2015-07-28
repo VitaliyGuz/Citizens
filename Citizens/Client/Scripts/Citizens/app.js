@@ -4,7 +4,7 @@ var app = angular.module("citizens",
     [
         'ngRoute', 'ngCookies',
         'angularUtils.directives.dirPagination','ui.bootstrap',
-        'peopleControllers', 'streetControllers', 'regionPartControllers', 'cityControllers', 'authControllers', 'precinctControllers', 'uploadXlsModule', 'districtControllers', 'userControllers'
+        'peopleControllers', 'streetControllers', 'regionPartControllers', 'cityControllers', 'authControllers', 'precinctControllers', 'uploadXlsModule', 'districtControllers', 'userControllers', 'neighborhoodControllers'
     ]
 );
 
@@ -89,8 +89,8 @@ app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider',
             templateUrl: 'Views/Admin/EditUser.html',
             controller: 'editUserController',
             resolve: {
-                genlData: function (genlData) { genlData.asyncLoad() },
-                resolvedUser: function ($route, usersHolder) { return usersHolder.asyncLoadById($route.current.params.id) }
+                genlData: function(genlData) { genlData.asyncLoad() },
+                resolvedUser: function($route, usersHolder) { return usersHolder.asyncLoadById($route.current.params.id) }
             },
             access: { requiredRoles: ['SuperAdministrators', 'Administrators'] }
         },
@@ -98,10 +98,17 @@ app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider',
             templateUrl: 'Views/Admin/Users.html',
             controller: 'listUsersController',
             resolve: {
-                genlData: function (genlData) { genlData.asyncLoad() },
-                resolvedUsers: function (usersHolder) { usersHolder.asyncLoad() }
+                genlData: function(genlData) { genlData.asyncLoad() },
+                resolvedUsers: function(usersHolder) { usersHolder.asyncLoad() }
             },
             access: { requiredRoles: ['SuperAdministrators', 'Administrators'] }
+        },
+        routeNeighborhoods = {
+            templateUrl: 'Views/Neighborhoods.html',
+            controller: 'listNeighborhoodsController',
+            resolve: {
+                genlData: function(genlData) { genlData.asyncLoad() }
+            }
         };
 
     $routeProvider.
@@ -136,6 +143,8 @@ app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider',
         when('/users/:currPage', routeUsers).
         when('/user/:id', routeEditUser).
         when('/user/:id/:currPage', routeEditUser).
+        when('/neighborhoods', routeNeighborhoods).
+        when('/neighborhoods/:currPage', routeNeighborhoods).
         when('/uploadXls', {
             templateUrl: 'Views/Admin/UploadXls.html',
             controller: 'uploadXlsController',
@@ -405,7 +414,7 @@ app.filter("filterByFirstChar", function () {
     }
 });
 
-app.factory('genlData', ['$q', '$rootScope', 'cityData', 'streetData', 'regionPartData', 'serviceUtil', function ($q, $rootScope, cityData, streetData, regionPartData, serviceUtil) {
+app.factory('genlData', ['$q', '$rootScope', 'cityData', 'streetData', 'regionPartData', 'neighborhoodData', 'serviceUtil', function ($q, $rootScope, cityData, streetData, regionPartData, neighborhoodData, serviceUtil) {
 
     function getDataPromise(param) {
         var deferred = $q.defer();
@@ -425,13 +434,15 @@ app.factory('genlData', ['$q', '$rootScope', 'cityData', 'streetData', 'regionPa
     return {
         asyncLoad: function () {
             return getDataPromise({ propName: 'cities', dataSource: cityData, method: 'getAll', desc: 'Населені пункти' })
-                .then(function () {
+                .then(function() {
                     return getDataPromise({ propName: 'streets', dataSource: streetData, method: 'query', desc: 'Вулиці' });
                 })
-                .then(function () {
+                .then(function() {
                     return getDataPromise({ propName: 'regionParts', dataSource: regionPartData, method: 'getAll', desc: 'Райони' });
-                }
-            );
+                })
+                .then(function () {
+                    return getDataPromise({ propName: 'neighborhoods', dataSource: neighborhoodData, method: 'getAll', desc: 'Мікрорайони' });
+                });
         }
     };
 }]);

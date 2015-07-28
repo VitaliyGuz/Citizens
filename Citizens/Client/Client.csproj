@@ -161,6 +161,8 @@
     <None Include="Properties\PublishProfiles\poltava2015Client - Web Deploy.pubxml" />
     <None Include="Scripts\jQuery\jquery-2.1.4.intellisense.js" />
     <Content Include="Scripts\Citizens\Controllers\districtControllers.js" />
+    <Content Include="Scripts\Citizens\Controllers\neighborhoodControllers.js" />
+    <Content Include="Scripts\Citizens\Services\neighborhoodServices.js" />
     <Content Include="Scripts\jQuery\jquery-2.1.4.js" />
     <Content Include="Scripts\jQuery\jquery-2.1.4.min.js" />
     <Content Include="Scripts\jQuery\jquery-2.1.4.min.map" />
@@ -223,6 +225,7 @@
     <Content Include="Views\ListPeople.html" />
     <Content Include="Views\ListPrecincts.html" />
     <Content Include="Views\Login.html" />
+    <Content Include="Views\Neighborhoods.html" />
     <Content Include="Views\RegionParts.html" />
     <Content Include="Views\Register.html" />
     <Content Include="Views\Streets.html" />

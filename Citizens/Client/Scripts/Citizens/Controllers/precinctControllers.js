@@ -233,8 +233,15 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
                 $rootScope.errorMsg = "Район '" + $scope.precinct.RegionPart + "' не знайдено";
                 return;
             }
+
+            if (!$scope.precinct.NeighborhoodId) {
+                $rootScope.errorMsg = "Мікрорайон '" + $scope.precinct.Neighborhood + "' не знайдено";
+                return;
+            }
+
             $rootScope.errorMsg = '';
             $scope.saving.precinct = true;
+            // todo: model factory
             var precinct = {
                 "Id": 0,
                 "Number": 0,
@@ -244,7 +251,8 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
                 "RegionPartId": 0,
                 "lat": 0,
                 "lng": 0,
-                "location_type": ''
+                "location_type": '',
+                "NeighborhoodId":0
             };
 
             serviceUtil.copyProperties($scope.precinct, precinct);
@@ -669,6 +677,11 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
             $scope.precinct.RegionPartId = $model;
         };
 
+        $scope.onSelectNeighborhood = function ($item, $model, $label) {
+            $scope.precinct.Neighborhood = $item;
+            $scope.precinct.NeighborhoodId = $model;
+        };
+
         $scope.changePrecinct = function (address) {
             $scope.changingPresinct = true;
             editableAddress = address;
@@ -805,6 +818,7 @@ precinctControllers.controller('geocodingController', ['$scope', '$rootScope', '
                 }
             }
             if (status === google.maps.GeocoderStatus.OK) {
+                // todo: model factory
                 var raw = {
                     "Id": 0,
                     "Number": 0,
@@ -814,7 +828,8 @@ precinctControllers.controller('geocodingController', ['$scope', '$rootScope', '
                     "RegionPartId": 0,
                     "lat": 0,
                     "lng": 0,
-                    "location_type": ''
+                    "location_type": '',
+                    "NeighborhoodId": 0
                 };
                 serviceUtil.copyProperties(precinct, raw);
                 precinctData.update({ id: precinct.Id }, raw, function () {
