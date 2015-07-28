@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Web;
 using System.Web.Http.Controllers;
@@ -12,7 +13,7 @@ namespace Citizens.Extensions
 {
     public class BaseActionFilter : ActionFilterAttribute
     {
-        private const string baseFilterString = "UserPrecincts/any(userprecinct:userprecinct/UserId eq '";
+        private const string filterPattern = "UserPrecincts/any(userprecinct:userprecinct/UserId eq '@userId')";
 
         private string filterString = string.Empty;
 
@@ -20,14 +21,20 @@ namespace Citizens.Extensions
 
         public override void OnActionExecuting(HttpActionContext actionContext)
         {
-            actionContext.Request.RequestUri = new Uri(buildNewPath(actionContext.Request.RequestUri.OriginalString));
+            buildNewRequestUri(actionContext);
+        }
+
+        private static ODataPath getODataPath(HttpActionContext actionContext)
+        {
+            object pathValue;
+            if (!actionContext.Request.Properties.TryGetValue("System.Web.OData.Path", out pathValue)) return null;
+            return (ODataPath)pathValue;
         }
 
         protected string getEntryId(HttpActionContext actionContext)
         {
-            object pathValue;
-            if (!actionContext.Request.Properties.TryGetValue("System.Web.OData.Path", out pathValue)) return null;
-            var odataPathValue = (ODataPath)pathValue;
+            var odataPathValue = getODataPath(actionContext);
+            if (odataPathValue == null) return null;
             return odataPathValue.Segments.Count > 1 ? odataPathValue.Segments[1].ToString() : string.Empty;
         }
 
@@ -37,50 +44,40 @@ namespace Citizens.Extensions
             this.filterString = filterString + "/";
         }
 
-        private string buildNewPath(string uri)
+        private void buildNewRequestUri(HttpActionContext actionContext)
         {
-            var pathBuilder = new StringBuilder();
-
-            var queryStringIndex = uri.IndexOf('?');
-            
-            var userId = getUserId();
-            
-            if (queryStringIndex != -1)
+            var queryBuilder = new StringBuilder();
+            object propValue;
+            if (actionContext.Request.Properties.TryGetValue("MS_QueryNameValuePairs", out propValue))
             {
-                var queryFilterIndex = uri.IndexOf("$Filter", StringComparison.OrdinalIgnoreCase);
-                if (queryFilterIndex != -1)
+                var queryPairs = (KeyValuePair<string, string>[]) propValue;
+                foreach (var pair in queryPairs)
                 {
-                    var queryAndIndex = uri.Substring(queryFilterIndex).IndexOf("&", StringComparison.OrdinalIgnoreCase);
-                    if (queryAndIndex != -1)
+                    if (queryBuilder.Length > 0) queryBuilder.Append('&');
+                    queryBuilder.Append(pair.Key).Append('=').Append(pair.Value);
+                    if ("$filter".Equals(pair.Key.ToLower()))
                     {
-                        queryAndIndex = queryAndIndex + queryFilterIndex;
-                        appendString(pathBuilder, uri.Substring(0, queryAndIndex), " and ", userId, uri.Substring(queryAndIndex));
-                    }
-                    else
-                    {
-                        appendString(pathBuilder, uri, " and ", userId, "");
+                        addFilter(queryBuilder, true);
                     }
                 }
-                else
+                if (!queryBuilder.ToString().ToLower().Contains("$filter"))
                 {
-                    appendString(pathBuilder, uri, "&$Filter=", userId, "");
+                    queryBuilder.Append("&");
+                    addFilter(queryBuilder, false);    
                 }
             }
             else
             {
-                appendString(pathBuilder, uri, "?$Filter=", userId, "");
+                addFilter(queryBuilder, false);
             }
-            return pathBuilder.ToString();
+            var uriString = actionContext.Request.RequestUri.Scheme + "://" + actionContext.Request.RequestUri.Authority +      actionContext.Request.RequestUri.AbsolutePath + '?' + queryBuilder;
+            actionContext.Request.RequestUri = new Uri(uriString);
         }
 
-        private void appendString(StringBuilder pathBuilder, string preUri, string addString, string userId, string postUri)
+        private void addFilter(StringBuilder builder, bool isExists)
         {
-            pathBuilder.Append(preUri);
-            pathBuilder.Append(addString);
-            pathBuilder.Append(filterString + baseFilterString);
-            pathBuilder.Append(userId);
-            pathBuilder.Append("')");
-            pathBuilder.Append(postUri);
+            builder.Append(isExists ? " and " : "$filter=");
+            builder.Append(filterString).Append(filterPattern.Replace("@userId", getUserId()));
         }
 
         protected string getUserId()
