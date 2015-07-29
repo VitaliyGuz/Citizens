@@ -19,6 +19,8 @@ namespace Citizens.Models
 
         public int? StreetId { get; set; }
 
+        public int? NeighborhoodId { get; set; }
+
         [StringLength(10)]
         public string House { get; set; }
         
@@ -29,6 +31,8 @@ namespace Citizens.Models
         public int? RegionPartId { get; set; }        
 
         public RegionPart RegionPart { get; set; }
+
+        public Neighborhood Neighborhood { get; set; }
 
         public ICollection<PrecinctAddress> PrecinctAddresses { get; set; }
 

@@ -7,6 +7,7 @@ using System.Web;
 
 namespace Citizens.Models
 {
+    public enum HouseType { Приватний, Багатоповерхівка };
     public class PrecinctAddress
     {
         [Key]
@@ -23,6 +24,8 @@ namespace Citizens.Models
         [Column(Order = 2)]
         [StringLength(10)]
         public string House { get; set; }
+
+        public HouseType? HouseType { get; set; }
 
         public int PrecinctId { get; set; }
 

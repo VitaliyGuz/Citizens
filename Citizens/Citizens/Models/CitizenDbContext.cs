@@ -67,6 +67,8 @@ namespace Citizens.Models
 
         public DbSet<Election> Elections { get; set; }
 
+        public DbSet<Neighborhood> Neighborhoods { get; set; }
+
 
         //protected override void OnModelCreating(DbModelBuilder modelBuilder)
         //{
@@ -83,6 +85,8 @@ namespace Citizens.Models
         //public DbSet<ApplicationRole> ApplicationRoles { get; set; }
         public DbSet<ApplicationUserClaim> Claims { get; set; }
         public DbSet<ApplicationUserLogin> Logins { get; set; }
+
+        
 
         
     }
