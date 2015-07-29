@@ -87,35 +87,35 @@ angular.module("precinctServices", ['ngResource'])
 
         function getUserPrecintcsPromise(precinctId) {
             var deferred = $q.defer();
-            //if (usersHolder.isEmpty()) usersHolder.asyncLoad();
-            if (!precinctId) {
-                deferred.resolve();
-                return deferred.promise;
-            }
-            userData.getUserPrecinctsByPrecinctId({ precinctId: precinctId }, function (res) {
-                function mappedUsers(users) {
-                    if (users && users.length > 0) {
-                        res.value = res.value.map(function(userPrecinct) {
-                            userPrecinct.User = users.filter(function(user) {
-                                return userPrecinct.UserId === user.Id;
-                            })[0];
-                            return userPrecinct;
-                        });
-                    }
-                    res.value.sort(function (a, b) {
-                        return a.User.FirstName.localeCompare(b.User.FirstName);
-                    });
-                    deferred.resolve(res.value);
-                };
-                if (usersHolder.isEmpty()) {
-                    usersHolder.asyncLoad().then(function () { mappedUsers(usersHolder.get()) }, function (err) { deferred.reject(serviceUtil.getErrorMessage(err)) });
-                } else {
-                    mappedUsers(usersHolder.get());
+            usersHolder.asyncLoad().then(function() {
+                if (!precinctId) {
+                    deferred.resolve();
+                    return deferred.promise;
                 }
-            }, function (err) {
-                err.description = 'Користувачі не завантажено',
+                userData.getUserPrecinctsByPrecinctId({ precinctId: precinctId }, function (res) {
+                    function mappedUsers(users) {
+                        if (users && users.length > 0) {
+                            res.value = res.value.map(function (userPrecinct) {
+                                userPrecinct.User = users.filter(function (user) {
+                                    return userPrecinct.UserId === user.Id;
+                                })[0];
+                                return userPrecinct;
+                            });
+                        }
+                        res.value.sort(function (a, b) {
+                            return a.User.FirstName.localeCompare(b.User.FirstName);
+                        });
+                        deferred.resolve(res.value);
+                    };
+                    mappedUsers(usersHolder.get());
+                }, function (err) {
+                    err.description = 'Користувачі, закріплені за дільницею не завантажено';
+                    deferred.reject(serviceUtil.getErrorMessage(err));
+                });
+            }, function(err) {
                 deferred.reject(serviceUtil.getErrorMessage(err));
             });
+            
             return deferred.promise;
         };
 
