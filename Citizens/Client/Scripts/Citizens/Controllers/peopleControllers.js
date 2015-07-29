@@ -215,8 +215,8 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
 
     }]);
 
-peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$location', 'peopleData', 'serviceUtil', 'precinctData', 'precinctAddressesData', 'additionalPropsData', 'propertyTypes', 'config', 'resolvedData', 'genlPeopleData',
-    function ($rootScope, $scope, $location, peopleData, serviceUtil, precinctData, precinctAddressesData, additionalPropsData, propertyTypes, config, resolvedData, genlPeopleData) {
+peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$location', 'peopleData', 'serviceUtil', 'precinctData', 'precinctAddressesData', 'additionalPropsData', 'propertyTypes', 'config', 'resolvedData', 'genlPeopleData','houseTypes',
+    function ($rootScope, $scope, $location, peopleData, serviceUtil, precinctData, precinctAddressesData, additionalPropsData, propertyTypes, config, resolvedData, genlPeopleData, houseTypes) {
         var addMode = true, editInd, propValues = [], DATE_FORMAT = 'yyyy-MM-ddT00:00:00+00:00';
         $rootScope.pageTitle = 'Фізична особа';
         $scope.tableHead = ['№', 'Назва', 'Значення'];
@@ -224,7 +224,7 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
         
         $scope.propKeys = genlPeopleData.propKeys;
         propValues = genlPeopleData.propValues;
-
+        $scope.houseTypes = houseTypes;
         function getPropertyValuesByKeyId (keyId) {
             return propValues.filter(function (item) {
                 return item.PropertyKeyId === keyId;
@@ -238,8 +238,8 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
                 if (resolvedData.person.DateOfBirth) {
                     $scope.dateOfBirth = serviceUtil.formatDate(new Date(resolvedData.person.DateOfBirth), 'dd.MM.yyyy');
                 }
-                $scope.person.PrecinctId = resolvedData.person.PrecinctAddress.PrecinctId;
                 $scope.person.Precinct = resolvedData.person.PrecinctAddress.Precinct;
+                $scope.person.HouseType = resolvedData.person.PrecinctAddress.HouseType;
                 $scope.additionalProperties = getPropertyPairs(resolvedData.person.PersonAdditionalProperties);
             }
             $scope.precincts = resolvedData.precincts;
@@ -301,8 +301,8 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
         };
 
         $scope.save = function () {
-            if (!$scope.person.PrecinctId) {
-                $rootScope.errorMsg = 'Не вірний номер дільниці';
+            if (!$scope.person.Precinct) {
+                $rootScope.errorMsg = 'Не вказано номер дільниці';
                 return;
             };
 
@@ -335,11 +335,11 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
                 "CityId": 0,
                 "StreetId": 0,
                 "House": '',
-                "PrecinctId": 0
+                "PrecinctId": 0,
+                "HouseType": null
             };
             serviceUtil.copyProperties($scope.person, person);
-            serviceUtil.copyProperties(person, precinctAddress);
-            precinctAddress.PrecinctId = $scope.person.PrecinctId;
+            serviceUtil.copyProperties($scope.person, precinctAddress);
             person.DateOfBirth = serviceUtil.formatDate($scope.dateOfBirth, DATE_FORMAT);
             if (!person.DateOfBirth) {
                 $scope.saving = false;
@@ -347,25 +347,19 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
                 return;
             }
             if (!person.Apartment) person.Apartment = null;
+            if ($scope.person.Precinct.Id) {
+                savePrecinctAddress({ Id: $scope.person.Precinct.Id });
+            } else {
+                precinctData.save({ "Number": $scope.person.Precinct }, savePrecinctAddress, errorHandler);
+            }
 
-            precinctData.getByIdNotExpand({ id: precinctAddress.PrecinctId }, function () {
-                    savePrecinctAddress();
-                }, function () {
-                    precinctData.save({"Id": precinctAddress.PrecinctId}, function () {
-                        savePrecinctAddress();
-                }, errorHandler);
-            });
-
-            function savePrecinctAddress() {
+            function savePrecinctAddress(precinct) {
                 var addressKey = serviceUtil.getAddressKey(precinctAddress);
+                precinctAddress.PrecinctId = precinct.Id;
                 precinctAddressesData.query(addressKey, function (success) {
-                    if(precinctAddress.PrecinctId === success.PrecinctId) {
+                    precinctAddressesData.update(addressKey, precinctAddress, function () {
                         savePerson();
-                    } else {
-                        precinctAddressesData.changePrecinct(addressKey, precinctAddress, function () {
-                            savePerson();
-                        }, errorHandler);
-                    }
+                    }, errorHandler);
                 }, function () {
                     precinctAddressesData.save(precinctAddress, function () {
                         savePerson();
@@ -410,7 +404,6 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
 
         $scope.onSelectPrecinctNumber = function ($item, $model, $label) {
             $scope.person.Precinct = $item;
-            $scope.person.PrecinctId = $model;
         };
 
         $scope.onSelectProperty = function ($item, $model, $label) {

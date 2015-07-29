@@ -29,12 +29,12 @@
         </div>
     </div>
     <div class="form-horizontal">
-        <div class="form-group col-lg-4">
+        <div class="form-group col-lg-3">
             <label>Населений пункт</label>
             <input type="text" ng-change="person.CityId=0" typeahead-on-select="onSelectCity($item, $model, $label)" ng-model="person.City"
                    typeahead="c.Id as c.CityType.Name +' '+c.Name + ' (' + c.RegionPart.Name + ' р-н)' for c in cities | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control" required>
         </div>
-        <div class="form-group col-lg-4">
+        <div class="form-group col-lg-3">
             <label>Вулиця</label>
             <input type="text" ng-change="person.StreetId=0" typeahead-on-select="onSelectStreet($item, $model, $label)" ng-model="person.Street"
                    typeahead="s.Id as s.StreetType.Name +' '+ s.Name for s in streets | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control" required>
@@ -48,8 +48,14 @@
             <input ng-model="person.Apartment" type="text" class="form-control">
         </div>
         <div class="form-group col-lg-2">
+            <label>Тип будинку</label>
+            <select class="form-control" ng-model="person.HouseType" ng-options="ht as ht for ht in houseTypes">
+                <option value='' disabled>-Тип будинку-</option>
+            </select>
+        </div>
+        <div class="form-group col-lg-2">
             <label>Дільниця</label>
-            <input type="text" ng-change="person.PrecinctId=0" typeahead-on-select="onSelectPrecinctNumber($item, $model, $label)" ng-model="person.Precinct"
+            <input type="text" typeahead-on-select="onSelectPrecinctNumber($item, $model, $label)" ng-model="person.Precinct"
                    typeahead="p.Id as p.Number for p in precincts | filter: {Number:$viewValue} | orderByStartsWith:{Number:$viewValue} | limitTo:10" class="form-control" required>
         </div>
     </div>

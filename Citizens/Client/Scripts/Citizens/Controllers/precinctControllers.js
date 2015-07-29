@@ -106,8 +106,8 @@ precinctControllers.controller("listPrecinctsController", ['$location', '$rootSc
         };
     }]);
 
-precinctControllers.controller("editPrecinctController", ['$location', '$rootScope', '$scope', '$routeParams', 'serviceUtil', 'config', 'precinctData', 'districtData', 'precinctAddressesData', 'resolvedData', 'userData', 'usersHolder',
-    function ($location, $rootScope, $scope, $routeParams, serviceUtil, config, precinctData, districtData, precinctAddressesData, resolvedData, userData, usersHolder) {
+precinctControllers.controller("editPrecinctController", ['$location', '$rootScope', '$scope', '$routeParams', 'serviceUtil', 'config', 'precinctData', 'districtData', 'precinctAddressesData', 'resolvedData', 'userData', 'usersHolder','houseTypes',
+    function ($location, $rootScope, $scope, $routeParams, serviceUtil, config, precinctData, districtData, precinctAddressesData, resolvedData, userData, usersHolder, houseTypes) {
         var copyAddressMode, editableAddress, editablePrecinctDistrict, editableUserPrecinct;
         $rootScope.pageTitle = 'Дільниця';
         $scope.saving = {};
@@ -122,6 +122,8 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
         ];
         $scope.queryBy = 'City.Name';
         $scope.precinctAddresses = [];
+        $scope.userPrecincts = [];
+        $scope.districts = [];
         $scope.selected = { precinct: {}, address: {}, precinctDistrict: {}, userPrecinct: {} };
         $scope.autocomplete = {};
         
@@ -145,15 +147,18 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
         $scope.districts = resolvedData.districts;
         $scope.userPrecincts = resolvedData.userPrecincts;
         $scope.users = usersHolder.get();
+        $scope.houseTypes = houseTypes;
         precinctData.getAllNotExpand(function (data) {
             $scope.precincts = data.value;
         }, function (err) {
             err.description = "Дільниці не завантажено";
             $rootScope.errorMsg = serviceUtil.getErrorMessage(err);
         });
+
         userData.getRoles(function (roles) {
             $scope.roles = roles.value;
         });
+
         $scope.editAddress = function (address) {
             $rootScope.errorMsg = '';
             editableAddress = address;
@@ -234,7 +239,7 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
                 return;
             }
 
-            if (!$scope.precinct.NeighborhoodId) {
+            if ($scope.precinct.Neighborhood && !$scope.precinct.NeighborhoodId) {
                 $rootScope.errorMsg = "Мікрорайон '" + $scope.precinct.Neighborhood + "' не знайдено";
                 return;
             }
@@ -310,35 +315,30 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
                 "CityId": 0,
                 "StreetId": 0,
                 "House": '',
-                "PrecinctId": 0
+                "PrecinctId": 0,
+                "HouseType": null
             };
             serviceUtil.copyProperties($scope.selected.address, address);
             address.PrecinctId = $scope.precinct.Id;
             if ($scope.addAddressMode || copyAddressMode) {
-                saveAddressData(address);
+                precinctAddressesData.save(address, successHandler, errorHandler);
+
             } else {
-                precinctAddressesData.remove(serviceUtil.getAddressKey(oldValue),
-                    function () {
-                        saveAddressData(address, ind);
-                    }, errorHandler);
+                precinctAddressesData.update(serviceUtil.getAddressKey(oldValue), address, successHandler, errorHandler);
             }
 
-            function saveAddressData(data, i) {
-                precinctAddressesData.save(data,
-                    function (saved) {
-                        precinctAddressesData.query(serviceUtil.getAddressKey(saved), function (res) {
-                            $scope.saving.address = false;
-                            $scope.saving.autocompleteAddresses = false;
-                            if (i == undefined) {
-                                $scope.precinctAddresses.push(res);
-                            } else {
-                                $scope.precinctAddresses[i] = res;
-                            }
-                            //$scope.precinctAddresses.sort(compareAddresses);
-                            sortAddresses($scope.precinctAddresses);
-                            $scope.resetAddress();
-                        }, errorHandler);
-                    }, errorHandler);
+            function successHandler(res) {
+                $scope.saving.address = false;
+                $scope.saving.autocompleteAddresses = false;
+                res.City = $scope.selected.address.City;
+                res.Street = $scope.selected.address.Street;
+                if ($scope.addAddressMode || copyAddressMode) {
+                    $scope.precinctAddresses.push(res);
+                } else {
+                    $scope.precinctAddresses[ind] = res;
+                }
+                sortAddresses($scope.precinctAddresses);
+                $scope.resetAddress();
             };
         };
 
@@ -546,12 +546,13 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
 
             var ok = confirm("Буде створено " + (endNumb - startNumb + 1) + " адрес. Продовжити?");
             if (!ok) return;
-
+            // todo: model factory
             function Address(house) {
                 this.CityId = $scope.autocomplete.CityId,
                 this.StreetId = $scope.autocomplete.StreetId,
                 this.House = house.toString(),
                 this.PrecinctId = $scope.precinct.Id;
+                this.HouseType = $scope.autocomplete.HouseType;
             };
 
             function getArrayAddresses() {
@@ -565,13 +566,15 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
             };
 
             $scope.saving.autocompleteAddresses = true;
-            precinctData.saveAll({ PrecinctAddresses: getArrayAddresses() }, function () {
-                precinctData.getById({ id: $scope.precinct.Id }, function (res) {
-                    $scope.saving.autocompleteAddresses = false;
-                    $scope.precinctAddresses = res.PrecinctAddresses;
-                    //$scope.precinctAddresses.sort(compareAddresses);
-                    sortAddresses($scope.precinctAddresses);
-                }, errorHandler);
+            var arrAddresses = getArrayAddresses();
+            precinctData.saveAll({ PrecinctAddresses: arrAddresses }, function () {
+                $scope.saving.autocompleteAddresses = false;
+                arrAddresses.forEach(function(item) {
+                    item.City = $scope.autocomplete.City;
+                    item.Street = $scope.autocomplete.Street;
+                });
+                $scope.precinctAddresses = $scope.precinctAddresses.concat(arrAddresses);
+                sortAddresses($scope.precinctAddresses);
             }, errorHandler);
         };
 
@@ -665,6 +668,8 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
         $scope.onSelectCity = function ($item, $model, $label, model) {
             model.City = $item;
             model.CityId = $model;
+            model.RegionPart = $item.RegionPart;
+            model.RegionPartId = model.RegionPart.Id;
         };
 
         $scope.onSelectPrecinctNumber = function ($item, $model, $label) {
@@ -698,12 +703,13 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
                 "CityId": 0,
                 "StreetId": 0,
                 "House": '',
-                "PrecinctId": 0
+                "PrecinctId": 0,
+                "HouseType": null
             };
             $scope.saving.address = true;
             serviceUtil.copyProperties(selectedAddress, address);
             address.PrecinctId = $scope.selected.newPrecinctId;
-            precinctAddressesData.changePrecinct(serviceUtil.getAddressKey(address), address, function () {
+            precinctAddressesData.update(serviceUtil.getAddressKey(address), address, function () {
                 $scope.changingPresinct = false;
                 $scope.saving.address = false;
                 $scope.resetAddress();
