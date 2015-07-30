@@ -147,7 +147,8 @@ namespace Citizens.Controllers.API
                         CityId = address.CityId,
                         StreetId = address.StreetId,
                         House = address.House,
-                        PrecinctId = address.PrecinctId
+                        PrecinctId = address.PrecinctId,
+                        HouseType = address.HouseType
                     };
                     db.PrecinctAddresses.Add(precinctAddress);
                 }
