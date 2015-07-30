@@ -192,10 +192,13 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
                 if (!ok) return;
             }
             $rootScope.errorMsg = '';
-            precinctAddressesData.remove(serviceUtil.getAddressKey(address),
-                function () {
+            precinctAddressesData.remove(serviceUtil.getAddressKey(address),function () {
                     $scope.precinctAddresses.splice(ind, 1);
-                }, errorHandler);
+                }, function(err) {
+                    err.description = "Заборонено видаляти адресу, за якою закріплена фізособа";
+                    errorHandler(err);
+                }
+            );
         };
 
         $scope.deletePrecinctDistrict = function (precinctDistrict, ind) {
@@ -321,11 +324,30 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
             serviceUtil.copyProperties($scope.selected.address, address);
             address.PrecinctId = $scope.precinct.Id;
             if ($scope.addAddressMode || copyAddressMode) {
-                precinctAddressesData.save(address, successHandler, errorHandler);
-
+                savePrecinctAddresses();
             } else {
-                precinctAddressesData.update(serviceUtil.getAddressKey(oldValue), address, successHandler, errorHandler);
+                if ($scope.selected.address.CityId === oldValue.CityId
+                    && $scope.selected.address.StreetId === oldValue.StreetId
+                    && $scope.selected.address.House === oldValue.House) {
+                    precinctAddressesData.update(serviceUtil.getAddressKey(oldValue), address, successHandler, errorHandler);
+                } else {
+                    precinctAddressesData.query(serviceUtil.getAddressKey(address), function() {
+                        savePrecinctAddresses(); // is expected conflict response
+                    }, function() {
+                        precinctAddressesData.remove(serviceUtil.getAddressKey(oldValue), function () {
+                            savePrecinctAddresses();
+                        }, function (err) {
+                            err.description = "Заборонено редагувати адресу, за якою закріплена фізособа";
+                            errorHandler(err);
+                        });
+                    });
+                    
+                }
             }
+
+            function savePrecinctAddresses() {
+                precinctAddressesData.save(address, successHandler, errorHandler);
+            };
 
             function successHandler(res) {
                 $scope.saving.address = false;
