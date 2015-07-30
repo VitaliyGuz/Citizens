@@ -184,7 +184,7 @@ app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider',
     paginationTemplateProvider.setPath('Scripts/AngularUtils/directives/dirPagination.tpl.html');
 }]);
 
-app.value("config", {
+app.constant("config", Object.freeze({
     baseUrl: 'https://poltava2015.azurewebsites.net', //'http://localhost:6600', 'http://poltava2015.azurewebsites.net', 'http://apicitizens.azurewebsites.net', #Deploy
     pageSize: 20, // by default 20
     pageSizeTabularSection: 10,
@@ -192,8 +192,9 @@ app.value("config", {
     getExternalProviderUrl: function (provider) {
         var redirectUri = location.protocol + '//' + location.host + '/Views/AuthComplete.html';
         return this.baseUrl + "/api/Account/ExternalLogin?provider=" + provider + "&response_type=token&client_id=Citizens" + "&redirect_uri=" + redirectUri;
-    }
-});
+    },
+    LOCALE_DATE_FORMAT: 'dd.MM.yyyy'
+}));
 
 app.filter('checkApartment', function () {
     return function (input) {
@@ -201,7 +202,7 @@ app.filter('checkApartment', function () {
     };
 });
 
-app.factory("serviceUtil", ["$filter", '$routeParams', '$location', function ($filter, $routeParams, $location) {
+app.factory("serviceUtil", ["$filter", '$routeParams', function ($filter, $routeParams) {
     return {
         getErrorMessage: function (error) {
             var errMsg, errDetail;
@@ -233,11 +234,9 @@ app.factory("serviceUtil", ["$filter", '$routeParams', '$location', function ($f
         },
         formatDate: function (date, pattern) {
             if (angular.isString(date)) {
-                // todo: replace regex to global object (used also in datepicker directive)
-                var regex = /^(\d{2}).(\d{2}).(\d{4})/,
-                maches = regex.exec(date);
-                if (maches) {
-                    return $filter("date")(new Date(maches[3], maches[2]-1, maches[1]), pattern);
+                var parsedDate = this.dateParse(date);
+                if (parsedDate) {
+                    return $filter("date")(parsedDate, pattern);
                 } else {
                     return undefined;
                 }
@@ -253,6 +252,16 @@ app.factory("serviceUtil", ["$filter", '$routeParams', '$location', function ($f
                 }
             }
             return undefined;
+        },
+        dateParse: function (dateText) {
+            if (!dateText) return undefined;
+            var regex = /^(\d{2}).(\d{2}).(\d{4})/,
+                maches = regex.exec(dateText);
+            if (maches) {
+                return new Date(maches[3], maches[2] - 1, maches[1]);
+            } else {
+                return undefined;
+            }
         }
     };
 }]);
@@ -462,40 +471,26 @@ app.factory('filterSettings', [function () {
     }
 }]);
 
-app.directive('datepicker', function () {
-    function parseDate(dateText) {
-        var arrDate, day, month, year;
-        if (!dateText) return undefined;
-        //var pattern = /^\d{2}.\d{2}.\d{4}/,
-        //maches = pattern.exec(dateText);
-        //if (!maches) return undefined;
-        arrDate = dateText.split('.');
-        if (arrDate && arrDate.length === 3) {
-            day = arrDate[0], month = arrDate[1], year = arrDate[2];
-            return new Date(year, month - 1, day);
-        }
-        return undefined;
-    }
+app.directive('datepicker', ['serviceUtil', function (serviceUtil) {
     return {
         restrict: 'A',
         require: 'ngModel',
         link: function (scope, element, attrs, ngModelCtrl) {
             $(function () {
                 element.datepicker({
-                    //dateFormat: 'dd.mm.yy',
                     changeMonth: true,
                     changeYear: true,
                     regional: "ua",
                     onSelect: function (date) {
                         scope.$apply(function () {
-                            ngModelCtrl.$setViewValue(parseDate(date));
+                            ngModelCtrl.$setViewValue(serviceUtil.dateParse(date));
                         });
                     }
                 });
             });
         }
     }
-});
+}]);
 
 app.directive('accessPermissions', ['checkPermissions', function (checkPermissions) {
     return {

@@ -31,6 +31,10 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
                 });
                 if (findedKeys.length > 0) {
                     propKey.input = findedKeys[0].input;
+                    if (propKey.input && propKey.PropertyType.html === 'date') {
+                        propKey.input.from = serviceUtil.formatDate(propKey.input.from, config.LOCALE_DATE_FORMAT);
+                        propKey.input.to = serviceUtil.formatDate(propKey.input.to, config.LOCALE_DATE_FORMAT);
+                    }
                     $scope.showFilters = true;
                 } 
             });
@@ -177,12 +181,21 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
         };
 
         $scope.toggleSelection = function (propKey,checkedValue) {
+            function indexOf(arr, val) {
+                for (var i = 0; i < arr.length; i++) {
+                    if (arr[i].Id === val.Id) {
+                        return i;
+                    }
+                }
+                return -1;
+            };
+
             if (!propKey.input) {
                 propKey.input = [];
                 propKey.input.push(checkedValue);
                 return;
             }
-            var ind = propKey.input.indexOf(checkedValue);
+            var ind = indexOf(propKey.input, checkedValue);
             if (ind < 0) {
                 propKey.input.push(checkedValue);
             } else {
@@ -236,7 +249,7 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
                 addMode = false;
                 $scope.person = resolvedData.person;
                 if (resolvedData.person.DateOfBirth) {
-                    $scope.dateOfBirth = serviceUtil.formatDate(new Date(resolvedData.person.DateOfBirth), 'dd.MM.yyyy');
+                    $scope.dateOfBirth = serviceUtil.formatDate(new Date(resolvedData.person.DateOfBirth), config.LOCALE_DATE_FORMAT);
                 }
                 $scope.person.Precinct = resolvedData.person.PrecinctAddress.Precinct;
                 $scope.person.HouseType = resolvedData.person.PrecinctAddress.HouseType;
