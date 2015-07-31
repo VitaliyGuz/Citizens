@@ -78,7 +78,10 @@ precinctControllers.controller("listPrecinctsController", ['$location', '$rootSc
             $rootScope.errorMsg = '';
             precinctData.remove({ id: precinct.Id },function () {
                 setPrecinctsOnPage(($scope.currentPage - 1) * config.pageSize);
-            }, errorHandler);
+            }, function(err) {
+                err.description = "За дільницею закріплені адреси, округи та користувачі";
+                errorHandler(err);
+            });
         };        
 
         $scope.addNewPrecinct = function () {
@@ -88,7 +91,6 @@ precinctControllers.controller("listPrecinctsController", ['$location', '$rootSc
 
         function errorHandler(e) {
             $scope.loadingPrecincts = false;
-            e.description = 'Дільниці не завантажено';
             $rootScope.errorMsg = serviceUtil.getErrorMessage(e);
         };
 
