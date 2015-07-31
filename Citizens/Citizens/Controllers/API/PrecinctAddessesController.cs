@@ -115,13 +115,13 @@ namespace Citizens.Controllers.API
             {
                 //if (PrecinctAddressExists(precinctAddress.CityId, precinctAddress.StreetId, precinctAddress.House))
                 //{
-                PrecinctAddress precinctAddress2 = db.PrecinctAddresses.Include("City.CityType").Include("Street.StreetType").SingleOrDefault(precinctAddress1 => precinctAddress1.CityId == precinctAddress.CityId && precinctAddress1.StreetId == precinctAddress.StreetId && precinctAddress1.House == precinctAddress.House);
+                PrecinctAddress precinctAddress2 = db.PrecinctAddresses.Include("Precinct").Include("City.CityType").Include("Street.StreetType").SingleOrDefault(precinctAddress1 => precinctAddress1.CityId == precinctAddress.CityId && precinctAddress1.StreetId == precinctAddress.StreetId && precinctAddress1.House == precinctAddress.House);
                 if (precinctAddress2 != null)
                 {
                     textConflict = textConflict + "Адреса " + precinctAddress.City.CityType.Name + precinctAddress.City.Name +
                                        ", " + precinctAddress.Street.StreetType.Name + precinctAddress.Street.Name +
                                        "," + precinctAddress.House + " вже знаходиться в дільниці " +
-                                       precinctAddress2.PrecinctId.ToString() + "\r\n";
+                                       precinctAddress2.Precinct.Number.ToString() + "\r\n";
                     //return Conflict();
                     return new TextResult(textConflict, Request, HttpStatusCode.Conflict);
                 }

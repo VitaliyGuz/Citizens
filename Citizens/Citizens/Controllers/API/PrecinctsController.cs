@@ -138,7 +138,7 @@ namespace Citizens.Controllers.API
                 key[2] = address.House;
                 //.Include(a => a.Children.Select( c=> c.ChildRelationshipType));
                 var address1 = address;
-                PrecinctAddress precinctAddress = await db.PrecinctAddresses.Include("City.CityType").Include("Street.StreetType").SingleOrDefaultAsync(i => i.CityId == address1.CityId && i.StreetId == address1.StreetId && i.House == address1.House);
+                PrecinctAddress precinctAddress = await db.PrecinctAddresses.Include("Precinct").Include("City.CityType").Include("Street.StreetType").SingleOrDefaultAsync(i => i.CityId == address1.CityId && i.StreetId == address1.StreetId && i.House == address1.House);
                 if (precinctAddress == null)
                 {
                     //db.PrecinctAddresses.Add(address);
@@ -164,7 +164,7 @@ namespace Citizens.Controllers.API
                         textConflict = textConflict + "Адреса " + precinctAddress.City.CityType.Name + precinctAddress.City.Name +
                                        ", " + precinctAddress.Street.StreetType.Name + precinctAddress.Street.Name +
                                        "," + precinctAddress.House + " вже знаходиться в дільниці " +
-                                       precinctAddress.PrecinctId.ToString() + "\r\n";
+                                       precinctAddress.Precinct.Number.ToString() + "\r\n";
 
                     }
 
