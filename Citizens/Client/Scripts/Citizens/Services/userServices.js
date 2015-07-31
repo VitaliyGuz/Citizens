@@ -25,6 +25,7 @@ angular.module("userServices", ['ngResource'])
 		    'removeUserPrecinct': { method: 'DELETE', params: paramKey, url: urlOdataUserPrecincts + key },
 		    'getUserPrecinctsByUserId': { method: 'GET', params: { userId: "@userId" }, url: urlOdataUserPrecincts + "?$expand=Precinct&$filter=UserId eq ':userId'" },
 		    'getUserPrecinctsByPrecinctId': { method: 'GET', params: { precinctId: "@precinctId" }, url: urlOdataUserPrecincts + '?$expand=User&$filter=PrecinctId eq :precinctId' },
+		    'getUserPrecinctsByRoleId': { method: 'GET', params: { roleId: "@roleId" }, url: urlOdataUserPrecincts + "?$expand=User,Precinct&$filter=User/Roles/any(ur:ur/RoleId eq ':roleId')" },
 		    'getUserPrecinct': { method: 'GET', params: paramKey, url: urlOdataUserPrecincts + key + '?$expand=User' },
 		    'saveUserRole': { method: 'POST', url: urlApiAccount + "/AddToRole" },
 		    'removeUserRole': { method: 'POST', url: urlApiAccount + "/RemoveFromRole" }
