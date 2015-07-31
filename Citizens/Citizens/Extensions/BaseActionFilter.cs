@@ -8,6 +8,7 @@ using System.Web.OData.Routing;
 using Citizens.Models;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
+using System.Linq;
 
 namespace Citizens.Extensions
 {
@@ -19,9 +20,11 @@ namespace Citizens.Extensions
 
         protected CitizenDbContext db = new CitizenDbContext();
 
+        private readonly string[] exceptRoles = { "SuperAdministrators" };
+
         public override void OnActionExecuting(HttpActionContext actionContext)
         {
-            buildNewRequestUri(actionContext);
+            if(!isInExceptRoles())  buildNewRequestUri(actionContext);
         }
 
         private static ODataPath getODataPath(HttpActionContext actionContext)
@@ -33,6 +36,7 @@ namespace Citizens.Extensions
 
         protected string getEntryId(HttpActionContext actionContext)
         {
+            if(isInExceptRoles()) return string.Empty;
             var odataPathValue = getODataPath(actionContext);
             if (odataPathValue == null) return null;
             return odataPathValue.Segments.Count > 1 ? odataPathValue.Segments[1].ToString() : string.Empty;
@@ -84,6 +88,11 @@ namespace Citizens.Extensions
         {
             var userMgr = HttpContext.Current.GetOwinContext().GetUserManager<ApplicationUserManager>();
             return userMgr.FindByName(HttpContext.Current.User.Identity.Name).Id;
+        }
+
+        protected bool isInExceptRoles()
+        {
+            return exceptRoles.Any(r => HttpContext.Current.User.IsInRole(r));
         }
     }
 }
