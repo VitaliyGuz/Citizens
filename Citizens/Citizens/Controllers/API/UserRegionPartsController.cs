@@ -6,8 +6,10 @@ using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.OData;
+using System.Web.OData.Routing;
 using Citizens.Models;
 
 namespace Citizens.Controllers.API
@@ -36,9 +38,10 @@ namespace Citizens.Controllers.API
 
         // GET: odata/UserRegionParts(5)
         [EnableQuery]
-        public SingleResult<UserRegionPart> GetUserRegionPart([FromODataUri] string key)
+        [ODataRoute("UserRegionParts(UserId={userId}, RegionPartId={regionPartId})")]
+        public SingleResult<UserRegionPart> GetUserRegionPart([FromODataUri] string userId, [FromODataUri] int regionPartId)
         {
-            return SingleResult.Create(db.UserRegionParts.Where(userRegionPart => userRegionPart.UserId == key));
+            return SingleResult.Create(db.UserRegionParts.Where(userRegionPart => userRegionPart.UserId == userId && userRegionPart.RegionPartId == regionPartId));
         }
 
         // PUT: odata/UserRegionParts(5)
@@ -146,32 +149,37 @@ namespace Citizens.Controllers.API
         }
 
         // DELETE: odata/UserRegionParts(5)
-        public IHttpActionResult Delete([FromODataUri] string key)
+        [ODataRoute("UserRegionParts(UserId={userId}, RegionPartId={regionPartId})")]
+        public async Task<IHttpActionResult> Delete([FromODataUri] string userId, [FromODataUri] int regionPartId)
         {
-            UserRegionPart userRegionPart = db.UserRegionParts.Find(key);
+            object[] key = new object[2];
+            key[0] = userId;
+            key[1] = regionPartId;
+
+            UserRegionPart userRegionPart = await db.UserRegionParts.FindAsync(key);
             if (userRegionPart == null)
             {
                 return NotFound();
             }
 
             db.UserRegionParts.Remove(userRegionPart);
-            db.SaveChanges();
+            await db.SaveChangesAsync();
 
             return StatusCode(HttpStatusCode.NoContent);
         }
 
         // GET: odata/UserRegionParts(5)/RegionPart
         [EnableQuery]
-        public SingleResult<RegionPart> GetRegionPart([FromODataUri] string key)
+        public SingleResult<RegionPart> GetRegionPart([FromODataUri] string userId, [FromODataUri] int regionPartId)
         {
-            return SingleResult.Create(db.UserRegionParts.Where(m => m.UserId == key).Select(m => m.RegionPart));
+            return SingleResult.Create(db.UserRegionParts.Where(userRegionPart => userRegionPart.UserId == userId && userRegionPart.RegionPartId == regionPartId).Select(m => m.RegionPart));
         }
 
         // GET: odata/UserRegionParts(5)/User
         [EnableQuery]
-        public SingleResult<ApplicationUser> GetUser([FromODataUri] string key)
+        public SingleResult<ApplicationUser> GetUser([FromODataUri] string userId, [FromODataUri] int regionPartId)
         {
-            return SingleResult.Create(db.UserRegionParts.Where(m => m.UserId == key).Select(m => m.User));
+            return SingleResult.Create(db.UserRegionParts.Where(userRegionPart => userRegionPart.UserId == userId && userRegionPart.RegionPartId == regionPartId).Select(m => m.User));
         }
 
         protected override void Dispose(bool disposing)
