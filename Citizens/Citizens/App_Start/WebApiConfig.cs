@@ -62,6 +62,8 @@ namespace Citizens
             builder.EntitySet<PropertyValue>("PropertyValues");
             builder.EntitySet<PersonAdditionalProperty>("PersonAdditionalProperties");
             builder.EntitySet<Neighborhood>("Neighborhoods");
+            builder.EntitySet<UserRegion>("UserRegions");
+            builder.EntitySet<UserRegionPart>("UserRegionParts");
 
 
             builder.EntitySet<ApplicationUser>("Users");

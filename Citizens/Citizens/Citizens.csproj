@@ -205,6 +205,8 @@
     <Compile Include="Controllers\API\StreetsController.cs" />
     <Compile Include="Controllers\API\StreetTypesController.cs" />
     <Compile Include="Controllers\API\UserPrecinctsController.cs" />
+    <Compile Include="Controllers\API\UserRegionPartsController.cs" />
+    <Compile Include="Controllers\API\UserRegionsController.cs" />
     <Compile Include="Controllers\API\UsersController.cs" />
     <Compile Include="Controllers\API\AccountController.cs" />
     <Compile Include="Controllers\API\NamesController.cs" />
