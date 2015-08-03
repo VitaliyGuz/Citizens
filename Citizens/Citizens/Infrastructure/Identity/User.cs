@@ -41,6 +41,10 @@ namespace Citizens.Models
         
         public ICollection<UserPrecinct> UserPrecincts { get; set; }
 
+        public ICollection<UserRegionPart> UserRegionParts { get; set; }
+
+        public ICollection<UserRegion> UserRegions { get; set; }
+
 
 
         public async Task<ClaimsIdentity> GenerateUserIdentityAsync(ApplicationUserManager manager, string authenticationType)

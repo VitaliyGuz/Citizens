@@ -53,6 +53,10 @@ namespace Citizens.Models
 
         public DbSet<UserPrecinct> UserPrecincts { get; set; }
 
+        public DbSet<UserRegion> UserRegions { get; set; }
+
+        public DbSet<UserRegionPart> UserRegionParts { get; set; }
+
         public DbSet<CityRegionPart> CityRegionParts { get; set; }
 
         public DbSet<PropertyKey> PropertyKeys { get; set; }

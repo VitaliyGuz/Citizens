@@ -256,6 +256,10 @@
     <Compile Include="Migrations\201507280853225_8.Designer.cs">
       <DependentUpon>201507280853225_8.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201508030643465_9.cs" />
+    <Compile Include="Migrations\201508030643465_9.Designer.cs">
+      <DependentUpon>201508030643465_9.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\CityRegionPart.cs" />
     <Compile Include="Models\District.cs" />
@@ -280,6 +284,8 @@
     <Compile Include="Models\Street.cs" />
     <Compile Include="Models\StreetType.cs" />
     <Compile Include="Models\UserPrecinct.cs" />
+    <Compile Include="Models\UserRegion.cs" />
+    <Compile Include="Models\UserRegionPart.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Providers\ApplicationOAuthProvider.cs" />
     <Compile Include="Providers\GoogleAuthProvider.cs" />
@@ -324,6 +330,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201507280853225_8.resx">
       <DependentUpon>201507280853225_8.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201508030643465_9.resx">
+      <DependentUpon>201508030643465_9.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

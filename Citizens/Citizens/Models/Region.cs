@@ -18,6 +18,7 @@ namespace Citizens.Models
 
         public ICollection<City> Cities { get; set; }
 
+        public ICollection<UserRegion> UserRegions { get; set; }
 
     }
 }

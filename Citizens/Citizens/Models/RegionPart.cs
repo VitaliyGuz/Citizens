@@ -28,5 +28,7 @@ namespace Citizens.Models
         public ICollection<CityRegionPart> CityRegionParts { get; set; }
 
         public ICollection<Precinct> Precincts { get; set; }
+
+        public ICollection<UserRegionPart> UserRegionParts { get; set; }
     }
 }
