@@ -45,7 +45,8 @@ namespace Citizens.Controllers.API
         }
 
         // PUT: odata/UserRegionParts(5)
-        public IHttpActionResult Put([FromODataUri] string key, Delta<UserRegionPart> patch)
+        [ODataRoute("UserRegionParts(UserId={userId}, RegionPartId={regionPartId})")]
+        public IHttpActionResult Put([FromODataUri] string userId, [FromODataUri] int regionPartId, Delta<UserRegionPart> patch)
         {
             Validate(patch.GetEntity());
 
@@ -53,6 +54,10 @@ namespace Citizens.Controllers.API
             {
                 return BadRequest(ModelState);
             }
+            
+            object[] key = new object[2];
+            key[0] = userId;
+            key[1] = regionPartId; 
 
             UserRegionPart userRegionPart = db.UserRegionParts.Find(key);
             if (userRegionPart == null)
@@ -68,7 +73,7 @@ namespace Citizens.Controllers.API
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!UserRegionPartExists(key))
+                if (!UserRegionPartExists(userId, regionPartId))
                 {
                     return NotFound();
                 }
@@ -97,7 +102,7 @@ namespace Citizens.Controllers.API
             }
             catch (DbUpdateException)
             {
-                if (UserRegionPartExists(userRegionPart.UserId))
+                if (UserRegionPartExists(userRegionPart.UserId, userRegionPart.RegionPartId))
                 {
                     return Conflict();
                 }
@@ -112,7 +117,7 @@ namespace Citizens.Controllers.API
 
         // PATCH: odata/UserRegionParts(5)
         [AcceptVerbs("PATCH", "MERGE")]
-        public IHttpActionResult Patch([FromODataUri] string key, Delta<UserRegionPart> patch)
+        public IHttpActionResult Patch([FromODataUri] string userId, [FromODataUri] int regionPartId, Delta<UserRegionPart> patch)
         {
             Validate(patch.GetEntity());
 
@@ -120,7 +125,9 @@ namespace Citizens.Controllers.API
             {
                 return BadRequest(ModelState);
             }
-
+            object[] key = new object[2];
+            key[0] = userId;
+            key[1] = regionPartId;
             UserRegionPart userRegionPart = db.UserRegionParts.Find(key);
             if (userRegionPart == null)
             {
@@ -135,7 +142,7 @@ namespace Citizens.Controllers.API
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!UserRegionPartExists(key))
+                if (!UserRegionPartExists(userId, regionPartId))
                 {
                     return NotFound();
                 }
@@ -191,9 +198,9 @@ namespace Citizens.Controllers.API
             base.Dispose(disposing);
         }
 
-        private bool UserRegionPartExists(string key)
+        private bool UserRegionPartExists(string userId, int regionPartId)
         {
-            return db.UserRegionParts.Count(e => e.UserId == key) > 0;
+            return db.UserRegionParts.Count(userRegionPart => userRegionPart.UserId == userId && userRegionPart.RegionPartId == regionPartId) > 0;
         }
     }
 }
