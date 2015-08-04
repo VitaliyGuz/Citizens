@@ -39,7 +39,8 @@ namespace Citizens.Extensions
             if(isInExceptRoles()) return string.Empty;
             var odataPathValue = getODataPath(actionContext);
             if (odataPathValue == null) return null;
-            return odataPathValue.Segments.Count > 1 ? odataPathValue.Segments[1].ToString() : string.Empty;
+            var key = odataPathValue.Segments.FirstOrDefault(s => s.SegmentKind == ODataSegmentKinds.Key);
+            return  key != null ? key.ToString() : string.Empty;
         }
 
         protected void setFilterString(string filterString)
