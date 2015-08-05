@@ -59,10 +59,14 @@ namespace Citizens.Extensions
                 foreach (var pair in queryPairs)
                 {
                     if (queryBuilder.Length > 0) queryBuilder.Append('&');
-                    queryBuilder.Append(pair.Key).Append('=').Append(pair.Value);
                     if ("$filter".Equals(pair.Key.ToLower()))
                     {
+                        queryBuilder.Append(pair.Key).Append('=').Append('(').Append(pair.Value).Append(')');
                         addFilter(queryBuilder, true);
+                    }
+                    else
+                    {
+                        queryBuilder.Append(pair.Key).Append('=').Append(pair.Value);   
                     }
                 }
                 if (!queryBuilder.ToString().ToLower().Contains("$filter"))
