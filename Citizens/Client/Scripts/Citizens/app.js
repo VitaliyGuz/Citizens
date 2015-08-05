@@ -13,14 +13,14 @@ app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider',
     var routeListCities = {
             templateUrl: 'Views/ListCities.html',
             controller: 'listCitiesController',
-            resolve: { genlData: function(genlData) { genlData.asyncLoad() } },
+            resolve: { commonData: function(commonData) { return commonData.asyncLoad() } },
             reloadOnSearch: true
         },
         routeEditCity = {
             templateUrl: 'Views/EditCity.html',
             controller: 'editCityController',
             resolve: {
-                genlData: function(genlData) { genlData.asyncLoad() },
+                commonData: function (commonData) { return commonData.asyncLoad() },
                 resolvedData: function($route, dataForEditCityPage) {
                     return dataForEditCityPage.asyncLoad($route.current.params.id);
                 }
@@ -30,7 +30,7 @@ app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider',
             templateUrl: 'Views/ListPeople.html',
             controller: 'listPeopleController',
             resolve: {
-                genlData: function(genlData) { genlData.asyncLoad() },
+                commonData: function (commonData) { return commonData.asyncLoad() },
                 genlPeopleData: function(genlPeopleData) { return genlPeopleData.asyncLoad() }
             }
         },
@@ -38,7 +38,7 @@ app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider',
             templateUrl: 'Views/EditPerson.html',
             controller: 'editPersonController',
             resolve: {
-                genlData: function(genlData) { genlData.asyncLoad() },
+                commonData: function (commonData) { return commonData.asyncLoad() },
                 genlPeopleData: function(genlPeopleData) { return genlPeopleData.asyncLoad() },
                 resolvedData: function($route, dataForEditPersonPage) {
                     return dataForEditPersonPage.asyncLoad($route.current.params.id);
@@ -48,28 +48,27 @@ app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider',
         routeStreets = {
             templateUrl: 'Views/Streets.html',
             controller: 'listStreetsController',
-            resolve: { genlData: function(genlData) { genlData.asyncLoad() } }
+            resolve: { commonData: function (commonData) { return commonData.asyncLoad() } }
         },
         routeRegionParts = {
             templateUrl: 'Views/RegionParts.html',
             controller: 'listRegionPartsController',
             resolve: {
-                genlData: function(genlData) { genlData.asyncLoad() }
+                commonData: function (commonData) { return commonData.asyncLoad() }
             }
         },
         routeListPrecincts = {
             templateUrl: 'Views/ListPrecincts.html',
             controller: 'listPrecinctsController',
             resolve: {
-                genlData: function(genlData) { genlData.asyncLoad() }
-                //loadedPrecincts: function (asyncLoadPrecincts) { return asyncLoadPrecincts() }
+                commonData: function (commonData) { return commonData.asyncLoad() }
             }
         },
         routeEditPecinct = {
             templateUrl: 'Views/EditPrecinct.html',
             controller: 'editPrecinctController',
             resolve: {
-                genlData: function(genlData) { genlData.asyncLoad() },
+                commonData: function (commonData) { return commonData.asyncLoad() },
                 resolvedData: function($route, dataForEditPrecinctPage) {
                     return dataForEditPrecinctPage.asyncLoad($route.current.params.id);
                 }
@@ -78,18 +77,18 @@ app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider',
         routeListDistricts = {
             templateUrl: 'Views/ListDistricts.html',
             controller: 'listDistrictsController',
-            resolve: { genlData: function(genlData) { genlData.asyncLoad() } }
+            resolve: { commonData: function (commonData) { return commonData.asyncLoad() } }
         },
         routeEditDistrict = {
             templateUrl: 'Views/EditDistrict.html',
             controller: 'editDistrictController',
-            resolve: { genlData: function(genlData) { genlData.asyncLoad() } }
+            resolve: { commonData: function (commonData) { return commonData.asyncLoad() } }
         },
         routeEditUser = {
             templateUrl: 'Views/Admin/EditUser.html',
             controller: 'editUserController',
             resolve: {
-                genlData: function(genlData) { genlData.asyncLoad() },
+                commonData: function (commonData) { return commonData.asyncLoad() },
                 resolvedUser: function($route, usersHolder) { return usersHolder.asyncLoadById($route.current.params.id) }
             },
             access: { requiredRoles: ['SuperAdministrators', 'Administrators'] }
@@ -98,7 +97,7 @@ app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider',
             templateUrl: 'Views/Admin/Users.html',
             controller: 'listUsersController',
             resolve: {
-                genlData: function(genlData) { genlData.asyncLoad() },
+                commonData: function (commonData) { return commonData.asyncLoad() },
                 resolvedUsers: function(usersHolder) { usersHolder.asyncLoad() }
             },
             access: { requiredRoles: ['SuperAdministrators', 'Administrators'] }
@@ -107,7 +106,7 @@ app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider',
             templateUrl: 'Views/Neighborhoods.html',
             controller: 'listNeighborhoodsController',
             resolve: {
-                genlData: function(genlData) { genlData.asyncLoad() }
+                commonData: function (commonData) { return commonData.asyncLoad() }
             }
         };
 
@@ -153,7 +152,7 @@ app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider',
         when('/geocoding-precincts', {
             templateUrl: 'Views/Admin/GeocodingPrecincts.html',
             controller: 'geocodingController',
-            resolve: { genlData: function (genlData) { genlData.asyncLoad() } },
+            resolve: { commonData: function (commonData) { return commonData.asyncLoad() } },
             access: { requiredRoles: ['SuperAdministrators', 'Administrators'] }
         }).
         when('/login', {
@@ -185,7 +184,7 @@ app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider',
 }]);
 
 app.constant("config", Object.freeze({
-    baseUrl: 'https://poltava2015.azurewebsites.net', //'http://localhost:6600', 'http://poltava2015.azurewebsites.net', 'http://apicitizens.azurewebsites.net', #Deploy
+    baseUrl: 'https://poltava2015.azurewebsites.net',//'http://localhost:6600', 'http://poltava2015.azurewebsites.net', 'http://apicitizens.azurewebsites.net', #Deploy
     pageSize: 20, // by default 20
     pageSizeTabularSection: 10,
     checkDeleteItem: true,
@@ -423,9 +422,9 @@ app.filter("filterByFirstChar", function () {
     }
 });
 
-app.factory('genlData', ['$q', '$rootScope', 'cityData', 'streetData', 'regionPartData', 'neighborhoodData', 'serviceUtil', function ($q, $rootScope, cityData, streetData, regionPartData, neighborhoodData, serviceUtil) {
+app.factory('commonData', ['$q', '$rootScope', 'cityData', 'streetData', 'regionPartData', 'neighborhoodData', 'serviceUtil', function ($q, $rootScope, cityData, streetData, regionPartData, neighborhoodData, serviceUtil) {
 
-    function getDataPromise(param) {
+    function getPromiseAndLoadData(param) {
         var deferred = $q.defer();
         if ($rootScope[param.propName] && $rootScope[param.propName].length > 0) {
             deferred.resolve();
@@ -442,16 +441,27 @@ app.factory('genlData', ['$q', '$rootScope', 'cityData', 'streetData', 'regionPa
     };
     return {
         asyncLoad: function () {
-            return getDataPromise({ propName: 'cities', dataSource: cityData, method: 'getAll', desc: 'Населені пункти' })
-                .then(function() {
-                    return getDataPromise({ propName: 'streets', dataSource: streetData, method: 'query', desc: 'Вулиці' });
-                })
-                .then(function() {
-                    return getDataPromise({ propName: 'regionParts', dataSource: regionPartData, method: 'getAll', desc: 'Райони' });
-                })
-                .then(function () {
-                    return getDataPromise({ propName: 'neighborhoods', dataSource: neighborhoodData, method: 'getAll', desc: 'Мікрорайони' });
-                });
+            //return getDataPromise({ propName: 'cities', dataSource: cityData, method: 'getAll', desc: 'Населені пункти' })
+            //    .then(function() {
+            //        return getDataPromise({ propName: 'streets', dataSource: streetData, method: 'query', desc: 'Вулиці' });
+            //    })
+            //    .then(function() {
+            //        return getDataPromise({ propName: 'regionParts', dataSource: regionPartData, method: 'getAll', desc: 'Райони' });
+            //    })
+            //    .then(function () {
+            //        return getDataPromise({ propName: 'neighborhoods', dataSource: neighborhoodData, method: 'getAll', desc: 'Мікрорайони' });
+            //    });
+            var params = [
+                    { propName: 'cities', dataSource: cityData, method: 'getAll', desc: 'Населені пункти' },
+                    { propName: 'streets', dataSource: streetData, method: 'query', desc: 'Вулиці' },
+                    { propName: 'regionParts', dataSource: regionPartData, method: 'getAll', desc: 'Райони' },
+                    { propName: 'neighborhoods', dataSource: neighborhoodData, method: 'getAll', desc: 'Мікрорайони' }
+                ],
+                promises = [];
+            params.forEach(function(param) {
+                promises.push(getPromiseAndLoadData(param));
+            });
+            return $q.all(promises);
         }
     };
 }]);
