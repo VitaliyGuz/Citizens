@@ -74,6 +74,8 @@ namespace Citizens.Controllers.API
             //patch.Put(userPrecinct);
             db.UserPrecincts.Remove(userPrecinct);
             db.UserPrecincts.Add(dbEntity);
+            await removeUserRegionPartAsync(userId, precinctId);
+            await addUserRegionPartAsync(dbEntity);
 
             try
             {
@@ -103,7 +105,8 @@ namespace Citizens.Controllers.API
             }
 
             db.UserPrecincts.Add(userPrecinct);
-
+            await addUserRegionPartAsync(userPrecinct);
+            
             try
             {
                 await db.SaveChangesAsync();
@@ -121,6 +124,27 @@ namespace Citizens.Controllers.API
             }
 
             return Created(userPrecinct);
+        }
+
+        private async Task addUserRegionPartAsync(UserPrecinct modelUserPrecinct)
+        {
+            var precinct = await db.Precincts.FindAsync(modelUserPrecinct.PrecinctId);
+            if (precinct == null || precinct.RegionPartId == null) return;
+            var totalPrecinctsByRegionPart = db.Precincts.Count(p => p.RegionPartId == precinct.RegionPartId);
+            var countUserPrecinctsByRegionPart = db.UserPrecincts.Count(up => up.Precinct.RegionPartId == precinct.RegionPartId && up.UserId == modelUserPrecinct.UserId);
+            if ((countUserPrecinctsByRegionPart + 1) == totalPrecinctsByRegionPart)
+            {
+                db.UserRegionParts.Add(new UserRegionPart() { UserId = modelUserPrecinct.UserId, RegionPartId = (int)precinct.RegionPartId });
+            }
+        }
+
+        private async Task removeUserRegionPartAsync(string userId, int precinctId)
+        {
+            var precinct = await db.Precincts.FindAsync(precinctId);
+            if (precinct == null || precinct.RegionPartId == null) return;
+            var userRegionPartKey = new object[] { userId, precinct.RegionPartId };
+            var userRegionPart = await db.UserRegionParts.FindAsync(userRegionPartKey);
+            if (userRegionPart != null) db.UserRegionParts.Remove(userRegionPart);
         }
 
         // PATCH: odata/UserPrecincts(5)
@@ -183,6 +207,8 @@ namespace Citizens.Controllers.API
             }
 
             db.UserPrecincts.Remove(userPrecinct);
+            await removeUserRegionPartAsync(userId, precinctId);
+
             await db.SaveChangesAsync();
 
             return StatusCode(HttpStatusCode.NoContent);

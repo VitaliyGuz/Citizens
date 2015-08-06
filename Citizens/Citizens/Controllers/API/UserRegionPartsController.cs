@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -87,7 +88,7 @@ namespace Citizens.Controllers.API
         }
 
         // POST: odata/UserRegionParts
-        public IHttpActionResult Post(UserRegionPart userRegionPart)
+        public async Task<IHttpActionResult> Post(UserRegionPart userRegionPart)
         {
             if (!ModelState.IsValid)
             {
@@ -95,7 +96,20 @@ namespace Citizens.Controllers.API
             }
 
             db.UserRegionParts.Add(userRegionPart);
+            
+            var userPrecincts = new List<UserPrecinct>();
+            //await db.Precincts.Where(precinct => precinct.RegionPartId == userRegionPart.RegionPartId)
+            //    .Where(p => db.UserPrecincts.Count(up => up.UserId == userRegionPart.UserId && up.PrecinctId == p.Id) == 0)
+            //    .ForEachAsync(p => userPrecincts.Add(new UserPrecinct {UserId = userRegionPart.UserId, PrecinctId = p.Id}));
+            await db.Database.SqlQuery<int>(
+                @"SELECT dbo.Precincts.Id as Id
+                      FROM dbo.Precincts
+                      LEFT JOIN dbo.UserPrecincts ON dbo.UserPrecincts.PrecinctId = dbo.Precincts.Id AND dbo.UserPrecincts.UserId = @userId
+                      WHERE dbo.Precincts.RegionPartId = @regionPartId AND dbo.UserPrecincts.UserId IS NULL",
+                new SqlParameter("regionPartId", userRegionPart.RegionPartId), new SqlParameter("userId", userRegionPart.UserId)
+                ).ForEachAsync(precinctId => userPrecincts.Add(new UserPrecinct { UserId = userRegionPart.UserId, PrecinctId = precinctId }));
 
+            db.UserPrecincts.AddRange(userPrecincts);
             try
             {
                 db.SaveChanges();
@@ -170,6 +184,9 @@ namespace Citizens.Controllers.API
             }
 
             db.UserRegionParts.Remove(userRegionPart);
+            db.UserPrecincts.RemoveRange(db.UserPrecincts.Where(
+                userPrecinct => userPrecinct.Precinct.RegionPartId == regionPartId && userPrecinct.UserId == userId));
+            
             await db.SaveChangesAsync();
 
             return StatusCode(HttpStatusCode.NoContent);
