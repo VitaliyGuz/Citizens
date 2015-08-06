@@ -4,37 +4,47 @@ angular.module("userServices", ['ngResource'])
     .factory("userData", ['$resource', 'config', function ($resource, config) {
         var urlOdata = config.baseUrl + '/odata/Users',
             urlOdataUserPrecincts = config.baseUrl + '/odata/UserPrecincts',
+            urlOdataUserRegionParts = config.baseUrl + '/odata/UserRegionParts',
             urlOdataRoles = config.baseUrl + '/odata/Roles',
             urlApiAccount = config.baseUrl + '/api/Account',
-            expand = "?$expand=UserPrecincts($expand=Precinct)",
+            expand = "?$expand=UserPrecincts($expand=Precinct),UserRegionParts($expand=RegionPart),UserRegions($expand=Region) ",
             order = "?$orderby=FirstName asc",
             paginate = "&$count=true&$skip=:skip&$top=" + config.pageSize,
-            params = { id: "@id" },
-            paramKey = { userId: "@userId", precinctId: "@precinctId" },
-            key = "(UserId=':userId',PrecinctId=:precinctId)";
+            params = {}, keys = {};
+
+        params.id = { id: "@id" };
+        params.keyUserPrecinct = { userId: "@userId", precinctId: "@precinctId" };
+        params.keyUserRegionPart = { userId: "@userId", regionPartId: "@regionPartId" };
+        params.keyUserId = { userId: "@userId" };
+        keys.userPrecinct = "(UserId=':userId',PrecinctId=:precinctId)";
+        keys.userRegionPart = "(UserId=':userId',RegionPartId=:regionPartId)";
+
         return $resource('', {},
 		{
 		    'getAll': { method: 'GET', url: urlOdata + order, cache: false },// DON'T CACHE! caching already implemented in usersHolder
-		    'getById': { method: 'GET', params: params, url: urlOdata + "(':id')" + expand },
-		    'getUserRoles': { method: 'GET', params: params, url: urlOdata + "(':id')/Roles" },
+		    'getById': { method: 'GET', params: params.id, url: urlOdata + "(':id')" + expand },
+		    'getUserRoles': { method: 'GET', params: params.id, url: urlOdata + "(':id')/Roles" },
 		    'getRoles': { method: 'GET', url: urlOdataRoles, cache: true },
-		    'update': { method: 'PUT', params: params, url: urlOdata + "(':id')" },
-		    'remove': { method: 'DELETE', params: params, url: urlOdata + "(':id')" },
+		    'update': { method: 'PUT', params: params.id, url: urlOdata + "(':id')" },
+		    'remove': { method: 'DELETE', params: params.id, url: urlOdata + "(':id')" },
 		    'saveUserPrecinct': { method: 'POST', url: urlOdataUserPrecincts },
-		    'updateUserPrecinct': { method: 'PUT', params: paramKey, url: urlOdataUserPrecincts + key },
-		    'removeUserPrecinct': { method: 'DELETE', params: paramKey, url: urlOdataUserPrecincts + key },
-		    'getUserPrecinctsByUserId': { method: 'GET', params: { userId: "@userId" }, url: urlOdataUserPrecincts + "?$expand=Precinct&$filter=UserId eq ':userId'" },
+		    'updateUserPrecinct': { method: 'PUT', params: params.keyUserPrecinct, url: urlOdataUserPrecincts + keys.userPrecinct },
+		    'removeUserPrecinct': { method: 'DELETE', params: params.keyUserPrecinct, url: urlOdataUserPrecincts + keys.userPrecinct },
+		    'getUserPrecinctsByUserId': { method: 'GET', params: params.keyUserId, url: urlOdataUserPrecincts + "?$expand=Precinct&$filter=UserId eq ':userId'" },
 		    'getUserPrecinctsByPrecinctId': { method: 'GET', params: { precinctId: "@precinctId" }, url: urlOdataUserPrecincts + '?$expand=User&$filter=PrecinctId eq :precinctId' },
 		    'getUserPrecinctsByRoleId': { method: 'GET', params: { roleId: "@roleId" }, url: urlOdataUserPrecincts + "?$expand=User,Precinct&$filter=User/Roles/any(ur:ur/RoleId eq ':roleId')" },
-		    'getUserPrecinct': { method: 'GET', params: paramKey, url: urlOdataUserPrecincts + key + '?$expand=User' },
+		    'getUserPrecinct': { method: 'GET', params: params.keyUserPrecinct, url: urlOdataUserPrecincts + keys.userPrecinct + '?$expand=User' },
 		    'saveUserRole': { method: 'POST', url: urlApiAccount + "/AddToRole" },
-		    'removeUserRole': { method: 'POST', url: urlApiAccount + "/RemoveFromRole" }
+		    'removeUserRole': { method: 'POST', url: urlApiAccount + "/RemoveFromRole" },
+		    'saveUserRegionPart': { method: 'POST', url: urlOdataUserRegionParts },
+		    'removeUserRegionPart': { method: 'DELETE', params: params.keyUserRegionPart, url: urlOdataUserRegionParts + keys.userRegionPart },
+		    'getUserRegionPartsByUserId': { method: 'GET', params: params.keyUserId, url: urlOdataUserRegionParts + "?$expand=RegionPart&$filter=UserId eq ':userId'" }
 		});
     }]).
     factory('usersHolder', ['$q', 'userData', 'serviceUtil', function ($q, userData, serviceUtil) {
         var users, index;
 
-        function mappedUserRoles (userRoles, roles) {
+        function mappedUserRoles(userRoles, roles) {
             return userRoles.map(function (userRole) {
                 userRole.Role = roles.filter(function (role) {
                     return userRole.RoleId === role.Id;
@@ -69,20 +79,11 @@ angular.module("userServices", ['ngResource'])
             },
             asyncLoadById: function (id) {
                 var deferred = $q.defer(),
-                userRolesPromise = userData.getUserRoles({ id: id }).$promise,
-                rolesPromise = userData.getRoles().$promise;
+                getUserRoles = this.asyncGetUserRoles;
                 userData.getById({ id: id }, function (user) {
-                    userRolesPromise.then(function (userRoles) {
-                        rolesPromise.then(function(roles) {
-                            user.Roles = mappedUserRoles(userRoles.value, roles.value);
-                            deferred.resolve(user);
-                        }, function(err) {
-                            err.description = 'Ролі не завантажено',
-                            deferred.reject(serviceUtil.getErrorMessage(err));
-                        });
-                    }, function(err) {
-                        err.description = 'Ролі користувача не завантажено',
-                        deferred.reject(serviceUtil.getErrorMessage(err));
+                    getUserRoles(id).then(function (userRoles) {
+                        user.Roles = userRoles;
+                        deferred.resolve(user); 
                     });
                 }, function (err) {
                     err.description = 'Користувача не знайдено',
@@ -99,6 +100,23 @@ angular.module("userServices", ['ngResource'])
                         return userRole.RoleId === role.Id;
                     });
                 });
+            },
+            asyncGetUserRoles: function (userId) {
+                var deferred = $q.defer();
+                var userRolesPromise = userData.getUserRoles({ id: userId }).$promise,
+                    rolesPromise = userData.getRoles().$promise;
+                userRolesPromise.then(function (userRoles) {
+                    rolesPromise.then(function (roles) {
+                        deferred.resolve(mappedUserRoles(userRoles.value, roles.value));
+                    }, function (err) {
+                        err.description = 'Ролі не завантажено',
+                        deferred.reject(serviceUtil.getErrorMessage(err));
+                    });
+                }, function (err) {
+                    err.description = 'Ролі користувача не завантажено',
+                    deferred.reject(serviceUtil.getErrorMessage(err));
+                });
+                return deferred.promise;
             },
             set: function (data) {
                 if (data && angular.isArray(data)) users = data;
