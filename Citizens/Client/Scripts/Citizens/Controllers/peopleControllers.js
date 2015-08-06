@@ -2,8 +2,8 @@
 
 var peopleControllers = angular.module('peopleControllers', ['peopleServices', 'streetServices', 'cityServices', 'precinctServices']);
 
-peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$location', 'peopleData', 'config', 'serviceUtil', 'genlPeopleData', 'filterSettings',
-    function ($rootScope, $scope, $location, peopleData, config, serviceUtil, genlPeopleData, filterSettings) {
+peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$location', 'peopleData', 'config', 'serviceUtil', 'genlPeopleData', 'filterSettings', 'precinctAddressesData',
+    function ($rootScope, $scope, $location, peopleData, config, serviceUtil, genlPeopleData, filterSettings, precinctAddressesData) {
         var propValues = [], DATE_FORMAT = 'yyyy-MM-ddT00:00:00';
         
         $rootScope.pageTitle = 'Фізичні особи';
@@ -97,13 +97,70 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
                 peopleData.getFilteredPageItems({ skip: skipItems, filter: filterString }, successHandler, errorHandler);
             }
         };
-        
+
+        // todo: add condition if StreetId/House = null in address
         function successHandler(data) {
-            $rootScope.errorMsg = '';
-            $scope.loadingPeople = false;
-            $scope.filtering = false;
-            $scope.people = data.value;
-            $scope.totalItems = data['@odata.count'];
+            var people = data.value, keys = [];
+
+            function getFilterKeys() {
+                var filterBuilder = [];
+                
+                keys.forEach(function (k) {
+                    if (filterBuilder.length > 0) filterBuilder.push("or");
+                    //filterBuilder.push("(CityId eq " + k.CityId + " and StreetId eq " + k.StreetId + " and House eq '" + p.House + "')");
+                    filterBuilder.push("(CityId eq " + k.CityId + " and (StreetId eq " + k.StreetId + " or StreetId eq 1))");
+                });
+
+                if (filterBuilder.length === 0) return undefined;
+                //console.debug(filterBuilder.join(''));
+                return "&$filter=" + filterBuilder.join('');
+            };
+
+            function contains(arr, val) {
+                for (var i = 0; i < arr.length; i++) {
+                    if (arr[i].CityId === val.CityId && arr[i].StreetId === val.StreetId) {
+                        return true;
+                    }
+                }
+                return false;
+            };
+
+            keys = people.reduce(function (previousValue, currentValue) {
+                var key = {};
+                key.CityId = currentValue.CityId;
+                key.StreetId = currentValue.StreetId;
+                if (!contains(previousValue, key)) previousValue.push(key);
+                return previousValue;
+            }, []);
+
+            precinctAddressesData.getAllByKeys({ filter: getFilterKeys() }, function (addresses) {
+                $rootScope.errorMsg = '';
+                $scope.loadingPeople = false;
+                $scope.filtering = false;
+                var start = new Date().getTime();
+
+                $scope.people = people.map(function (p) {
+                    var finded = addresses.value.filter(function(a) {
+                        return a.CityId === p.CityId && 
+                            a.StreetId === 1 ? true : a.StreetId === p.StreetId &&
+                            a.House === '' ? true : a.House.toLocaleLowerCase() === p.House.toLocaleLowerCase();
+                    });
+
+                    if (finded && finded.length > 0) p.PrecinctNumber = finded[0].Precinct.Number;
+
+                    p.City = $rootScope.cities.filter(function(c) {
+                        return c.Id === p.CityId;
+                    })[0];
+
+                    p.Street = $rootScope.streets.filter(function (s) {
+                        return s.Id === p.StreetId;
+                    })[0];
+
+                    return p;
+                });
+                console.debug(new Date().getTime() - start);
+                $scope.totalItems = data['@odata.count'];
+            }, errorHandler);
         };
 
         function getFilterString() {

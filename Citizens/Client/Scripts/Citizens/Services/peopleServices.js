@@ -4,16 +4,15 @@ angular.module("peopleServices", ['ngResource', 'precinctServices']).
     factory("peopleData", ['$resource', 'config', function ($resource, config) {
         var urlOdata = config.baseUrl + '/odata/People',
             order = '&$orderby=LastName,FirstName,MidleName',
-            expand = '?$expand=City($expand=CityType,RegionPart),Street($expand=StreetType),PrecinctAddress($expand=Precinct)',
-            expandWithProps = expand + ",PersonAdditionalProperties($expand=PropertyKey,PropertyValue)",
+            expand = '?$expand=City($expand=CityType,RegionPart),Street($expand=StreetType)',
+            expandWithProps = expand + ",PrecinctAddress($expand=Precinct),PersonAdditionalProperties($expand=PropertyKey,PropertyValue)",
             paginate = "&$count=true&$skip=:skip&$top=" + config.pageSize;
 
         return $resource('', {},
 		{
 		    'getById': { method: 'GET', params: { id: "@id" }, url: urlOdata + "(:id)" + expandWithProps },
-		    'query': { method: 'GET', params: { id: "@id", skip: "@skip" }, url: urlOdata + expand },
-		    'getPageItems': { method: 'GET', params: { skip: "@skip" }, url: urlOdata + expand + paginate + order },
-		    'getFilteredPageItems': { method: 'GET', params: { skip: "@skip", filter: '@filter' }, url: urlOdata + expandWithProps + "&$filter=:filter" + paginate + order },
+		    'getPageItems': { method: 'GET', params: { skip: "@skip" }, url: urlOdata + "?" + paginate },
+		    'getFilteredPageItems': { method: 'GET', params: { skip: "@skip", filter: '@filter' }, url: urlOdata + "?$filter=:filter" + paginate },
 		    'update': { method: 'PUT', params: { id: "@id" }, url: urlOdata + "(:id)" },
 		    'save': { method: "POST", url: urlOdata },
 		    'remove': { method: 'DELETE', params: { id: "@id" }, url: urlOdata + "(:id)"}

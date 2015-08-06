@@ -56,7 +56,8 @@ angular.module("precinctServices", ['ngResource'])
                 key = "(CityId=:cityId,StreetId=:streetId,House=':house')";
             return $resource('', {},
             {
-                'query': { method: 'GET', params: params, url: urlOdata + key + "?$expand=City($expand=CityType,RegionPart),Street($expand=StreetType)" },
+                'query': { method: 'GET', params: params, url: urlOdata +key + "?$expand=City($expand=CityType,RegionPart),Street($expand=StreetType)" },
+                'getAllByKeys': { method: 'GET', params: { filter: '@filter' }, url: urlOdata +"?$expand=Precinct" + ":filter" },
                 'save': { method: "POST", url: urlOdata },
                 'update': { method: 'PUT', params: params, url: urlOdata + key },
                 'remove': { method: 'DELETE', params: params, url: urlOdata + key }
