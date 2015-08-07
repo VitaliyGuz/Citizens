@@ -27,7 +27,7 @@ namespace Citizens.Controllers.API
         private CitizenDbContext db = new CitizenDbContext();
 
         // GET: odata/PrecinctAddresses
-        [EnableQuery(MaxNodeCount = 400)]
+        [EnableQuery]
         [PrecinctAddressesFilter]
         public IQueryable<PrecinctAddress> GetPrecinctAddresses()
         {
