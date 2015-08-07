@@ -16,7 +16,7 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
         $scope.totalItems = 0;
 
         $scope.people = [];
-        $scope.tableHead = ['№', 'П.І.Б.', 'Дата народження', 'Адреса','Дільниця', 'Дії'];
+        $scope.tableHead = ['№', 'П.І.Б.', 'Дата народження', 'Адреса','Дії'];
 
         $scope.propKeys = genlPeopleData.propKeys;
         propValues = genlPeopleData.propValues;
@@ -98,69 +98,87 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
             }
         };
 
-        // todo: add condition if StreetId/House = null in address
         function successHandler(data) {
             var people = data.value, keys = [];
+            $rootScope.errorMsg = '';
+            $scope.loadingPeople = false;
+            $scope.filtering = false;
+            //var start = new Date().getTime();
+            // include city and street in person model
+            $scope.people = people.map(function (p) {
 
-            function getFilterKeys() {
-                var filterBuilder = [];
+                p.City = $rootScope.cities.filter(function (c) {
+                    return c.Id === p.CityId;
+                })[0];
+
+                p.Street = $rootScope.streets.filter(function (s) {
+                    return s.Id === p.StreetId;
+                })[0];
+
+                return p;
+            });
+            $scope.totalItems = data['@odata.count'];
+
+            //console.debug(new Date().getTime() - start);
+            //function getFilterKeys() {
+            //    var filterBuilder = [];
                 
-                keys.forEach(function (k) {
-                    if (filterBuilder.length > 0) filterBuilder.push("or");
-                    //filterBuilder.push("(CityId eq " + k.CityId + " and StreetId eq " + k.StreetId + " and House eq '" + p.House + "')");
-                    filterBuilder.push("(CityId eq " + k.CityId + " and (StreetId eq " + k.StreetId + " or StreetId eq 1))");
-                });
+            //    keys.forEach(function (k) {
+            //        if (filterBuilder.length > 0) filterBuilder.push("or");
+            //        //filterBuilder.push("(CityId eq " + k.CityId + " and StreetId eq " + k.StreetId + " and House eq '" + p.House + "')");
+            //        filterBuilder.push("(CityId eq " + k.CityId + " and (StreetId eq " + k.StreetId + " or StreetId eq 1))");
+            //    });
 
-                if (filterBuilder.length === 0) return undefined;
-                //console.debug(filterBuilder.join(''));
-                return "&$filter=" + filterBuilder.join('');
-            };
+            //    if (filterBuilder.length === 0) return undefined;
+            //    console.debug(filterBuilder.join(''));
+            //    return "&$filter=" + filterBuilder.join('');
+            //};
 
-            function contains(arr, val) {
-                for (var i = 0; i < arr.length; i++) {
-                    if (arr[i].CityId === val.CityId && arr[i].StreetId === val.StreetId) {
-                        return true;
-                    }
-                }
-                return false;
-            };
+            //function contains(arr, val) {
+            //    for (var i = 0; i < arr.length; i++) {
+            //        if (arr[i].CityId === val.CityId && arr[i].StreetId === val.StreetId) {
+            //            return true;
+            //        }
+            //    }
+            //    return false;
+            //};
 
-            keys = people.reduce(function (previousValue, currentValue) {
-                var key = {};
-                key.CityId = currentValue.CityId;
-                key.StreetId = currentValue.StreetId;
-                if (!contains(previousValue, key)) previousValue.push(key);
-                return previousValue;
-            }, []);
+            //keys = people.reduce(function (previousValue, currentValue) {
+            //    var key = {};
+            //    key.CityId = currentValue.CityId;
+            //    key.StreetId = currentValue.StreetId;
+            //    if (!contains(previousValue, key)) previousValue.push(key);
+            //    return previousValue;
+            //}, []);
 
-            precinctAddressesData.getAllByKeys({ filter: getFilterKeys() }, function (addresses) {
-                $rootScope.errorMsg = '';
-                $scope.loadingPeople = false;
-                $scope.filtering = false;
-                var start = new Date().getTime();
+            //precinctAddressesData.getAllByKeys({ filter: getFilterKeys() }, function (addresses) {
+            //    $rootScope.errorMsg = '';
+            //    $scope.loadingPeople = false;
+            //    $scope.filtering = false;
+            //    var start = new Date().getTime();
 
-                $scope.people = people.map(function (p) {
-                    var finded = addresses.value.filter(function(a) {
-                        return a.CityId === p.CityId && 
-                            a.StreetId === 1 ? true : a.StreetId === p.StreetId &&
-                            a.House === '' ? true : a.House.toLocaleLowerCase() === p.House.toLocaleLowerCase();
-                    });
+            //    $scope.people = people.map(function (p) {
+            //        var finded = addresses.value.filter(function(a) {
+            //            return a.CityId === p.CityId && 
+            //                a.StreetId === 1 ? true : a.StreetId === p.StreetId &&
+            //                a.House === '' ? true : a.House.toLocaleLowerCase() === p.House.toLocaleLowerCase();
+            //        });
 
-                    if (finded && finded.length > 0) p.PrecinctNumber = finded[0].Precinct.Number;
+            //        if (finded && finded.length > 0) p.PrecinctNumber = finded[0].Precinct.Number;
 
-                    p.City = $rootScope.cities.filter(function(c) {
-                        return c.Id === p.CityId;
-                    })[0];
+            //        p.City = $rootScope.cities.filter(function(c) {
+            //            return c.Id === p.CityId;
+            //        })[0];
 
-                    p.Street = $rootScope.streets.filter(function (s) {
-                        return s.Id === p.StreetId;
-                    })[0];
+            //        p.Street = $rootScope.streets.filter(function (s) {
+            //            return s.Id === p.StreetId;
+            //        })[0];
 
-                    return p;
-                });
-                console.debug(new Date().getTime() - start);
-                $scope.totalItems = data['@odata.count'];
-            }, errorHandler);
+            //        return p;
+            //    });
+            //    console.debug(new Date().getTime() - start);
+            //    $scope.totalItems = data['@odata.count'];
+            //}, errorHandler);
         };
 
         function getFilterString() {
@@ -537,7 +555,7 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
         };
 
         $scope.saveProperty = function () {
-            var propType, newProperty, newPropValue;
+            var newPropValue;
             if (!$scope.person.Id) {
                 $rootScope.errorMsg = 'Спочатку необхідно зберегти фіз. особу';
                 return;
@@ -551,7 +569,7 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
                 $rootScope.errorMsg = 'Не вказано значення характеристики';
                 return;
             }
-            propType = $scope.selected.property.Key.PropertyType;
+            var propType = $scope.selected.property.Key.PropertyType;
             if (propType.html.indexOf('ref') === 0 && !$scope.selected.property.ValueId) {
                 $rootScope.errorMsg = "Значення '" + $scope.selected.property.Value + "' для характеристики '" + $scope.selected.property.Key.Name + "' не знайдено";
                 return;
@@ -559,7 +577,7 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
             $rootScope.errorMsg = '';
             $scope.savingProp = true;
             // todo: factory method
-            newProperty = {
+            var newProperty = {
                 "PersonId": $scope.person.Id,
                 "PropertyKeyId": $scope.selected.property.Key.Id,
                 "IntValue": null,
