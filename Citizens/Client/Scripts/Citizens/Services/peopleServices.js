@@ -6,13 +6,15 @@ angular.module("peopleServices", ['ngResource', 'precinctServices']).
             order = '&$orderby=LastName,FirstName,MidleName',
             expand = '?$expand=City($expand=CityType,RegionPart),Street($expand=StreetType)',
             expandWithProps = expand + ",PrecinctAddress($expand=Precinct),PersonAdditionalProperties($expand=PropertyKey,PropertyValue)",
-            paginate = "&$count=true&$skip=:skip&$top=" + config.pageSize;
+            //paginate = "&$count=true&$skip=:skip&$top=" + config.pageSize,
+            paginate = "$count=true&$skip=:skip"; // page size on server-side
 
         return $resource('', {},
 		{
 		    'getById': { method: 'GET', params: { id: "@id" }, url: urlOdata + "(:id)" + expandWithProps },
-		    'getPageItems': { method: 'GET', params: { skip: "@skip" }, url: urlOdata + "?" + paginate },
-		    'getFilteredPageItems': { method: 'GET', params: { skip: "@skip", filter: '@filter' }, url: urlOdata + "?$filter=:filter" + paginate },
+		    //'getPageItems': { method: 'GET', params: { skip: "@skip" }, url: urlOdata + "?" + paginate },
+		    //'getFilteredPageItems': { method: 'GET', params: { skip: "@skip", filter: '@filter' }, url: urlOdata + "?$filter=:filter" + paginate },
+		    'getPageItems': { method: 'GET', params: { skip: '@skip', filter: '@filter' }, url: urlOdata + "?" + paginate + ":filter" },
 		    'update': { method: 'PUT', params: { id: "@id" }, url: urlOdata + "(:id)" },
 		    'save': { method: "POST", url: urlOdata },
 		    'remove': { method: 'DELETE', params: { id: "@id" }, url: urlOdata + "(:id)"}

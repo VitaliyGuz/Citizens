@@ -8,15 +8,24 @@
 <h5 ng-show="loadingPeople" class="help-block">Завантаження... <i class="fa fa-refresh fa-spin"></i></h5>
 <hr>
 <div class="row">
-    <div class="col-md-3">
-        <input ng-model="filterQuery.LastName" type="text" ng-change="onFilterChange()" class="form-control" placeholder="Фільтр по прізвищу">
-    </div>
-    <div class="col-md-3">
-        <input ng-model="filterQuery.FirstName" type="text" ng-change="onFilterChange()" class="form-control" placeholder="Фільтр по імені">
-    </div>
-    <div class="col-md-3">
-        <input ng-model="filterQuery.MidleName" type="text" ng-change="onFilterChange()" class="form-control" placeholder="Фільтр по по-батькові">
-    </div>
+    <form ng-submit="applyFilter()">
+        <div class="col-md-3">
+            <input ng-model="filterQuery.LastName" type="text" class="form-control" placeholder="Фільтр по прізвищу">
+        </div>
+        <div class="col-md-3">
+            <input ng-model="filterQuery.FirstName" type="text" class="form-control" placeholder="Фільтр по імені">
+        </div>
+        <div class="col-md-3">
+            <input ng-model="filterQuery.MidleName" type="text" class="form-control" placeholder="Фільтр по по-батькові">
+        </div>
+        <button type="submit" class="btn btn-success" title="Застосувати фільтр">
+            <span class="glyphicon glyphicon-filter"></span>
+            <i ng-show="filtering" class="fa fa-refresh fa-spin"></i>
+        </button>
+        <button ng-click="resetFilter()" class="btn btn-success" title="Скасувати фільтр">
+            <span class="glyphicon glyphicon-remove-sign"></span>
+        </button>
+    </form>
 </div>
 <hr>
 <div ng-show="showFilters" style="height:400px;">

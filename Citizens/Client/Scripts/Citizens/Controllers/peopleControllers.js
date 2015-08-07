@@ -2,13 +2,13 @@
 
 var peopleControllers = angular.module('peopleControllers', ['peopleServices', 'streetServices', 'cityServices', 'precinctServices']);
 
-peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$location', 'peopleData', 'config', 'serviceUtil', 'genlPeopleData', 'filterSettings', 'precinctAddressesData',
-    function ($rootScope, $scope, $location, peopleData, config, serviceUtil, genlPeopleData, filterSettings, precinctAddressesData) {
-        var propValues = [], DATE_FORMAT = 'yyyy-MM-ddT00:00:00';
+peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$location', 'peopleData', 'config', 'serviceUtil', 'genlPeopleData', 'filterSettings',
+    function ($rootScope, $scope, $location, peopleData, config, serviceUtil, genlPeopleData, filterSettings) {
+        var propValues = [], DATE_FORMAT = 'yyyy-MM-ddT00:00:00', odataFilter;
         
         $rootScope.pageTitle = 'Фізичні особи';
         $scope.saving = false;
-        //$scope.filterQuery = {};
+        $scope.filterQuery = {};
 
         $scope.currentPage = serviceUtil.getRouteParam("currPage") || 1;
         
@@ -21,29 +21,30 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
         $scope.propKeys = genlPeopleData.propKeys;
         propValues = genlPeopleData.propValues;
 
-        var peopleQuery = filterSettings.get('people');
-        //todo: include filterQuery in propKyes, personNameQuery is temp
-        var personNameQuery = filterSettings.get('people_name');
-        if (peopleQuery) {
-            angular.forEach($scope.propKeys, function (propKey) {
-                var findedKeys = peopleQuery.filter(function (query) {
-                    return query.Id === propKey.Id;
-                });
-                if (findedKeys.length > 0) {
-                    propKey.input = findedKeys[0].input;
-                    if (propKey.input && propKey.PropertyType.html === 'date') {
-                        propKey.input.from = serviceUtil.formatDate(propKey.input.from, config.LOCALE_DATE_FORMAT);
-                        propKey.input.to = serviceUtil.formatDate(propKey.input.to, config.LOCALE_DATE_FORMAT);
+        var peopleQuerySettings = filterSettings.get('people');
+        //var personNameQuery = filterSettings.get('people_name');
+        if (peopleQuerySettings) {
+            if (peopleQuerySettings.props) $scope.filterQuery = peopleQuerySettings.props;
+            if (peopleQuerySettings.additionalProps) {
+                angular.forEach($scope.propKeys, function(propKey) {
+                    var findedKeys = peopleQuerySettings.additionalProps.filter(function (query) {
+                        return query.Id === propKey.Id;
+                    });
+                    if (findedKeys.length > 0) {
+                        propKey.input = findedKeys[0].input;
+                        if (propKey.input && propKey.PropertyType.html === 'date') {
+                            propKey.input.from = serviceUtil.formatDate(propKey.input.from, config.LOCALE_DATE_FORMAT);
+                            propKey.input.to = serviceUtil.formatDate(propKey.input.to, config.LOCALE_DATE_FORMAT);
+                        }
+                        $scope.showFilters = true;
+                    } else {
+                        propKey.input = undefined;
                     }
-                    $scope.showFilters = true;
-                } 
-            });
+                });
+            }
+            if (peopleQuerySettings.odataFilter) odataFilter = peopleQuerySettings.odataFilter;
         }
-        if (personNameQuery) {
-            $scope.filterQuery = personNameQuery;
-        } else {
-            $scope.filterQuery = {};
-        }
+
 
         $scope.getPropertyValuesByKeyId = function (keyId) {
             return propValues.filter(function (item) {
@@ -85,17 +86,10 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
         
         $scope.onPageChange = function (newPageNumber) {
             $location.path("/people/" + newPageNumber);
-            //setPeopleOnPage((newPageNumber - 1) * config.pageSize);
         };
         
         function setPeopleOnPage(skipItems) {
-            var filterString = getFilterString();
-            if (skipItems == undefined) skipItems = 0;
-            if (filterString.length === 0) {
-                peopleData.getPageItems({ skip: skipItems }, successHandler, errorHandler);
-            } else {
-                peopleData.getFilteredPageItems({ skip: skipItems, filter: filterString }, successHandler, errorHandler);
-            }
+            peopleData.getPageItems({ skip: skipItems||0, filter: odataFilter }, successHandler, errorHandler);
         };
 
         function successHandler(data) {
@@ -122,7 +116,7 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
             //console.debug(new Date().getTime() - start);
             //function getFilterKeys() {
             //    var filterBuilder = [];
-                
+
             //    keys.forEach(function (k) {
             //        if (filterBuilder.length > 0) filterBuilder.push("or");
             //        //filterBuilder.push("(CityId eq " + k.CityId + " and StreetId eq " + k.StreetId + " and House eq '" + p.House + "')");
@@ -181,7 +175,7 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
             //}, errorHandler);
         };
 
-        function getFilterString() {
+        function getODataFilterQuery() {
             var filterStr = '', filterInnerStr = '',
                 filterQuery = $scope.filterQuery,
                 filterPattern = "startswith(:fieldName, ':val') eq true",
@@ -239,21 +233,33 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
             //console.log(filterStr);
             return filterStr;
         };
-        
+
         $scope.applyFilter = function () {
             $scope.filtering = true;
-            filterSettings.set('people', $scope.propKeys);
-            setPeopleOnPage();
+            var filterQuery = getODataFilterQuery();
+            if (filterQuery.length > 0) {
+                odataFilter = '&$filter=' + filterQuery;
+                filterSettings.set('people', {
+                    props: angular.copy($scope.filterQuery),
+                    additionalProps: angular.copy($scope.propKeys.filter(function(key) {
+                        return key.input != undefined;
+                    })),
+                    odataFilter: odataFilter
+                });
+                setPeopleOnPage();
+            }
         };
 
-        $scope.onFilterChange = function () {
-            if ($scope.filterQuery.LastName || $scope.filterQuery.FirstName || $scope.filterQuery.MidleName) {
-                filterSettings.set('people_name', $scope.filterQuery);
-            } else {
-                filterSettings.remove('people_name');
-            }
-            setPeopleOnPage();
-        };
+        //temp function
+        //$scope.onFilterChange = function () {
+        //    if ($scope.filterQuery.LastName || $scope.filterQuery.FirstName || $scope.filterQuery.MidleName) {
+        //        filterSettings.set('people_name', $scope.filterQuery);
+        //    } else {
+        //        filterSettings.remove('people_name');
+        //    }
+        //    setFilterString();
+        //    setPeopleOnPage();
+        //};
 
         $scope.toggleSelection = function (propKey,checkedValue) {
             function indexOf(arr, val) {
@@ -287,11 +293,15 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
         };
 
         $scope.resetFilter = function () {
-            angular.forEach($scope.propKeys, function (propKey) {
-                if (propKey.input) propKey.input = undefined;
-            });
-            filterSettings.remove('people');
-            setPeopleOnPage();
+            if (odataFilter) {
+                angular.forEach($scope.propKeys, function (propKey) {
+                    if (propKey.input) propKey.input = undefined;
+                });
+                $scope.filterQuery = {};
+                odataFilter = undefined;
+                filterSettings.remove('people');
+                setPeopleOnPage();
+            }
         };
 
         $scope.checkedPropValue = function (propKey, checkVal) {
