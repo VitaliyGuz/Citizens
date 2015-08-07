@@ -22,7 +22,7 @@ namespace Citizens.Models
 
         public CityType CityType { get; set; }
         
-        public int? RegionPartId { get; set; }        
+        public int RegionPartId { get; set; }        
 
         public RegionPart RegionPart { get; set; }
 

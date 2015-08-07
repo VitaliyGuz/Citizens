@@ -262,6 +262,26 @@
     <Compile Include="Migrations\201508030643465_9.Designer.cs">
       <DependentUpon>201508030643465_9.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201508061405529_10.cs" />
+    <Compile Include="Migrations\201508061405529_10.Designer.cs">
+      <DependentUpon>201508061405529_10.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201508061430283_11.cs" />
+    <Compile Include="Migrations\201508061430283_11.Designer.cs">
+      <DependentUpon>201508061430283_11.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201508070702266_12.cs" />
+    <Compile Include="Migrations\201508070702266_12.Designer.cs">
+      <DependentUpon>201508070702266_12.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201508070755481_13.cs" />
+    <Compile Include="Migrations\201508070755481_13.Designer.cs">
+      <DependentUpon>201508070755481_13.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201508070934305_14.cs" />
+    <Compile Include="Migrations\201508070934305_14.Designer.cs">
+      <DependentUpon>201508070934305_14.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\CityRegionPart.cs" />
     <Compile Include="Models\District.cs" />
@@ -335,6 +355,21 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201508030643465_9.resx">
       <DependentUpon>201508030643465_9.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201508061405529_10.resx">
+      <DependentUpon>201508061405529_10.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201508061430283_11.resx">
+      <DependentUpon>201508061430283_11.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201508070702266_12.resx">
+      <DependentUpon>201508070702266_12.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201508070755481_13.resx">
+      <DependentUpon>201508070755481_13.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201508070934305_14.resx">
+      <DependentUpon>201508070934305_14.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

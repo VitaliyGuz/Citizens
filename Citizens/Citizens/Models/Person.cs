@@ -35,11 +35,13 @@ namespace Citizens.Models
 
         [ForeignKey("PrecinctAddress")]
         [Column(Order = 4)]
-        public int? StreetId { get; set; }
+        public int StreetId { get; set; }
 
         [ForeignKey("PrecinctAddress")]
         [Column(Order = 5)]
         [StringLength(10)]
+        [Index]
+        [Required()]
         public string House { get; set; }
 
         public int? Apartment { get; set; }

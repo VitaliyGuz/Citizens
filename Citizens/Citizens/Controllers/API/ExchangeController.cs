@@ -17,7 +17,7 @@ namespace Citizens.Controllers.API
 {
     public class ExchangeController : ApiController
     {
-        [Logger(Roles = "Administrators")]        
+        [Logger(Roles = "SuperAdministrators")]        
         [HttpPost]
         public IHttpActionResult Upload()
         {
@@ -52,7 +52,7 @@ namespace Citizens.Controllers.API
                                 
 
                                 string query =
-                                    "SELECT DISTINCT FirstName, MidleName, LastName, Street, StreetType, City, CityType, RegionPart, House, Apartment, Gender FROM [" +
+                                    "SELECT DISTINCT FirstName, MidleName, LastName, Street, StreetType, City, CityType, RegionPart, IIF(House IS NULL, 0, House) as House, Apartment, Gender FROM [" +
                                     sheetName + "] WHERE FirstName<>'' & FirstName<>'*' & LastName<>'' & LastName<>'*'";
                                 OleDbDataAdapter adapter = new OleDbDataAdapter(query, conn);
                                 ds = new DataSet();

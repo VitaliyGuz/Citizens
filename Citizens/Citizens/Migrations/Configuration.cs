@@ -11,6 +11,7 @@ namespace Citizens.Migrations
         {
             AutomaticMigrationsEnabled = false;
             AutomaticMigrationDataLossAllowed = true;
+            CommandTimeout = 60 * 5; 
         }
 
         protected override void Seed(Citizens.Models.CitizenDbContext context)

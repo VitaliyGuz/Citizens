@@ -18,11 +18,12 @@ namespace Citizens.Models
         [Key]
         [Column(Order = 1)]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
-        public int? StreetId { get; set; }
+        public int StreetId { get; set; }
 
         [Key]
         [Column(Order = 2)]
         [StringLength(10)]
+        [Required()]
         public string House { get; set; }
 
         public HouseType? HouseType { get; set; }
