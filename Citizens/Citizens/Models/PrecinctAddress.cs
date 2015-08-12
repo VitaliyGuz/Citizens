@@ -28,6 +28,8 @@ namespace Citizens.Models
 
         public HouseType? HouseType { get; set; }
 
+        public int? Apartments { get; set; }
+
         public int PrecinctId { get; set; }
 
         public City City { get; set; }
