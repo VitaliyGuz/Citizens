@@ -434,7 +434,8 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
                 "StreetId": 0,
                 "House": '',
                 "PrecinctId": 0,
-                "HouseType": null
+                "HouseType": null,
+                "Apartments": null
             };
             serviceUtil.copyProperties($scope.person, person);
             serviceUtil.copyProperties($scope.person, precinctAddress);

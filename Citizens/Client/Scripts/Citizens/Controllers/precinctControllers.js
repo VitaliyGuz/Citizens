@@ -321,7 +321,8 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
                 "StreetId": 0,
                 "House": '',
                 "PrecinctId": 0,
-                "HouseType": null
+                "HouseType": null,
+                "Apartments": null
             };
             serviceUtil.copyProperties($scope.selected.address, address);
             address.PrecinctId = $scope.precinct.Id;
@@ -728,7 +729,8 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
                 "StreetId": 0,
                 "House": '',
                 "PrecinctId": 0,
-                "HouseType": null
+                "HouseType": null,
+                "Apartments": null
             };
             $scope.saving.address = true;
             serviceUtil.copyProperties(selectedAddress, address);

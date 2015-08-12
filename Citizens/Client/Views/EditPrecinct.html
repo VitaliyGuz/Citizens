@@ -105,6 +105,7 @@
                     <th>Вулиця</th>
                     <th>Буд.</th>
                     <th>Тип будинку</th>
+                    <th>К-сть квартир</th>
                     <th ng-show="changingPresinct">Нова дільниця</th>
                     <th>
                         <button ng-click="addNewAddress()" class="btn btn-sm btn-success" title="Створити нову адресу">
@@ -125,6 +126,7 @@
             <td>{{address.Street.StreetType.Name}} {{address.Street.Name}}</td>
             <td>{{address.House}}</td>
             <td>{{address.HouseType}}</td>
+            <td>{{address.Apartments}}</td>
             <td ng-show="changingPresinct"></td>
             <td>
                 <button class="btn btn-xs" ng-click="editAddress(address)" title="Редагувати">
@@ -147,6 +149,7 @@
             <td>{{address.Street.StreetType.Name}} {{address.Street.Name}}</td>
             <td>{{address.House}}</td>
             <td>{{address.HouseType}}</td>
+            <td>{{address.Apartments}}</td>
             <td>
                 <input type="text" ng-change="selected.newPrecinctId=0" typeahead-on-select="onSelectPrecinctNumber($item, $model, $label)" ng-model="selected.newPrecinct"
                        typeahead="p.Id as p.Number for p in precincts | filter: {Number:$viewValue} | orderByStartsWith:{Number:$viewValue} | limitTo:10" class="form-control">
@@ -171,12 +174,13 @@
                 <input type="text" ng-change="selected.address.StreetId=0" typeahead-on-select="onSelectStreet($item, $model, $label,selected.address)" ng-model="selected.address.Street"
                        typeahead="s.Id as s.StreetType.Name +' '+ s.Name for s in streets | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control" placeholder="Вулиця">
             </td>
-            <td><input class="form-control" ng-model="selected.address.House" /></td>
+            <td><input class="form-control" ng-model="selected.address.House" style="width:90px"></td>
             <td>
-                <select class="form-control" ng-model="selected.address.HouseType" ng-options="ht as ht for ht in houseTypes">
+                <select class="form-control" ng-model="selected.address.HouseType" ng-options="ht as ht for ht in houseTypes" style="width:150px">
                     <option value='' disabled>-Вибрати-</option>
                 </select>
             </td>
+            <td><input class="form-control" ng-model="selected.address.Apartments" type="number" style="width:70px"></td>
             <td>
                 <button ng-click="saveAddress(address,$index)" class="btn btn-sm btn-success" title="Зберегти зміни">
                     <span class="glyphicon glyphicon-save"></span>
