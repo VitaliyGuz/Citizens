@@ -62,7 +62,7 @@ districtControllers.controller("listDistrictsController", ['$rootScope', '$locat
             $rootScope.errorMsg = '';
             districtData.remove({ id: district.Id },
                 function () {
-                    districtsHolder.removeElem(district);
+                    districtsHolder.remove(district);
                 }, function (e) {
                     e.description = 'Округ не видалено';
                     $rootScope.errorMsg = serviceUtil.getErrorMessage(e);
@@ -149,10 +149,10 @@ districtControllers.controller('editDistrictController', ['$rootScope', '$scope'
                 }
                 if (addMode) {
                     $scope.district.Id = res.Id;
-                    districtsHolder.addElem($scope.district);
+                    districtsHolder.add($scope.district);
                     $rootScope.successMsg = 'Округ успішно створено!';
                 } else {
-                    districtsHolder.updateElem($scope.district);
+                    districtsHolder.update($scope.district);
                     $rootScope.successMsg = 'Зміни успішно збережено!';
                 }
                 districtsHolder.sort();
