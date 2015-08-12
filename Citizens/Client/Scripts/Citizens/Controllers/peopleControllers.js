@@ -337,7 +337,7 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
                     $scope.dateOfBirth = serviceUtil.formatDate(new Date(resolvedData.person.DateOfBirth), config.LOCALE_DATE_FORMAT);
                 }
                 $scope.person.Precinct = resolvedData.person.PrecinctAddress.Precinct;
-                $scope.person.HouseType = resolvedData.person.PrecinctAddress.HouseType;
+                $scope.person.address = resolvedData.person.PrecinctAddress;
                 $scope.additionalProperties = getPropertyPairs(resolvedData.person.PersonAdditionalProperties);
             }
             $scope.precincts = resolvedData.precincts;
@@ -426,7 +426,7 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
                 "CityId": 0,
                 "StreetId": 0,
                 "House": '',
-                "Apartment": 0
+                "Apartment": null
             },
             // todo: factory method
             precinctAddress =  {
@@ -438,7 +438,7 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
                 "Apartments": null
             };
             serviceUtil.copyProperties($scope.person, person);
-            serviceUtil.copyProperties($scope.person, precinctAddress);
+            serviceUtil.copyProperties($scope.person.address, precinctAddress);
             person.DateOfBirth = serviceUtil.formatDate($scope.dateOfBirth, DATE_FORMAT);
             if (!person.DateOfBirth) {
                 $scope.saving = false;
@@ -486,8 +486,7 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
 
         $scope.backToList = function () {
             $rootScope.errorMsg = '';
-            var currPage = serviceUtil.getRouteParam("currPage");
-            if (!currPage) currPage = 1;
+            var currPage = serviceUtil.getRouteParam("currPage") || 1;
             $location.path('/people/' + currPage);
         };
 
