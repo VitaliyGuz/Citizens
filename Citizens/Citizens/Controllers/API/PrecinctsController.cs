@@ -101,6 +101,21 @@ namespace Citizens.Controllers.API
             db.Precincts.Add(precinct);
             await db.SaveChangesAsync();
 
+            var savingUserPrecincts = new List<UserPrecinct>();
+
+            await db.UserRegionParts
+                .Where(r => r.RegionPartId == precinct.RegionPartId)
+                .Select(s => s.UserId)
+                .Distinct()
+                .ForEachAsync(userId => savingUserPrecincts.Add(new UserPrecinct
+                    {
+                        UserId = userId, PrecinctId = precinct.Id
+                    }));
+
+            db.UserPrecincts.AddRange(savingUserPrecincts);
+
+            await db.SaveChangesAsync();
+
             return Created(precinct);
         }
 
