@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.Entity;
+﻿using System.Collections.Generic;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
-using System.Web.Http.ModelBinding;
 using System.Web.OData;
 using System.Web.OData.Routing;
 using Citizens.Models;
@@ -74,8 +69,8 @@ namespace Citizens.Controllers.API
             //patch.Put(userPrecinct);
             db.UserPrecincts.Remove(userPrecinct);
             db.UserPrecincts.Add(dbEntity);
-            await removeUserRegionPartAsync(userId, precinctId);
-            await addUserRegionPartAsync(dbEntity);
+            await RemoveUserRegionPartAsync(userId, precinctId);
+            await AddUserRegionPartAsync(dbEntity);
 
             try
             {
@@ -105,7 +100,7 @@ namespace Citizens.Controllers.API
             }
 
             db.UserPrecincts.Add(userPrecinct);
-            await addUserRegionPartAsync(userPrecinct);
+            await AddUserRegionPartAsync(userPrecinct);
             
             try
             {
@@ -126,19 +121,20 @@ namespace Citizens.Controllers.API
             return Created(userPrecinct);
         }
 
-        private async Task addUserRegionPartAsync(UserPrecinct modelUserPrecinct)
+        private async Task AddUserRegionPartAsync(UserPrecinct modelUserPrecinct)
         {
             var precinct = await db.Precincts.FindAsync(modelUserPrecinct.PrecinctId);
             if (precinct == null || precinct.RegionPartId == null) return;
-            var totalPrecinctsByRegionPart = db.Precincts.Count(p => p.RegionPartId == precinct.RegionPartId);
-            var countUserPrecinctsByRegionPart = db.UserPrecincts.Count(up => up.Precinct.RegionPartId == precinct.RegionPartId && up.UserId == modelUserPrecinct.UserId);
-            if ((countUserPrecinctsByRegionPart + 1) == totalPrecinctsByRegionPart)
+            var regionPartId = (int) precinct.RegionPartId;
+            var total = GetTotalPrecinctsByRegionPartId(regionPartId);
+            var count = GetCountUserPrecinctsByRegionPartId(regionPartId, modelUserPrecinct.UserId);
+            if ((count + 1) == total)
             {
-                db.UserRegionParts.Add(new UserRegionPart() { UserId = modelUserPrecinct.UserId, RegionPartId = (int)precinct.RegionPartId });
+                db.UserRegionParts.Add(new UserRegionPart { UserId = modelUserPrecinct.UserId, RegionPartId = regionPartId });
             }
         }
 
-        private async Task removeUserRegionPartAsync(string userId, int precinctId)
+        private async Task RemoveUserRegionPartAsync(string userId, int precinctId)
         {
             var precinct = await db.Precincts.FindAsync(precinctId);
             if (precinct == null || precinct.RegionPartId == null) return;
@@ -207,7 +203,7 @@ namespace Citizens.Controllers.API
             }
 
             db.UserPrecincts.Remove(userPrecinct);
-            await removeUserRegionPartAsync(userId, precinctId);
+            await RemoveUserRegionPartAsync(userId, precinctId);
 
             await db.SaveChangesAsync();
 
@@ -240,6 +236,139 @@ namespace Citizens.Controllers.API
         private bool UserPrecinctExists(string userId,  int precinctId)
         {
             return db.UserPrecincts.Count(userPrecinct => userPrecinct.UserId == userId && userPrecinct.PrecinctId == precinctId) > 0;
+        }
+
+        [HttpPost]
+        public async Task<IHttpActionResult> AddRange(ODataActionParameters parameters)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            
+            var paramArray = parameters["Array"] as IEnumerable<UserPrecinct>;
+            if (paramArray == null) return BadRequest("Not found property 'Array'");
+
+            var userPrecincts = paramArray as UserPrecinct[] ?? paramArray.ToArray();
+            if (userPrecincts.Length == 0) return StatusCode(HttpStatusCode.Created);
+
+            var savingUserPrecincts = userPrecincts
+                .Distinct(new UserPrecinctComparer()) // removing duplicate
+                .GroupJoin(db.UserPrecincts, e => new { e.PrecinctId, e.UserId }, param => new { param.PrecinctId, param.UserId }, (k, v) => new { Key = k, Values = v })
+                .SelectMany(x => x.Values.DefaultIfEmpty(), (x, y) => new { Exist = x.Key, NotExist = y })
+                .Where(p => p.NotExist == null) //filter existing items
+                .Select(e => e.Exist)
+                .ToArray();
+
+            //db.UserPrecincts.AddRange(savingUserPrecincts);
+            //await db.SaveChangesAsync();
+
+            // adding region parts by user
+            //var listUserIds = savingUserPrecincts.Select(e => e.UserId).Distinct();
+            //var listPrecinctIds = savingUserPrecincts.Select(e => e.PrecinctId).Distinct();
+            //var dicUserRegionParts =
+            //    db.UserPrecincts.Include("Precinct")
+            //        .Where(up => listUserIds.Contains(up.UserId) && listPrecinctIds.Contains(up.PrecinctId))
+            //        .GroupBy(k => k.UserId, g => g.Precinct.RegionPartId,
+            //            (k, g) => new { UserId = k, RegionPartIds = g.Distinct() })
+            //        .ToDictionary(key => key.UserId, val => val.RegionPartIds);
+
+            //foreach (var userId in dicUserRegionParts.Keys)
+            //{
+            //    foreach (var id in dicUserRegionParts[userId])
+            //    {
+            //        if (id == null) continue;
+            //        var regionPartId = (int)id;
+            //        if (IsCountEqualTotal(regionPartId, userId))
+            //        {
+            //            db.UserRegionParts.Add(new UserRegionPart { UserId = userId, RegionPartId = regionPartId });
+            //        }
+            //    }
+            //}
+
+            var savingUserRegionParts = savingUserPrecincts
+               .GroupJoin(db.Precincts, up => up.PrecinctId, p => p.Id, (k, v) => new { k.UserId, Precincts = v })
+               .SelectMany(x => x.Precincts.DefaultIfEmpty(), (x, y) => y.RegionPartId != null ? new UserRegionPart { UserId = x.UserId, RegionPartId = (int)y.RegionPartId } : null)
+               .Distinct(new UserRegionPartComparer())
+               .Where(r => IsCountEqualTotal(r.RegionPartId, r.UserId, savingUserPrecincts.Length));
+
+            db.UserPrecincts.AddRange(savingUserPrecincts);
+            db.UserRegionParts.AddRange(savingUserRegionParts);
+
+            await db.SaveChangesAsync();
+            
+            return StatusCode(HttpStatusCode.Created);
+        }
+
+        [HttpPost]
+        public async Task<IHttpActionResult> RemoveRange(ODataActionParameters parameters)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var paramArray = parameters["Array"] as IEnumerable<UserPrecinct>;
+            if (paramArray == null) return BadRequest("Not found property 'Array'");
+
+            var userPrecincts = paramArray as UserPrecinct[] ?? paramArray.ToArray();
+            if (userPrecincts.Length == 0) return StatusCode(HttpStatusCode.NoContent);
+
+            var listUserIds = userPrecincts.Select(e => e.UserId).Distinct();
+            var listPrecinctIds = userPrecincts.Select(e => e.PrecinctId).Distinct();
+
+            var removingUserPrecincts = db.UserPrecincts.Include("Precinct")
+                .Where(up => listUserIds.Contains(up.UserId) && listPrecinctIds.Contains(up.PrecinctId));
+                
+            var removingUserRegionParts = removingUserPrecincts
+                .Join(db.UserRegionParts, p => new { p.Precinct.RegionPartId, p.UserId }, r => new { RegionPartId = (int?)r.RegionPartId, r.UserId }, (p, r) => r);
+
+            db.UserPrecincts.RemoveRange(removingUserPrecincts);
+            db.UserRegionParts.RemoveRange(removingUserRegionParts);
+
+            await db.SaveChangesAsync();
+
+            return StatusCode(HttpStatusCode.NoContent);
+        }
+
+        private bool IsCountEqualTotal(int regionPartId, string userId, int countSave)
+        {
+            return countSave + GetCountUserPrecinctsByRegionPartId(regionPartId, userId) == GetTotalPrecinctsByRegionPartId(regionPartId);
+        }
+
+        private int GetCountUserPrecinctsByRegionPartId(int regionPartId, string userId)
+        {
+            return db.UserPrecincts.Count(up => up.Precinct.RegionPartId == regionPartId && up.UserId == userId);
+        }
+
+        private int GetTotalPrecinctsByRegionPartId(int regionPartId)
+        {
+            return db.Precincts.Count(p => p.RegionPartId == regionPartId);
+        }
+    }
+
+    class UserPrecinctComparer : IEqualityComparer<UserPrecinct>
+    {
+        public bool Equals(UserPrecinct x, UserPrecinct y)
+        {
+            return x.UserId == y.UserId && x.PrecinctId == y.PrecinctId;
+        }
+
+        public int GetHashCode(UserPrecinct obj)
+        {
+            return obj.UserId.GetHashCode() ^ obj.PrecinctId.GetHashCode();
+        }
+    }
+
+    class UserRegionPartComparer : IEqualityComparer<UserRegionPart>
+    {
+        public bool Equals(UserRegionPart x, UserRegionPart y)
+        {
+            return x.UserId == y.UserId && x.RegionPartId == y.RegionPartId;
+        }
+
+        public int GetHashCode(UserRegionPart obj)
+        {
+            return obj.UserId.GetHashCode() ^ obj.RegionPartId.GetHashCode();
         }
     }
 }

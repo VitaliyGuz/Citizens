@@ -40,7 +40,7 @@ namespace Citizens
                 defaults: new { id = RouteParameter.Optional }
             );
 
-            config.Filters.Add(new LoggerAttribute() { Roles = "Operators, Administrators, SuperAdministrators, ReadOnly" });            
+            config.Filters.Add(new LoggerAttribute() { Roles = "Operators, Administrators, SuperAdministrators, ReadOnly" });
             // Web API configuration and services
             ODataConventionModelBuilder builder = new ODataConventionModelBuilder();
             builder.EntitySet<City>("Cities");
@@ -65,10 +65,20 @@ namespace Citizens
             builder.EntitySet<UserRegion>("UserRegions");
             builder.EntitySet<UserRegionPart>("UserRegionParts");
 
-
             builder.EntitySet<ApplicationUser>("Users");
             //builder.EntitySet<IdentityUserClaim>("Claims");
             builder.EntitySet<ApplicationRole>("Roles");
+
+            builder.EntityType<UserPrecinct>()
+                .Collection
+                .Action("AddRange")
+                .CollectionParameter<UserPrecinct>("Array");
+
+            builder.EntityType<UserPrecinct>()
+                .Collection
+                .Action("RemoveRange")
+                .CollectionParameter<UserPrecinct>("Array");
+
             //builder.EntitySet<IdentityUserRole>("UserRoles");
             //builder.EntitySet<ApplicationUserLogin>("Logins");
             //var conventions = ODataRoutingConventions.CreateDefault();
