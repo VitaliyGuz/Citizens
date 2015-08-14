@@ -30,6 +30,8 @@ angular.module("userServices", ['ngResource'])
 		    'saveUserPrecinct': { method: 'POST', url: urlOdataUserPrecincts },
 		    'updateUserPrecinct': { method: 'PUT', params: params.keyUserPrecinct, url: urlOdataUserPrecincts + keys.userPrecinct },
 		    'removeUserPrecinct': { method: 'DELETE', params: params.keyUserPrecinct, url: urlOdataUserPrecincts + keys.userPrecinct },
+		    'saveRangeUserPrecincts': { method: 'POST', url: urlOdataUserPrecincts + "/AddRange" },
+		    'removeRangeUserPrecincts': { method: 'POST', url: urlOdataUserPrecincts + "/RemoveRange" },
 		    'getUserPrecinctsByUserId': { method: 'GET', params: params.keyUserId, url: urlOdataUserPrecincts + "?$expand=Precinct&$filter=UserId eq ':userId'" },
 		    'getUserPrecinctsByPrecinctId': { method: 'GET', params: { precinctId: "@precinctId" }, url: urlOdataUserPrecincts + '?$expand=User&$filter=PrecinctId eq :precinctId' },
 		    'getUserPrecinctsByRoleId': { method: 'GET', params: { roleId: "@roleId" }, url: urlOdataUserPrecincts + "?$expand=User,Precinct&$filter=User/Roles/any(ur:ur/RoleId eq ':roleId')" },
@@ -125,14 +127,20 @@ angular.module("userServices", ['ngResource'])
                 index = undefined;
                 if (ind != undefined && ind >= 0) index = ind;
             },
-            updateElem: function (elem) {
+            update: function (elem) {
                 if (index >= 0 && elem) users[index] = elem;
             },
-            addElem: function (elem) {
+            updateRoles: function (newRoles) {
+                if (index >= 0 && newRoles) users[index].Roles = newRoles;
+            },
+            add: function (elem) {
                 if (users && elem) users.push(elem);
             },
-            removeElem: function (elem) {
+            remove: function (elem) {
                 users.splice(this.indexOf(elem), 1);
+            },
+            removeAll: function () {
+                users = [];
             },
             isEmpty: function () {
                 return users ? users.length <= 0 : true;

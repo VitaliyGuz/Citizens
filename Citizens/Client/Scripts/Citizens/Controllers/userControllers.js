@@ -46,7 +46,7 @@ userControllers.controller('listUsersController', ['$rootScope', '$location', '$
         $rootScope.errorMsg = '';
         userData.remove({ id: user.Id },
             function () {
-                usersHolder.removeElem(user);
+                usersHolder.remove(user);
             }, function (e) {
                 e.description = 'Користувача не видалено';
                 $rootScope.errorMsg = serviceUtil.getErrorMessage(e);
@@ -67,7 +67,7 @@ userControllers.controller('listUsersController', ['$rootScope', '$location', '$
 }]);
 
 userControllers.controller('editUserController', ['$rootScope', '$scope', '$location', '$filter', '$q', 'serviceUtil', 'userData', 'config', 'precinctData', 'usersHolder', 'resolvedUser', 'regionPartTypes',
-    function ($rootScope, $scope, $location, $filter, $q, serviceUtil, userData, config, precinctData, usersHolder, resolvedUser, regionPartTypes) {
+    function ($rootScope, $scope, $location, $filter, $q, serviceUtil, userData, config, precinctData, usersHolder, resolvedUser) {
         var selectedItems = {}, deleteItems = {};
         $rootScope.pageTitle = 'Користувач';
         $scope.tableHead = ['№', 'Дільниця'];
@@ -82,8 +82,6 @@ userControllers.controller('editUserController', ['$rootScope', '$scope', '$loca
         $scope.user.regions = [];
         $scope.user.roles = [];
         $scope.user.logins = [];
-        
-        $scope.regionPartTypes = regionPartTypes;
 
         if (resolvedUser) {
             $scope.user = resolvedUser;
@@ -134,8 +132,7 @@ userControllers.controller('editUserController', ['$rootScope', '$scope', '$loca
             selectedItems.regionParts = [], deleteItems.regionParts = [];
             $scope.isEditingUserRegionParts = true;
             //$scope.load.editingUserRegionParts = true;
-            $scope.regionPartsREGION = angular.copy($filter('filter')($rootScope.regionParts, { RegionPartType: regionPartTypes.REGION.desc }, true));
-            $scope.regionPartsREGION = $scope.regionPartsREGION.map(function (regionPart) {
+            $scope.regionPartsCopy = angular.copy($rootScope.regionParts).map(function (regionPart) {
                 regionPart.isUser = $scope.user.regionParts.some(function (userRegionPart) {
                     return userRegionPart.RegionPartId === regionPart.Id;
                 });
@@ -146,31 +143,55 @@ userControllers.controller('editUserController', ['$rootScope', '$scope', '$loca
 
         $scope.completeEditingUserPrecincts = function () {
             $scope.load.loadingUserPrecincts = true;
-            userData.getUserPrecinctsByUserId({ userId: $scope.user.Id },function (data) {
+            getUserPrecincts(function(data) {
                 $scope.isEditingUserPrecincts = false;
                 $scope.load.loadingUserPrecincts = false;
-                $scope.user.precincts = data.value;
-                $scope.precincts = null;
-            },errorHandler);
+                $scope.user.precincts = data;
+                $scope.precincts = null; 
+            });
         };
 
         $scope.completeEditingUserRoles = function() {
             $scope.load.loadingUserRoles = true;
-            usersHolder.asyncGetUserRoles($scope.user.Id).then(function(userRoles) {
+            getUserRoles(function(data) {
                 $scope.isEditingUserRoles = false;
                 $scope.load.loadingUserRoles = false;
-                $scope.user.roles = userRoles;
+                $scope.user.roles = data;
                 $scope.roles = null;
-            }, errorHandler);
+            });
+            //usersHolder.asyncGetUserRoles($scope.user.Id).then(function(userRoles) {
+            //    $scope.isEditingUserRoles = false;
+            //    $scope.load.loadingUserRoles = false;
+            //    $scope.user.roles = userRoles;
+            //    $scope.roles = null;
+            //}, errorHandler);
         };
 
         $scope.completeEditingUserRegionParts = function () {
             $scope.load.loadingUserRegionParts = true;
-            userData.getUserRegionPartsByUserId({ userId: $scope.user.Id }, function (data) {
+            getUserRegionParts(function(data) {
                 $scope.isEditingUserRegionParts = false;
                 $scope.load.loadingUserRegionParts = false;
-                $scope.user.regionParts = data.value;
-                $scope.regionPartsREGION = null;
+                $scope.user.regionParts = data;
+                $scope.regionPartsCopy = null;
+            });
+        };
+
+        function getUserRegionParts(successCallback) {
+            userData.getUserRegionPartsByUserId({ userId: $scope.user.Id }, function (data) {
+                successCallback(data.value);
+            }, errorHandler);
+        };
+
+        function getUserPrecincts(successCallback) {
+            userData.getUserPrecinctsByUserId({ userId: $scope.user.Id }, function (data) {
+                successCallback(data.value);
+            }, errorHandler);
+        };
+
+        function getUserRoles(successCallback) {
+            usersHolder.asyncGetUserRoles($scope.user.Id).then(function (userRoles) {
+                successCallback(userRoles);
             }, errorHandler);
         };
 
@@ -196,7 +217,7 @@ userControllers.controller('editUserController', ['$rootScope', '$scope', '$loca
             serviceUtil.copyProperties($scope.user, userRaw);
             userData.update({ id: $scope.user.Id }, userRaw, function() {
                 $scope.saving.user = false;
-                usersHolder.updateElem($scope.user);
+                usersHolder.update($scope.user);
                 usersHolder.sort();
                 $rootScope.successMsg = 'Зміни успішно збережено!';
             }, errorHandler);
@@ -237,8 +258,8 @@ userControllers.controller('editUserController', ['$rootScope', '$scope', '$loca
                 raw[rawScheme.secondProp] = item[rawScheme.itemProp];
                 userData[method](raw, function () {
                     item.isUser = false;
-                    var ind = selectedItems[arrName].indexOf(item);
-                    if (ind >= 0) selectedItems[arrName].splice(ind, 1);
+                    //var ind = selectedItems[arrName].indexOf(item);
+                    //if (ind >= 0) selectedItems[arrName].splice(ind, 1);
                     def.resolve();
                 }, function (err) { def.reject(err) });
                 return def.promise;
@@ -254,7 +275,7 @@ userControllers.controller('editUserController', ['$rootScope', '$scope', '$loca
         function saveRangeAsync(arr, method, rawScheme) {
             var def = $q.defer(), total, countSaved = 0,
                 itemsWithoutUser = arr.filter(function (item) { return !item.isUser });
-            total = precinctsWithoutUser.length;
+            total = itemsWithoutUser.length;
             if (total === 0) def.resolve();
             itemsWithoutUser.forEach(function (item) {
                 var raw = {};
@@ -271,47 +292,35 @@ userControllers.controller('editUserController', ['$rootScope', '$scope', '$loca
 
          
         $scope.saveUserPrecinctChanges = function () {
+
+            function precinctsToUserPrecincts(precinct) {
+                return { UserId: $scope.user.Id, PrecinctId: precinct.Id };
+            };    
+            
             $rootScope.errorMsg = '';
+
             if ($scope.isEditingUserRegionParts) {
                 var ok = confirm("Увага! Дані в таблиці 'Райони' будуть оновлені.\n Всі не збережені зміни будуть скасовані, продовжити?");
                 if (!ok) return;
             }
-            //function syncRemoveUserPrecincts(item) {
-            //    if (!item) return;
-            //    $scope.saving.userPrecincts = true;
-            //    userData.removeUserPrecinct({ userId: $scope.user.Id, precinctId: item.Id }, function () {
-            //        $scope.saving.userPrecincts = false;
-            //        item.isUser = false;
-            //        //deleteItems.precincts.splice(deleteItems.precincts.indexOf(item), 1);
-            //        selectedItems.precincts.splice(selectedItems.precincts.indexOf(item), 1);
-            //        var nextItem = deleteItems.precincts.pop();
-            //        if (nextItem) syncRemoveUserPrecincts(nextItem);
-            //    }, errorHandler);
-            //};
-            //syncRemoveUserPrecincts(deleteItems.precincts.pop());
-            function saveUserPrecinctsAsync() {
-                var def = $q.defer(), countPrecincts, countSavedPrecincts = 0;
-                var precinctsWithoutUser = selectedItems.precincts.filter(function (p) { return !p.isUser });
-                countPrecincts = precinctsWithoutUser.length;
-                if (countPrecincts === 0) def.resolve();
-                precinctsWithoutUser.forEach(function (item) {
-                    userData.saveUserPrecinct({ UserId: $scope.user.Id, PrecinctId: item.Id }, function () {
-                        item.isUser = true;
-                        countSavedPrecincts++;
-                        if (countSavedPrecincts === countPrecincts) def.resolve();
-                    }, function (err) { def.reject(err) });
-                });
-                return def.promise;
-            }
-            
-            var rawScheme = { firstProp: 'userId', secondProp: 'precinctId', itemProp: 'Id' };
+
             $scope.saving.userPrecincts = true;
-            removeRangeAsync('precincts', 'removeUserPrecinct', rawScheme).then(function () {
-                rawScheme.secondProp = 'PrecinctId';
-                saveRangeAsync(selectedItems.precincts, 'saveUserPrecinct', rawScheme).then(function () {
+
+            userData.removeRangeUserPrecincts({ "Array": deleteItems.precincts.map(precinctsToUserPrecincts) }, function () {
+                var userPrecinctsWithoutUser = selectedItems.precincts.filter(function (p) { return !p.isUser });
+                userData.saveRangeUserPrecincts({ "Array": userPrecinctsWithoutUser.map(precinctsToUserPrecincts) }, function () {
+                    deleteItems.precincts.forEach(function (item) {
+                        item.isUser = false;
+                    });
+                    deleteItems.precincts = [];
+                    userPrecinctsWithoutUser.forEach(function (item) { item.isUser = true });
+
                     $scope.saving.userPrecincts = false;
                     if ($scope.isEditingUserRegionParts) {
-                        $scope.onEditUserRegionParts();
+                        getUserRegionParts(function (data) {
+                            $scope.user.regionParts = data;
+                            $scope.onEditUserRegionParts();
+                        });                    
                     } else {
                         $scope.completeEditingUserRegionParts();
                     }
@@ -324,34 +333,38 @@ userControllers.controller('editUserController', ['$rootScope', '$scope', '$loca
             $scope.saving.userRoles = true;
             var rawScheme = { firstProp: 'UserId', secondProp: 'RoleName', itemProp: 'Name' };
             removeRangeAsync('roles', 'removeUserRole', rawScheme).then(function () {
-                $scope.saving.userRoles = false;
-                selectedItems.roles.forEach(function (role) {
-                    if (!role.isUser) {
-                        $scope.saving.userRoles = true;
-                        userData.saveUserRole({ UserId: $scope.user.Id, RoleName: role.Name }, function () {
-                            $scope.saving.userRoles = false;
-                            role.isUser = true;
-                        }, errorHandler);
-                    }
-                });
+                saveRangeAsync(selectedItems.roles, 'saveUserRole', rawScheme).then(function () {
+                    getUserRoles(function(roles) {
+                        $scope.saving.userRoles = false;
+                        usersHolder.updateRoles(roles);
+                    });
+                }, errorHandler);
             }, errorHandler);            
         };
 
         $scope.saveUserRegionPartsChanges = function () {
             $rootScope.errorMsg = '';
+
+            if ($scope.isEditingUserPrecincts) {
+                var ok = confirm("Увага! Дані в таблиці 'Дільниці' будуть оновлені.\n Всі не збережені зміни будуть скасовані, продовжити?");
+                if (!ok) return;
+            }
+
             $scope.saving.userRegionParts = true;
             var rawScheme = { firstProp: 'userId', secondProp: 'regionPartId', itemProp: 'Id' };
             removeRangeAsync('regionParts', 'removeUserRegionPart', rawScheme).then(function () {
-                $scope.saving.userRegionParts = false;
-                selectedItems.regionParts.forEach(function (regionPart) {
-                    if (!regionPart.isUser) {
-                        $scope.saving.userRegionParts = true;
-                        userData.saveUserRegionPart({ UserId: $scope.user.Id, RegionPartId: regionPart.Id }, function () {
-                            $scope.saving.userRegionParts = false;
-                            regionPart.isUser = true;
-                        }, errorHandler);
+                rawScheme.secondProp = 'RegionPartId';
+                saveRangeAsync(selectedItems.regionParts, 'saveUserRegionPart', rawScheme).then(function () {
+                    $scope.saving.userRegionParts = false;
+                    if ($scope.isEditingUserPrecincts) {
+                        getUserPrecincts(function(data) {
+                            $scope.user.precincts = data;
+                            $scope.onEditUserPrecincts();
+                        });
+                    } else {
+                        $scope.completeEditingUserPrecincts();
                     }
-                });
+                }, errorHandler);
             }, errorHandler);
         };
 
@@ -382,7 +395,7 @@ userControllers.controller('editUserController', ['$rootScope', '$scope', '$loca
         };
 
         $scope.checkAllUserRegionParts = function () {
-            checkAll($scope.regionPartsREGION, 'regionParts');
+            checkAll($scope.regionPartsCopy, 'regionParts');
         };
 
         $scope.uncheckAllUserPrecincts = function () {
@@ -394,7 +407,7 @@ userControllers.controller('editUserController', ['$rootScope', '$scope', '$loca
         };
         
         $scope.uncheckAllUserRegionParts = function () {
-            uncheckAll($scope.regionPartsREGION, 'regionParts');
+            uncheckAll($scope.regionPartsCopy, 'regionParts');
         };
 
         function getFilteredPrecincts () {
@@ -404,11 +417,6 @@ userControllers.controller('editUserController', ['$rootScope', '$scope', '$loca
         $scope.getFilterExpression = function() {
             return { RegionPartId: $scope.selected.regionPartId, isUser: $scope.checkOnlyUserPrecincts() };
         };
-
-        //$scope.onSelectPrecinct = function ($item, $model, $label) {
-        //    $scope.selected.precinct = $item;
-        //    $scope.selected.precinctId = $model;
-        //};
 
         $scope.onSelectRegionPart = function ($item, $model, $label) {
             $scope.selected.regionPart = $item;
