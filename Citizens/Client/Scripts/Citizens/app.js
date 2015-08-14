@@ -165,8 +165,9 @@ app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider',
         //}).
         when('/logout', {
             resolve: {
-                logout: function ($location, Credentials) {
+                logout: function ($location, Credentials, usersHolder) {
                     Credentials.clear();
+                    usersHolder.removeAll();
                     $location.path('/login');
                 }
             }
