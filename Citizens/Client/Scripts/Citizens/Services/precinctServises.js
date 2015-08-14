@@ -180,13 +180,13 @@ angular.module("precinctServices", ['ngResource'])
                 index = undefined;
                 if (ind != undefined && ind >= 0) index = ind;
             },
-            updateElem: function(elem) {
+            update: function(elem) {
                 if (index >= 0 && elem) districts[index] = elem;
             },
-            addElem: function(elem) {
+            add: function(elem) {
                 if (districts && elem) districts.push(elem);
             },
-            removeElem: function(elem) {
+            remove: function(elem) {
                 districts.splice(this.indexOf(elem), 1);
             },
             isEmpty: function() {
