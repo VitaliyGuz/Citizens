@@ -152,7 +152,7 @@ authServices.factory('authInterceptor', ['$q', '$location', '$rootScope', '$inje
             }
         }
         if (error.status === 403) {
-            error.data = { description: 'У Вас недостатньо прав доступу' };
+            error.data = 'У Вас недостатньо прав доступу';
         }
     };
 

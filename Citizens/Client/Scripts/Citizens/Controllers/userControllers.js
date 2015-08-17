@@ -115,10 +115,23 @@ userControllers.controller('editUserController', ['$rootScope', '$scope', '$loca
         $scope.onEditUserRoles = function() {
             selectedItems.roles = [], deleteItems.roles = [];
             $scope.load.editingUserRoles = true;
+            var ROLE_NAME_SUPERADMINISTRATORS = 'SuperAdministrators'.toLowerCase();
             userData.getRoles(function (roles) {
                 $scope.isEditingUserRoles = true;
                 $scope.load.editingUserRoles = false;
-                $scope.roles = roles.value.map(function(role) {
+                var isSuperAdmin = $rootScope.UserInfo.roles.some(function (role) {
+                    return role.Name.toLowerCase() === ROLE_NAME_SUPERADMINISTRATORS;
+                });
+
+                if (isSuperAdmin) {
+                    $scope.roles = roles.value;
+                } else {
+                    $scope.roles = roles.value.filter(function(role) {
+                        return role.Name.toLowerCase() !== ROLE_NAME_SUPERADMINISTRATORS;
+                    });
+                }
+                
+                $scope.roles = $scope.roles.map(function (role) {
                     role.isUser = $scope.user.roles.some(function (userRole) {
                         return userRole.RoleId === role.Id;
                     });
@@ -159,12 +172,6 @@ userControllers.controller('editUserController', ['$rootScope', '$scope', '$loca
                 $scope.user.roles = data;
                 $scope.roles = null;
             });
-            //usersHolder.asyncGetUserRoles($scope.user.Id).then(function(userRoles) {
-            //    $scope.isEditingUserRoles = false;
-            //    $scope.load.loadingUserRoles = false;
-            //    $scope.user.roles = userRoles;
-            //    $scope.roles = null;
-            //}, errorHandler);
         };
 
         $scope.completeEditingUserRegionParts = function () {

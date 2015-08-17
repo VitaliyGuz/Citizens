@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Globalization;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -27,7 +28,7 @@ namespace Citizens.Controllers.API
     {
         private const string LocalLoginProvider = "Local";
         private ApplicationUserManager _userManager;
-
+        private const string ROLE_NAME_SUPER_ADMIN = "SuperAdministrators";
         public AccountController()
         {
         }
@@ -186,7 +187,12 @@ namespace Citizens.Controllers.API
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
-            }                        
+            }
+
+            if (!HttpContext.Current.User.IsInRole(ROLE_NAME_SUPER_ADMIN) && string.Equals(model.RoleName, ROLE_NAME_SUPER_ADMIN, StringComparison.OrdinalIgnoreCase))
+            {
+                return StatusCode(HttpStatusCode.Forbidden);
+            }
 
             IdentityResult result = await UserManager.AddToRoleAsync(model.UserId, model.RoleName);
 
@@ -206,6 +212,11 @@ namespace Citizens.Controllers.API
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
+            }
+
+            if (!HttpContext.Current.User.IsInRole(ROLE_NAME_SUPER_ADMIN) && string.Equals(model.RoleName, ROLE_NAME_SUPER_ADMIN, StringComparison.OrdinalIgnoreCase))
+            {
+                return StatusCode(HttpStatusCode.Forbidden);
             }
 
             IdentityResult result = await UserManager.RemoveFromRoleAsync(model.UserId, model.RoleName);
