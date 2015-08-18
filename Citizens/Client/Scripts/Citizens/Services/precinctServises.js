@@ -13,7 +13,7 @@ angular.module("precinctServices", ['ngResource'])
             return $resource('', {},
             {
                 'getAll': { method: 'GET', params: { filter: '@filter' }, url: urlOdata + baseExpand + ":filter" + order, cache: false },
-                'getById': { method: 'GET', params: params, url: urlOdata + "(:id)" + baseExpand + "," + addressesExpand + "," + districtsExpand },
+                'getById': { method: 'GET', params: params, url: urlOdata + "(:id)" + baseExpand + "," + districtsExpand },
                 'getByIdNotExpand': { method: 'GET', params: params, url: urlOdata + "(:id)" },
                 'getAllNotExpand': { method: 'GET', url: urlOdata + "?$orderby=Number asc", cache: false },
                 'getByRegionPartId': { method: 'GET', params: { regionPartId: '@regionPartId' }, url: urlOdata + baseExpand + "&$filter=RegionPartId eq :regionPartId", cache: false },
@@ -42,7 +42,7 @@ angular.module("precinctServices", ['ngResource'])
                 'save': { method: "POST", url: urlOdata },
                 'remove': { method: 'DELETE', params: params, url: urlOdata + "(:id)" },
                 'getTypes': { method: 'GET', url: urlDistrictTypes, cache: true },
-                'getPrecinctDistricts': { method: 'GET', params: paramKey, url: urlDistrictPrecincts + key + '?$expand=District($expand=DistrictType)' },
+                'getPrecinctDistrict': { method: 'GET', params: paramKey, url: urlDistrictPrecincts + key + '?$expand=District($expand=DistrictType)' },
                 'updatePrecinctDistrict': { method: 'PUT', params: paramKey, url: urlDistrictPrecincts + key },
                 'savePrecinctDistrict': { method: "POST", url: urlDistrictPrecincts },
                 'removePrecinctDistrict': { method: 'DELETE', params: paramKey, url: urlDistrictPrecincts + key }
@@ -52,20 +52,21 @@ angular.module("precinctServices", ['ngResource'])
     .factory("precinctAddressesData", [
         '$resource', 'config', function($resource, config) {
             var urlOdata = config.baseUrl + '/odata/PrecinctAddresses',
+                expand = "City($expand=CityType,RegionPart),Street($expand=StreetType)",
                 params = { cityId: "@cityId", streetId: "@streetId", house: "@house" },
                 key = "(CityId=:cityId,StreetId=:streetId,House=':house')";
             return $resource('', {},
             {
-                'query': { method: 'GET', params: params, url: urlOdata +key + "?$expand=City($expand=CityType,RegionPart),Street($expand=StreetType)" },
-                'getAllByKeys': { method: 'GET', params: { filter: '@filter' }, url: urlOdata +"?$expand=Precinct" + ":filter" },
+                'query': { method: 'GET', params: params, url: urlOdata + key + "?$expand=" + expand },
+                'getAllByPrecinctId': { method: 'GET', params: { precinctId: '@precinctId' }, url: urlOdata + "?$expand=" + expand + "&$filter=PrecinctId eq :precinctId" },
                 'save': { method: "POST", url: urlOdata },
                 'update': { method: 'PUT', params: params, url: urlOdata + key },
                 'remove': { method: 'DELETE', params: params, url: urlOdata + key }
             });
         }
     ])
-    .factory('dataForEditPrecinctPage', [
-        '$q', 'serviceUtil', 'precinctData', 'districtData', 'userData', 'usersHolder', function($q, serviceUtil, precinctData, districtData, userData, usersHolder) {
+    .factory('dataForEditPrecinctPage', ['$q', 'serviceUtil', 'precinctData', 'districtData', 'userData', 'usersHolder', 'precinctAddressesData',
+        function ($q, serviceUtil, precinctData, districtData, userData, usersHolder, precinctAddressesData) {
 
             function getPrecinctPromise(routeParam) {
                 var deferred = $q.defer();
@@ -73,8 +74,23 @@ angular.module("precinctServices", ['ngResource'])
                     precinctData.getById({ id: routeParam }, function(res) {
                         deferred.resolve(res);
                     }, function(err) {
-                        err.description = 'Дільницю не знайдено',
-                            deferred.reject(serviceUtil.getErrorMessage(err));
+                        err.description = 'Дільницю не знайдено';
+                        deferred.reject(serviceUtil.getErrorMessage(err));
+                    });
+                } else {
+                    deferred.resolve();
+                }
+                return deferred.promise;
+            };
+            
+            function getPrecinctAddressesPromise(routeParam) {
+                var deferred = $q.defer();
+                if (routeParam) {
+                    precinctAddressesData.getAllByPrecinctId({ precinctId: routeParam }, function (res) {
+                        deferred.resolve(res.value);
+                    }, function (err) {
+                        err.description = 'Адреси дільниці не завантажено';
+                        deferred.reject(serviceUtil.getErrorMessage(err));
                     });
                 } else {
                     deferred.resolve();
@@ -128,16 +144,16 @@ angular.module("precinctServices", ['ngResource'])
                 return deferred.promise;
             };
 
-            function getPrecinctsPromise() {
-                var deferred = $q.defer();
-                precinctData.getAllNotExpand(function(res) {
-                    deferred.resolve(res.value);
-                }, function(err) {
-                    err.description = 'Дільниці не завантажено',
-                        deferred.reject(serviceUtil.getErrorMessage(err));
-                });
-                return deferred.promise;
-            };
+            //function getPrecinctsPromise() {
+            //    var deferred = $q.defer();
+            //    precinctData.getAllNotExpand(function(res) {
+            //        deferred.resolve(res.value);
+            //    }, function(err) {
+            //        err.description = 'Дільниці не завантажено',
+            //            deferred.reject(serviceUtil.getErrorMessage(err));
+            //    });
+            //    return deferred.promise;
+            //};
 
             return {
                 asyncLoad: function(routeParam) {
@@ -159,6 +175,7 @@ angular.module("precinctServices", ['ngResource'])
                     //return deferred.promise;
                     return $q.all({
                         precinct: getPrecinctPromise(routeParam),
+                        precinctAddresses: getPrecinctAddressesPromise(routeParam),
                         districts: getDistrictsPromise(),
                         userPrecincts: getUserPrecintcsPromise(routeParam)
                         //precincts: getPrecinctsPromise() // precincts async loading in controller

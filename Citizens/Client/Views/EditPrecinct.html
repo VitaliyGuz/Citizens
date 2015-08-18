@@ -96,9 +96,9 @@
             </form>
         </div>
         <br/>
-        <scrollable-table watch="precinctAddresses">
-            <table class="table table-striped table-bordered">
-                <thead>
+        <!--<scrollable-table watch="precinctAddresses">-->
+        <table class="table table-striped table-bordered">
+            <thead>
                 <tr>
                     <th>№</th>
                     <th>Населений пункт</th>
@@ -113,21 +113,49 @@
                         </button>
                     </th>
                 </tr>
-                </thead>
-                <tbody>
-                <tr ng-show="addAddressMode" ng-include="'edit'"></tr>
-                <tr ng-repeat="address in precinctAddresses| filterByFirstChar: query" ng-include="getTemplate(address)"></tr>
-                </tbody>
-            </table>
-        </scrollable-table>
-        <script type="text/ng-template" id="display">
-            <td>{{ $index + 1 }}</td>
+            </thead>
+            <tbody>
+                <tr ng-show="addAddressMode">
+                    <td></td>
+                    <td ng-include="'editCity'"></td>
+                    <td ng-include="'editStreet'"></td>
+                    <td ng-include="'editHouse'"></td>
+                    <td ng-include="'editHouseType'"></td>
+                    <td ng-include="'editApartments'"></td>
+                    <td ng-include="'editBtn'"></td>
+                </tr>
+                <tr dir-paginate="address in precinctAddresses| filterByFirstChar: query | itemsPerPage: pagination.pageSize" current-page="pagination.currentPage" pagination-id="precinctAddressesPagination">
+                    <td>{{ getIndex($index) + 1 }}</td>
+                    <td ng-include="getTemplate(address,'City')"></td>
+                    <td ng-include="getTemplate(address,'Street')"></td>
+                    <td ng-include="getTemplate(address,'House')"></td>
+                    <td ng-include="getTemplate(address,'HouseType')"></td>
+                    <td ng-include="getTemplate(address,'Apartments')"></td>
+                    <td ng-if="changingPresinct" ng-include="getTemplate(address,'Number')"></td>
+                    <td ng-include="getTemplate(address,'Btn')"></td>
+
+                </tr>
+            </tbody>
+        </table>
+        <dir-pagination-controls boundary-links="true" on-page-change="onPageChange(newPageNumber)" pagination-id="precinctAddressesPagination"></dir-pagination-controls>
+
+        <script type="text/ng-template" id="displayCity">
             <td>{{address.City.CityType.Name}} {{address.City.Name}}</td>
+        </script>
+        <script type="text/ng-template" id="displayStreet">
             <td>{{address.Street.StreetType.Name}} {{address.Street.Name}}</td>
+        </script>
+        <script type="text/ng-template" id="displayHouse">
             <td>{{address.House}}</td>
+        </script>
+        <script type="text/ng-template" id="displayHouseType">
             <td>{{address.HouseType}}</td>
+        </script>
+        <script type="text/ng-template" id="displayApartments">
             <td>{{address.Apartments}}</td>
-            <td ng-show="changingPresinct"></td>
+        </script>
+        <script type="text/ng-template" id="displayNumber"></script>
+        <script type="text/ng-template" id="displayBtn">
             <td>
                 <button class="btn btn-xs" ng-click="editAddress(address)" title="Редагувати">
                     <span class="glyphicon glyphicon-edit"></span>
@@ -138,24 +166,35 @@
                 <button class="btn btn-xs" ng-click="changePrecinct(address)" title="Змінити дільницю">
                     <span class="glyphicon glyphicon-retweet"></span>
                 </button>
-                <button class="btn btn-xs" ng-click="deleteAddress(address,$index)" title="Видалити">
+                <button class="btn btn-xs" ng-click="deleteAddress(address)" title="Видалити">
                     <span class="glyphicon glyphicon-trash"></span>
                 </button>
             </td>
         </script>
-        <script type="text/ng-template" id="changePresinct">
-            <td>{{ $index + 1 }}</td>
+        <script type="text/ng-template" id="changePresinctCity">
             <td>{{address.City.CityType.Name}} {{address.City.Name}}</td>
+        </script>
+        <script type="text/ng-template" id="changePresinctStreet">
             <td>{{address.Street.StreetType.Name}} {{address.Street.Name}}</td>
+        </script>
+        <script type="text/ng-template" id="changePresinctHouse">
             <td>{{address.House}}</td>
+        </script>
+        <script type="text/ng-template" id="changePresinctHouseType">
             <td>{{address.HouseType}}</td>
+        </script>
+        <script type="text/ng-template" id="changePresinctApartments">
             <td>{{address.Apartments}}</td>
+        </script>
+        <script type="text/ng-template" id="changePresinctNumber">
             <td>
                 <input type="text" ng-change="selected.newPrecinctId=0" typeahead-on-select="onSelectPrecinctNumber($item, $model, $label)" ng-model="selected.newPrecinct"
                        typeahead="p.Id as p.Number for p in precincts | filter: {Number:$viewValue} | orderByStartsWith:{Number:$viewValue} | limitTo:10" class="form-control">
             </td>
+        </script>
+        <script type="text/ng-template" id="changePresinctBtn">
             <td>
-                <button ng-click="saveChangesPrecinct(address,$index)" class="btn btn-sm btn-success" title="Зберегти зміни">
+                <button ng-click="saveChangesPrecinct(address)" class="btn btn-sm btn-success" title="Зберегти зміни">
                     <span class="glyphicon glyphicon-save"></span>
                     <i ng-show="saving.address" class="fa fa-refresh fa-spin"></i>
                 </button>
@@ -164,25 +203,35 @@
                 </button>
             </td>
         </script>
-        <script type="text/ng-template" id="edit">
-            <td>{{ $index + 1 }}</td>
+        <script type="text/ng-template" id="editCity">
             <td>
                 <input type="text" ng-change="selected.address.CityId=0" typeahead-on-select="onSelectCity($item, $model, $label,selected.address)" ng-model="selected.address.City"
-                       typeahead="c.Id as c.CityType.Name +' '+c.Name + ' (' + c.RegionPart.Name + ' р-н)' for c in cities | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control" placeholder="Населений пункт">
+                        typeahead="c.Id as c.CityType.Name +' '+c.Name + ' (' + c.RegionPart.Name + ' р-н)' for c in cities | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control" placeholder="Населений пункт">
             </td>
+        </script>
+        <script type="text/ng-template" id="editStreet">
             <td>
                 <input type="text" ng-change="selected.address.StreetId=0" typeahead-on-select="onSelectStreet($item, $model, $label,selected.address)" ng-model="selected.address.Street"
-                       typeahead="s.Id as s.StreetType.Name +' '+ s.Name for s in streets | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control" placeholder="Вулиця">
+                        typeahead="s.Id as s.StreetType.Name +' '+ s.Name for s in streets | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control" placeholder="Вулиця">
             </td>
+        </script>
+        <script type="text/ng-template" id="editHouse">
             <td><input class="form-control" ng-model="selected.address.House" style="width:90px"></td>
+        </script>
+        <script type="text/ng-template" id="editHouseType">
             <td>
                 <select class="form-control" ng-model="selected.address.HouseType" ng-options="ht as ht for ht in houseTypes" style="width:150px">
                     <option value='' disabled>-Вибрати-</option>
                 </select>
             </td>
-            <td><input class="form-control" ng-model="selected.address.Apartments" type="number" style="width:70px"></td>
+        </script>
+        <script type="text/ng-template" id="editApartments">
+            <td><input class="form-control" ng-model="selected.address.Apartments" type="number" style="width: 70px"></td>
+        </script>
+        <script type="text/ng-template" id="editNumber"></script>
+        <script type="text/ng-template" id="editBtn">
             <td>
-                <button ng-click="saveAddress(address,$index)" class="btn btn-sm btn-success" title="Зберегти зміни">
+                <button ng-click="saveAddress(address)" class="btn btn-sm btn-success" title="Зберегти зміни">
                     <span class="glyphicon glyphicon-save"></span>
                     <i ng-show="saving.address" class="fa fa-refresh fa-spin"></i>
                 </button>

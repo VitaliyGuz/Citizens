@@ -33,7 +33,7 @@
         </tr>
     </thead>
     <tbody>
-        <tr dir-paginate="precinct in precincts | itemsPerPage: pageSize" current-page="currentPage" total-items="totalItems" pagination-id="precinctsPagination">
+        <tr dir-paginate="precinct in precincts | itemsPerPage: pagination.pageSize" current-page="pagination.currentPage" total-items="pagination.totalItems" pagination-id="precinctsPagination">
             <td>{{ getIndex($index) }}</td>
             <td>{{ precinct.Number }}</td>
             <td>{{ precinct.Street.StreetType.Name }}{{ precinct.Street.Name }}, {{ precinct.House }}, {{ precinct.City.CityType.Name }}{{ precinct.City.Name }}, {{ precinct.City.RegionPart.Name }} р-н.</td>
