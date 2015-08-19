@@ -1,7 +1,7 @@
 ﻿<!--<h3>Дільниця</h3>
 <h5 ng-show="loading">Завантаження... <i class="fa fa-refresh fa-spin"></i></h5>-->
 <hr/>
-<div class="container form-inline">
+<!--<div class="container form-inline">
     <label>Пошук:</label>
     <input ng-model="query[queryBy]" type="text" class="form-control" placeholder="Введіть слово">
     <label>по:</label>
@@ -9,11 +9,11 @@
         <option ng-repeat="option in options" value="{{option.value}}">{{option.desc}}</option>
     </select>
 </div>
-<hr />
+<hr />-->
 <form ng-submit="save()">
     <div class="container row form-horizontal">
         <div class="form-group col-lg-2">
-            <label>Дільниця</label>
+            <label>Номер</label>
             <input ng-model="precinct.Number" type="text" class="form-control" required>
         </div>
         <div class="form-group col-lg-3">
@@ -101,12 +101,54 @@
             <thead>
                 <tr>
                     <th>№</th>
-                    <th>Населений пункт</th>
-                    <th>Вулиця</th>
-                    <th>Буд.</th>
-                    <th>Тип будинку</th>
+                    <th class="col-sm-3" title="Редагування здійснюється подвійним натиснення лівої кнопки миші на назві колонки">
+                        <span ng-hide="theadEditing.city" ng-dblclick="onDblClickThead('city')">Населений пункт <span class="glyphicon glyphicon-filter"></span></span>
+                        <div ng-show="theadEditing.city" class="input-group">
+                            <input type="text" typeahead=" c.Name for c in cities | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" 
+                                   ng-model="query.city.name" class="form-control" placeholder="Населений пункт" autofocus>
+                            <span class="input-group-btn">
+                                <button type="button" class="btn btn-default" ng-click="doneEditingThead('city')" title="Скасувати фільтр">
+                                    <span class="glyphicon glyphicon-remove"></span>
+                                </button>
+                            </span>
+                        </div>
+                    </th>
+                    <th class="col-sm-3" title="Редагування здійснюється подвійним натиснення лівої кнопки миші на назві колонки">
+                        <span ng-hide="theadEditing.street" ng-dblclick="onDblClickThead('street')">Вулиця <span class="glyphicon glyphicon-filter"></span></span>
+                        <div ng-show="theadEditing.street" class="input-group">
+                            <input type="text" typeahead=" s.Name for s in streets | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10"
+                                   ng-model="query.street.name" class="form-control" placeholder="Вулиця" autofocus>
+                            <span class="input-group-btn">
+                                <button type="button" class="btn btn-default" ng-click="doneEditingThead('street')" title="Скасувати фільтр">
+                                    <span class="glyphicon glyphicon-remove"></span>
+                                </button>
+                            </span>
+                        </div>
+                    </th>
+                    <th class="col-sm-2" title="Редагування здійснюється подвійним натиснення лівої кнопки миші на назві колонки">
+                        <span ng-hide="theadEditing.house" ng-dblclick="onDblClickThead('house')">Буд. <span class="glyphicon glyphicon-filter"></span></span>
+                        <div ng-show="theadEditing.house" class="input-group">
+                            <input type="text" ng-model="query.house.num" class="form-control" placeholder="№ буд." autofocus>
+                            <span class="input-group-btn">
+                                <button type="button" class="btn btn-default" ng-click="doneEditingThead('house')" title="Скасувати фільтр">
+                                    <span class="glyphicon glyphicon-remove"></span>
+                                </button>
+                            </span>
+                        </div>
+                    </th>
+                    <th class="col-sm-2" title="Редагування здійснюється подвійним натиснення лівої кнопки миші на назві колонки">
+                        <span ng-hide="theadEditing.houseType" ng-dblclick="onDblClickThead('houseType')">Тип будинку <span class="glyphicon glyphicon-filter"></span></span>
+                        <div ng-show="theadEditing.houseType" class="input-group">
+                            <select class="form-control" ng-model="query.houseType.name" ng-options="ht as ht for ht in houseTypes"></select>
+                            <span class="input-group-btn">
+                                <button type="button" class="btn btn-default" ng-click="doneEditingThead('houseType')" title="Скасувати фільтр">
+                                    <span class="glyphicon glyphicon-remove"></span>
+                                </button>
+                            </span>
+                        </div>
+                    </th>
                     <th>К-сть квартир</th>
-                    <th ng-show="changingPresinct">Нова дільниця</th>
+                    <th class="col-sm-2" ng-show="changingPresinct">Нова дільниця</th>
                     <th>
                         <button ng-click="addNewAddress()" class="btn btn-sm btn-success" title="Створити нову адресу">
                             <span class="glyphicon glyphicon-plus"></span> Додати адресу
@@ -124,7 +166,7 @@
                     <td ng-include="'editApartments'"></td>
                     <td ng-include="'editBtn'"></td>
                 </tr>
-                <tr dir-paginate="address in precinctAddresses| filterByFirstChar: query | itemsPerPage: pagination.pageSize" current-page="pagination.currentPage" pagination-id="precinctAddressesPagination">
+                <tr dir-paginate="address in precinctAddresses | filter: {City: { Name: query.city.name }, Street: { Name: query.street.name }, House: query.house.num, HouseType: query.houseType.name} | itemsPerPage: pagination.pageSize" current-page="pagination.currentPage" pagination-id="precinctAddressesPagination">
                     <td>{{ getIndex($index) + 1 }}</td>
                     <td ng-include="getTemplate(address,'City')"></td>
                     <td ng-include="getTemplate(address,'Street')"></td>
@@ -216,11 +258,11 @@
             </td>
         </script>
         <script type="text/ng-template" id="editHouse">
-            <td><input class="form-control" ng-model="selected.address.House" style="width:90px"></td>
+            <td><input class="form-control" ng-model="selected.address.House" ></td>
         </script>
         <script type="text/ng-template" id="editHouseType">
             <td>
-                <select class="form-control" ng-model="selected.address.HouseType" ng-options="ht as ht for ht in houseTypes" style="width:150px">
+                <select class="form-control" ng-model="selected.address.HouseType" ng-options="ht as ht for ht in houseTypes" >
                     <option value='' disabled>-Вибрати-</option>
                 </select>
             </td>

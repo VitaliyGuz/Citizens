@@ -122,12 +122,13 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
         };
         
         $scope.query = {};
-        $scope.options = [
-              { value: "City.Name", desc: "Населений пункт" },
-              { value: "Street.Name", desc: "Вулиця" },
-              { value: "House", desc: "Буд" }
-        ];
-        $scope.queryBy = 'City.Name';
+        //$scope.options = [
+        //      { value: "City.Name", desc: "Населений пункт" },
+        //      { value: "Street.Name", desc: "Вулиця" },
+        //      { value: "House", desc: "Буд" }
+        //];
+        //$scope.queryBy = 'City.Name';
+
         $scope.precinctAddresses = [];
         $scope.userPrecincts = [];
         $scope.districts = [];
@@ -721,7 +722,7 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
             editableAddress = address;
         };
 
-        $scope.saveChangesPrecinct = function (selectedAddresss) {
+        $scope.saveChangesPrecinct = function (selectedAddress) {
             if (!$scope.selected.newPrecinctId) {
                 $rootScope.errorMsg = "Не вірний номер дільниці";
                 return;
@@ -784,6 +785,19 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
         $scope.onPageChange = function(newPageNumber) {
             $scope.pagination.currentPage = newPageNumber;
         };
+
+        $scope.onDblClickThead = function (propName) {
+            if (!$scope.theadEditing) {
+                $scope.theadEditing = {};
+            }
+            $scope.theadEditing[propName] = true;
+        };
+
+        $scope.doneEditingThead = function (propName) {
+            $scope.theadEditing[propName] = false;
+            $scope.query[propName] = {};
+        };
+
     }]);
 
 precinctControllers.controller('geocodingController', ['$scope', '$rootScope', '$timeout', 'precinctData', 'serviceUtil', 'refreshToken', function ($scope, $rootScope, $timeout, precinctData, serviceUtil, refreshToken) {
