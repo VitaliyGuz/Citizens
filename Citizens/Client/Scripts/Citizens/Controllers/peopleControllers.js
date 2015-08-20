@@ -8,7 +8,7 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
         
         $rootScope.pageTitle = 'Фізичні особи';
         $scope.saving = false;
-        $scope.filterQuery = {};
+        $scope.query = {};
 
         $scope.currentPage = serviceUtil.getRouteParam("currPage") || 1;
         
@@ -24,7 +24,7 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
         var peopleQuerySettings = filterSettings.get('people');
         //var personNameQuery = filterSettings.get('people_name');
         if (peopleQuerySettings) {
-            if (peopleQuerySettings.props) $scope.filterQuery = peopleQuerySettings.props;
+            if (peopleQuerySettings.props) $scope.query = peopleQuerySettings.props;
             if (peopleQuerySettings.additionalProps) {
                 angular.forEach($scope.propKeys, function(propKey) {
                     var findedKeys = peopleQuerySettings.additionalProps.filter(function (query) {
@@ -177,8 +177,14 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
 
         function getODataFilterQuery() {
             var filterStr = '', filterInnerStr = '',
-                filterQuery = $scope.filterQuery,
-                filterPattern = "startswith(:fieldName, ':val') eq true",
+                filterQuery = $scope.query,
+                //filterPattern = "substringof(:fieldName, ':val') eq true",
+                filterPatterns = {
+                    string: "indexof(:fieldName,':val') ne -1",
+                    num: ":fieldName eq :val",
+                    ref: ":fieldNameId eq :val",
+                    interval: ":fieldName ge :from and :fieldName le :to"
+                },
                 filterBasePatternProp = "PersonAdditionalProperties/any(p::innerPattern and p/PropertyKeyId eq :propKeyId)",
                 filterPatternProp = filterBasePatternProp.replace(':innerPattern',"p/:fieldName eq :val"),
                 filterPatternPropInterval = filterBasePatternProp.replace(':innerPattern', "p/:fieldName ge :from and p/:fieldName le :to"),
@@ -191,12 +197,19 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
                 }
                 return baseStr;
             };
-            // filter by base fields
-            for (var prop in filterQuery) {
-                if (filterQuery.hasOwnProperty(prop)) {
-                    var val = filterQuery[prop];
+            // filter by base properties
+            //for (var prop in filterQuery) {
+            //    if (filterQuery.hasOwnProperty(prop)) {
+            //        var val = filterQuery[prop];
+            //        if (!val || val.length === 0) continue;
+            //        filterStr = concatIfExist(filterStr, " and ") + filterPattern.replace(':fieldName', prop).replace(':val', val);
+            //    }
+            //}
+            for (var prop in filterQuery.string) {
+                if (filterQuery.string.hasOwnProperty(prop)) {
+                    var val = filterQuery.string[prop];
                     if (!val || val.length === 0) continue;
-                    filterStr = concatIfExist(filterStr, " and ") + filterPattern.replace(':fieldName', prop).replace(':val', val);
+                    filterStr = concatIfExist(filterStr, " and ") + filterPatterns.string.replace(/:fieldName/g, prop).replace(/:val/g, val);
                 }
             }
             // filter by additional properties
@@ -240,7 +253,7 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
             if (filterQuery.length > 0) {
                 odataFilter = '&$filter=' + filterQuery;
                 filterSettings.set('people', {
-                    props: angular.copy($scope.filterQuery),
+                    props: angular.copy($scope.query),
                     additionalProps: angular.copy($scope.propKeys.filter(function(key) {
                         return key.input != undefined;
                     })),
@@ -297,7 +310,7 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
                 angular.forEach($scope.propKeys, function (propKey) {
                     if (propKey.input) propKey.input = undefined;
                 });
-                $scope.filterQuery = {};
+                $scope.query = {};
                 odataFilter = undefined;
                 filterSettings.remove('people');
                 setPeopleOnPage();

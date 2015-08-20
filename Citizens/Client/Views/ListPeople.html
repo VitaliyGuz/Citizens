@@ -6,7 +6,7 @@
 <script src="Scripts/AngularUtils/directives/ui-bootstrap-typeahead-tpls-0.12.1.min.js"></script>-->
 <!--<h3>Фізичні особи</h3>-->
 <h5 ng-show="loadingPeople" class="help-block">Завантаження... <i class="fa fa-refresh fa-spin"></i></h5>
-<hr>
+<!--<hr>
 <div class="row">
     <form ng-submit="applyFilter()">
         <div class="col-md-3">
@@ -26,61 +26,123 @@
             <span class="glyphicon glyphicon-remove-sign"></span>
         </button>
     </form>
-</div>
+</div>-->
 <hr>
 <div ng-show="showFilters" style="height:400px;">
-    <div class="row col-lg-3" style="overflow-y: scroll;height:380px;">
-        <div class="form-group" ng-repeat="propKey in propKeys">
-            <div ng-switch="propKey.PropertyType.html">
-                <div ng-switch-when="text">
-                    <label>{{propKey.Name}}:</label>
-                    <input type="{{propKey.PropertyType.html}}" ng-model="propKey.input" class="form-control">
-                </div>
-                <div ng-switch-when="date">
-                    <label>{{propKey.Name}}:</label>
-                    з <input type="text" ng-model="propKey.input.from" datepicker class="form-control" placeholder="дд.мм.рррр">
-                    по <input type="text" ng-model="propKey.input.to" datepicker class="form-control" placeholder="дд.мм.рррр">
-                </div>
-                <div ng-switch-when="number">
-                    <label>{{propKey.Name}}:</label>
-                    з <input type="number" ng-model="propKey.input.from" class="form-control">
-                    по <input type="number" ng-model="propKey.input.to" class="form-control">
-                </div>
-                <div ng-switch-when="ref">
-                    <label>{{propKey.Name}}:</label>
-                    <div class="checkbox">
-                        <label ng-repeat="v in getPropertyValuesByKeyId(propKey.Id)" class="checkbox">
-                            <input type="checkbox" ng-click="toggleSelection(propKey,v)" ng-checked="checkedPropValue(propKey,v)" />{{v.Value}}
-                        </label>
+    <div style="overflow-y: scroll; height: 380px;">
+        <div class="col-lg-3">
+            <div class="form-group" ng-repeat="propKey in propKeys">
+                <div ng-switch="propKey.PropertyType.html">
+                    <div ng-switch-when="text">
+                        <label>{{propKey.Name}}:</label>
+                        <input type="{{propKey.PropertyType.html}}" ng-model="propKey.input" class="form-control">
+                    </div>
+                    <div ng-switch-when="date">
+                        <label>{{propKey.Name}}:</label>
+                        з <input type="text" ng-model="propKey.input.from" datepicker class="form-control" placeholder="дд.мм.рррр">
+                        по <input type="text" ng-model="propKey.input.to" datepicker class="form-control" placeholder="дд.мм.рррр">
+                    </div>
+                    <div ng-switch-when="number">
+                        <label>{{propKey.Name}}:</label>
+                        з <input type="number" ng-model="propKey.input.from" class="form-control">
+                        по <input type="number" ng-model="propKey.input.to" class="form-control">
+                    </div>
+                    <div ng-switch-when="ref">
+                        <label>{{propKey.Name}}:</label>
+                        <div class="checkbox">
+                            <label ng-repeat="v in getPropertyValuesByKeyId(propKey.Id)" class="checkbox">
+                                <input type="checkbox" ng-click="toggleSelection(propKey,v)" ng-checked="checkedPropValue(propKey,v)"/>{{v.Value}}
+                            </label>
+                        </div>
+                    </div>
+                    <div ng-switch-when="refCity">
+                        <label>{{propKey.Name}}:</label>
+                        <input type="text" typeahead-on-select="onSelectFilterCity($item, $model, $label, propKey.input)" ng-model="propKey.input.City"
+                               typeahead="c.Id as c.CityType.Name +' '+c.Name + ' (' + c.RegionPart.Name + ' р-н)' for c in cities | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control" required>
+                    </div>
+                    <div ng-switch-when="refStreet">
+                        <label>{{propKey.Name}}:</label>
+                        <input type="text" typeahead-on-select="onSelectFilterStreet($item, $model, $label, propKey.input)" ng-model="propKey.input.Street"
+                               typeahead="s.Id as s.StreetType.Name +' '+ s.Name for s in streets | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control" required>
                     </div>
                 </div>
-                <div ng-switch-when="refCity">
-                    <label>{{propKey.Name}}:</label>
-                    <input type="text" typeahead-on-select="onSelectFilterCity($item, $model, $label, propKey.input)" ng-model="propKey.input.City"
-                           typeahead="c.Id as c.CityType.Name +' '+c.Name + ' (' + c.RegionPart.Name + ' р-н)' for c in cities | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control" required>
-                </div>
-                <div ng-switch-when="refStreet">
-                    <label>{{propKey.Name}}:</label>
-                    <input type="text" typeahead-on-select="onSelectFilterStreet($item, $model, $label, propKey.input)" ng-model="propKey.input.Street"
-                           typeahead="s.Id as s.StreetType.Name +' '+ s.Name for s in streets | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control" required>
-                </div>
+                <hr/>
             </div>
-            <hr />
+            <!--<button ng-click="applyFilter()" class="btn btn-sm btn-success">
+                <span class="glyphicon glyphicon-filter"></span> Застосувати
+                <i ng-show="filtering" class="fa fa-refresh fa-spin"></i>
+            </button>
+            <button ng-click="resetFilter()" class="btn btn-sm btn-success">
+                <span class="glyphicon glyphicon-remove-sign"></span> Скасувати
+            </button>-->
         </div>
-        <button ng-click="applyFilter()" class="btn btn-sm btn-success">
-            <span class="glyphicon glyphicon-filter"></span> Застосувати
-            <i ng-show="filtering" class="fa fa-refresh fa-spin"></i>
-        </button>
-        <button ng-click="resetFilter()" class="btn btn-sm btn-success">
-            <span class="glyphicon glyphicon-remove-sign"></span> Скасувати
-        </button>
+        <!-- Base person properties  -->
+        <div class="col-lg-3">
+            <div class="form-group">
+                <label>Прізвище:</label>
+                <input ng-model="query.string.LastName" type="text" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>Ім'я:</label>
+                <input ng-model="query.string.FirstName" type="text" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>По-батькові:</label>
+                <input ng-model="query.string.MidleName" type="text" class="form-control">
+            </div>
+            <hr/>
+            <div class="form-group">
+                <label>Дата народження:</label>
+                з <input type="text" ng-model="query.interval.date.DateOfBirth.from" datepicker class="form-control" placeholder="дд.мм.рррр">
+                по <input type="text" ng-model="query.interval.date.DateOfBirth.to" datepicker class="form-control" placeholder="дд.мм.рррр">
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <div class="form-group">
+                <label>Населений пункт:</label>
+                <input typeahead="c as c.CityType.Name +' '+c.Name + ' (' + c.RegionPart.Name + ' р-н)' for c in cities | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10"
+                       ng-model="query.ref.City" type="text" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>Вулиця:</label>
+                <input typeahead="s as s.StreetType.Name +' '+ s.Name for s in streets | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10"
+                       ng-model="query.ref.Street" type="text" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>Будинок:</label>
+                з <input type="text" ng-model="query.interval.num.House.from" class="form-control">
+                по <input type="text" ng-model="query.interval.num.House.to" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>Квартира:</label>
+                з <input type="number" ng-model="query.interval.num.Apartment.from" class="form-control">
+                по <input type="number" ng-model="query.interval.num.Apartment.to" class="form-control">
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <div class="form-group">
+                <label>Дільниця</label>
+                <input ng-model="query.num.PrecinctId" type="text" class="form-control">
+            </div>
+        </div>
     </div>
 </div>
 <div class="row">
-    <div class="col-md-12">
+    <div class="col-md-2">
         <button ng-click="addNew()" class="btn btn-sm btn-success">
             <span class="glyphicon glyphicon-plus"></span> Створити нову фіз. особу
+        </button> 
+    </div>
+    <div ng-show="showFilters" class="col-md-4">
+        <button ng-click="applyFilter()" class="btn btn-sm btn-success">
+            <span class="glyphicon glyphicon-filter"></span> Застосувати фільтр
+            <i ng-show="filtering" class="fa fa-refresh fa-spin"></i>
         </button>
+        <button ng-click="resetFilter()" class="btn btn-sm btn-success">
+            <span class="glyphicon glyphicon-remove-sign"></span> Скасувати фільтр
+        </button>
+    </div>
+    <div class="col-md-2">
         <input type="checkbox" ng-model="showFilters" /> Показати фільтри
     </div>
 </div>
@@ -109,5 +171,4 @@
         </tr>
     </tbody>
 </table>
-<hr/>
 <dir-pagination-controls boundary-links="true" on-page-change="onPageChange(newPageNumber)" pagination-id="peoplePagination"></dir-pagination-controls>
