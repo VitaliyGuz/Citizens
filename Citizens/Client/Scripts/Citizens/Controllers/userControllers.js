@@ -2,68 +2,102 @@
 
 var userControllers = angular.module('userControllers', ['userServices']);
 
-userControllers.controller('listUsersController', ['$rootScope', '$location', '$scope', 'config', 'serviceUtil', 'filterSettings', 'userData', 'usersHolder', function ($rootScope, $location, $scope, config, serviceUtil, filterSettings, userData, usersHolder) {
-    $rootScope.pageTitle = 'Користувачі';
-    $scope.currentPage = serviceUtil.getRouteParam("currPage") || 1;
-    $scope.pageSize = config.pageSize;
+userControllers.controller('listUsersController', ['$rootScope', '$location', '$scope', '$filter', '$q', 'config', 'serviceUtil', 'filterSettings', 'userData', 'usersHolder',
+    function ($rootScope, $location, $scope, $filter, $q, config, serviceUtil, filterSettings, userData, usersHolder) {
 
-    $scope.tableHead = ['№', 'П.І.Б.', 'Email','Ролі', 'Дії'];
+        $rootScope.pageTitle = 'Користувачі';
+        $scope.tableHead = ['№', 'П.І.Б.', 'Email', 'Ролі', 'Дії'];
 
-    $scope.getUsers = usersHolder.get;
-
-    var usersQuery = filterSettings.get('users');
-    if (usersQuery) {
-        $scope.query = usersQuery;
-        $scope.queryBy = Object.keys(usersQuery)[0];
-    } else {
-        $scope.query = {};
-        $scope.queryBy = 'FirstName';
-    }
-
-    $scope.onFilterQueryChange = function (isChangeValue) {
-        if (isChangeValue) {
-            filterSettings.set('users', $scope.query);
+        $scope.pagination = {
+            currentPage: serviceUtil.getRouteParam("currPage") || 1,
+            pageSize: config.pageSize
+        };
+        
+        var odataFilterPattern = "&$filter=UserRegionParts/any(r:r/RegionPartId eq :regionPartId)";
+        
+        $scope.query = filterSettings.get('users');
+        if ($scope.query) {
+            doFilter();
         } else {
-            $scope.query = {};
-            filterSettings.remove('users');
+            $scope.users = usersHolder.get();
         }
-    };
 
-    $scope.getIndex = function (user) {
-        return usersHolder.indexOf(user);
-    };
+        $scope.getIndex = function (ind) {
+            return ($scope.pagination.currentPage - 1) * $scope.pagination.pageSize + ind;
+            //return usersHolder.indexOf(user);
+        };
 
-    $scope.edit = function (user, ind) {
-        usersHolder.setEditIndex(ind);
-        $location.path('/user/' + user.Id + '/' + $scope.currentPage);
-    };
+        $scope.edit = function (user) {
+            usersHolder.setEditIndex(usersHolder.indexOf(user));
+            $location.path('/user/' + user.Id + '/' + $scope.pagination.currentPage);
+        };
 
-    $scope.delete = function (user) {
-        if (config.checkDeleteItem) {
-            var ok = confirm("Увага! Користувача буде видалено, продовжити?");
-            if (!ok) return;
-        }
-        $rootScope.errorMsg = '';
-        userData.remove({ id: user.Id },
-            function () {
-                usersHolder.remove(user);
-            }, function (e) {
-                e.description = 'Користувача не видалено';
+        $scope.delete = function (user) {
+            if (config.checkDeleteItem) {
+                var ok = confirm("Увага! Користувача буде видалено, продовжити?");
+                if (!ok) return;
+            }
+            $rootScope.errorMsg = '';
+            userData.remove({ id: user.Id },
+                function () {
+                    usersHolder.remove(user);
+                }, function (e) {
+                    e.description = 'Користувача не видалено';
+                    $rootScope.errorMsg = serviceUtil.getErrorMessage(e);
+                });
+        };
+
+        $scope.onPageChange = function (newPageNumber) {
+            $location.path("/users/" + newPageNumber);
+        };
+
+        $scope.userRolesToString = function (user) {
+            if (!user) return '';
+            return user.Roles.map(function(userRole) {
+                return userRole.Role.Name;
+            }).join(', ');
+        };
+
+        $scope.applyFilter = doFilter;
+
+        function doFilter() {
+            var usersPromise;
+            if (!$scope.loader) $scope.loader = {};
+            $scope.loader.filtering = true;
+            if ($scope.query.userRegionPart) {
+                usersPromise = userData.getAll({ filter: odataFilterPattern.replace(':regionPartId', $scope.query.userRegionPart.Id) }).$promise;
+            } else {
+                usersPromise = $q.when(usersHolder.get());
+            }
+            usersPromise.then(function (resp) {
+                $scope.loader.filtering = false;
+                var usersForFilter;
+                if (resp === usersHolder.get()) {
+                    usersForFilter = resp;
+                } else {
+                    usersForFilter = usersHolder.get().filter(function(cachedUser) {
+                        return resp.value.some(function(user) { return user.Id === cachedUser.Id });
+                    });
+                }
+                $scope.users = $filter('filter')(usersForFilter, { FirstName: $scope.query.userName, Email: $scope.query.userEmail });
+                filterSettings.set('users', $scope.query);
+            }, function(e) {
+                $scope.loader.filtering = false;
+                e.description = 'Не вдалося застосувати фільтр';
                 $rootScope.errorMsg = serviceUtil.getErrorMessage(e);
             });
-    };
+            
+        };
 
-    $scope.onPageChange = function (newPageNumber) {
-        $location.path("/users/" + newPageNumber);
-    };
-
-    $scope.userRolesToString = function (user) {
-        if (!user) return '';
-        return user.Roles.map(function(userRole) {
-            return userRole.Role.Name;
-        }).join(', ');
-    };
-
+        $scope.resetFilter = function () {
+            $scope.query = {};
+            filterSettings.remove('users');
+            doFilter();
+        };
+        $scope.clearQueryInput = function (propName) {
+            $scope.query[propName] = undefined;
+            doFilter();
+        };
 }]);
 
 userControllers.controller('editUserController', ['$rootScope', '$scope', '$location', '$filter', '$q', 'serviceUtil', 'userData', 'config', 'precinctData', 'usersHolder', 'resolvedUser', 'regionPartTypes',

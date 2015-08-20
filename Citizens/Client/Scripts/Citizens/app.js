@@ -98,7 +98,7 @@ app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider',
             controller: 'listUsersController',
             resolve: {
                 commonData: function (commonData) { return commonData.asyncLoad() },
-                resolvedUsers: function(usersHolder) { usersHolder.asyncLoad() }
+                resolvedUsers: function (usersHolder) { return usersHolder.asyncLoad() }
             },
             access: { requiredRoles: ['SuperAdministrators', 'Administrators'] }
         },
@@ -185,7 +185,7 @@ app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider',
 }]);
 
 app.constant("config", Object.freeze({
-    baseUrl: 'https://poltava2015.azurewebsites.net',//'http://localhost:6600', 'http://poltava2015.azurewebsites.net', 'http://apicitizens.azurewebsites.net', #Deploy
+    baseUrl: 'https://poltava2015.azurewebsites.net',//'http://localhost:6600',//, 'http://poltava2015.azurewebsites.net', 'http://apicitizens.azurewebsites.net', #Deploy
     pageSize: 20, // by default 20
     pageSizeTabularSection: 10,
     checkDeleteItem: true,
@@ -329,6 +329,7 @@ app.run(["$rootScope", "$timeout", '$location', 'Credentials', 'checkPermissions
     });
 
     $rootScope.$on('$routeChangeError', function (event, current, previous, rejection) {
+        // todo: get rejection as error object but not as string
         $rootScope.errorMsg = rejection;
         $rootScope.loading = false;
     });

@@ -21,7 +21,7 @@ angular.module("userServices", ['ngResource'])
 
         return $resource('', {},
 		{
-		    'getAll': { method: 'GET', url: urlOdata + order, cache: false },// DON'T CACHE! caching already implemented in usersHolder
+		    'getAll': { method: 'GET', params: { filter: "@filter" }, url: urlOdata + order + ":filter", cache: false },// DON'T CACHE! caching already implemented in usersHolder
 		    'getById': { method: 'GET', params: params.id, url: urlOdata + "(':id')" + expand },
 		    'getUserRoles': { method: 'GET', params: params.id, url: urlOdata + "(':id')/Roles" },
 		    'getRoles': { method: 'GET', url: urlOdataRoles, cache: true },
