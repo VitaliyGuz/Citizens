@@ -31,16 +31,19 @@ precinctControllers.controller("listPrecinctsController", ['$location', '$rootSc
             totalItems: 0
         };
 
-        setPrecinctsOnPage(($scope.pagination.currentPage - 1) * $scope.pagination.pageSize);
+        function getSkip() {
+            return ($scope.pagination.currentPage - 1) * $scope.pagination.pageSize || 0;
+        };
 
-        function setPrecinctsOnPage(skipItems) {
+        setPrecinctsOnPage();
+
+        function setPrecinctsOnPage() {
             $scope.loadingPrecincts = true;
             var filterString = getFilterString();
-            if (!skipItems) skipItems = 0;
             if (filterString) {
-                precinctData.getFilteredPageItems({ skip: skipItems, filter: filterString }, successHandler, errorHandler);
+                precinctData.getFilteredPageItems({ skip: getSkip(), filter: filterString }, successHandler, errorHandler);
             } else {
-                precinctData.getPageItems({ skip: skipItems }, successHandler, errorHandler);
+                precinctData.getPageItems({ skip: getSkip() }, successHandler, errorHandler);
             }
         };
 
@@ -61,7 +64,7 @@ precinctControllers.controller("listPrecinctsController", ['$location', '$rootSc
         };
 
         $scope.getIndex = function (ind) {
-            return ($scope.pagination.currentPage - 1) * $scope.pagination.pageSize + ind + 1;
+            return getSkip() + ind + 1;
         };
 
         $scope.edit = function (precinct) {
@@ -76,7 +79,7 @@ precinctControllers.controller("listPrecinctsController", ['$location', '$rootSc
             }
             $rootScope.errorMsg = '';
             precinctData.remove({ id: precinct.Id },function () {
-                setPrecinctsOnPage(($scope.pagination.currentPage - 1) * $scope.pagination.pageSize);
+                setPrecinctsOnPage();
             }, function(err) {
                 err.description = "За дільницею закріплені адреси, округи та користувачі";
                 errorHandler(err);
