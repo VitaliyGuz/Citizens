@@ -80,21 +80,25 @@
         <div class="col-lg-3">
             <div class="form-group">
                 <label>Прізвище:</label>
-                <input ng-model="query.string.LastName" type="text" class="form-control">
+                <!--ng-model="query.string.LastName"-->
+                <input ng-model="query.name.LastName" type="text" class="form-control">
             </div>
             <div class="form-group">
                 <label>Ім'я:</label>
-                <input ng-model="query.string.FirstName" type="text" class="form-control">
+                <!--ng-model="query.string.FirstName"-->
+                <input ng-model="query.name.FirstName" type="text" class="form-control">
             </div>
             <div class="form-group">
                 <label>По-батькові:</label>
-                <input ng-model="query.string.MidleName" type="text" class="form-control">
+                <!--ng-model="query.string.MidleName"-->
+                <input ng-model="query.name.MidleName" type="text" class="form-control">
             </div>
             <hr/>
             <div class="form-group">
                 <label>Дата народження:</label>
-                з <input type="text" ng-model="query.interval.date.DateOfBirth.from" datepicker class="form-control" placeholder="дд.мм.рррр">
-                по <input type="text" ng-model="query.interval.date.DateOfBirth.to" datepicker class="form-control" placeholder="дд.мм.рррр">
+                <!--ng-model="query.interval.date.DateOfBirth.from"-->
+                з <input type="text" ng-model="query.DateOfBirth.from" datepicker class="form-control" placeholder="дд.мм.рррр">
+                по <input type="text" ng-model="query.DateOfBirth.to" datepicker class="form-control" placeholder="дд.мм.рррр">
             </div>
         </div>
         <div class="col-lg-3">
@@ -110,19 +114,34 @@
             </div>
             <div class="form-group">
                 <label>Будинок:</label>
-                з <input type="text" ng-model="query.interval.num.House.from" class="form-control">
-                по <input type="text" ng-model="query.interval.num.House.to" class="form-control">
+                <!--ng-model="query.string.House"-->
+                <input type="text" ng-model="query.House" class="form-control">
+                <!--по <input type="text" ng-model="query.interval.House.to" class="form-control">-->
             </div>
             <div class="form-group">
                 <label>Квартира:</label>
-                з <input type="number" ng-model="query.interval.num.Apartment.from" class="form-control">
-                по <input type="number" ng-model="query.interval.num.Apartment.to" class="form-control">
+                <!--ng-model="query.interval.num.Apartment.from"-->
+                <div class="row">
+                    <div class="col-lg-6">
+                        <input type="number" ng-model="query.Apartment.from" class="form-control" placeholder="№ з">
+                    </div>
+                    <div class="col-lg-6">
+                        <input type="number" ng-model="query.Apartment.to" class="form-control" placeholder="№ по">
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Тип будинку</label>
+                <select class="form-control" ng-model="query.HouseType"
+                        ng-options="option.val as option.desc for option in houseTypes">
+                </select>
             </div>
         </div>
         <div class="col-lg-3">
             <div class="form-group">
                 <label>Дільниця</label>
-                <input ng-model="query.num.PrecinctId" type="text" class="form-control">
+                <!--ng-model="query.num.PrecinctId"-->
+                <input ng-model="query.PrecinctNum" type="text" class="form-control">
             </div>
         </div>
     </div>
@@ -154,7 +173,7 @@
     </tr>
     </thead>
     <tbody>
-        <tr dir-paginate="person in people | itemsPerPage: pageSize" current-page="currentPage" total-items="totalItems" pagination-id="peoplePagination">
+        <tr dir-paginate="person in people | itemsPerPage: pagination.pageSize" current-page="pagination.currentPage" total-items="pagination.totalItems" pagination-id="peoplePagination">
             <td>{{ getIndex($index) }}</td>
             <td>{{ person.LastName }} {{ person.FirstName }} {{ person.MidleName }}</td>
             <td>{{ person.DateOfBirth | date:'dd.MM.yyyy' }}</td>

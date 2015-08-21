@@ -2,29 +2,40 @@
 
 var peopleControllers = angular.module('peopleControllers', ['peopleServices', 'streetServices', 'cityServices', 'precinctServices']);
 
-peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$location', 'peopleData', 'config', 'serviceUtil', 'genlPeopleData', 'filterSettings',
-    function ($rootScope, $scope, $location, peopleData, config, serviceUtil, genlPeopleData, filterSettings) {
+peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$location', 'peopleData', 'config', 'serviceUtil', 'genlPeopleData', 'filterSettings','houseTypes',
+    function ($rootScope, $scope, $location, peopleData, config, serviceUtil, genlPeopleData, filterSettings,houseTypes) {
         var propValues = [], DATE_FORMAT = 'yyyy-MM-ddT00:00:00', odataFilter;
         
         $rootScope.pageTitle = 'Фізичні особи';
-        $scope.saving = false;
-        $scope.query = {};
-
-        $scope.currentPage = serviceUtil.getRouteParam("currPage") || 1;
+        $scope.tableHead = ['№', 'П.І.Б.', 'Дата народження', 'Адреса', 'Дії'];
         
-        $scope.pageSize = config.pageSize;
-        $scope.totalItems = 0;
-
+        $scope.pagination = {
+            currentPage: serviceUtil.getRouteParam("currPage") || 1,
+            pageSize: config.pageSize,
+            totalItems: 0
+        };
+        
         $scope.people = [];
-        $scope.tableHead = ['№', 'П.І.Б.', 'Дата народження', 'Адреса','Дії'];
+        $scope.houseTypes = [];
+        $scope.query = {};
 
         $scope.propKeys = genlPeopleData.propKeys;
         propValues = genlPeopleData.propValues;
+        
+        $scope.houseTypes.push({ val: undefined, desc: '-Всі типи-' });
+        houseTypes.forEach(function (type) {
+            $scope.houseTypes.push({ val: "Citizens.Models.HouseType':type'".replace(/:type/g, type), desc: type });
+        });
 
         var peopleQuerySettings = filterSettings.get('people');
-        //var personNameQuery = filterSettings.get('people_name');
         if (peopleQuerySettings) {
-            if (peopleQuerySettings.props) $scope.query = peopleQuerySettings.props;
+            if (peopleQuerySettings.props) {
+                $scope.query = peopleQuerySettings.props;
+                if ($scope.query.DateOfBirth) {
+                    $scope.query.DateOfBirth.from = serviceUtil.formatDate($scope.query.DateOfBirth.from, config.LOCALE_DATE_FORMAT);
+                    $scope.query.DateOfBirth.to = serviceUtil.formatDate($scope.query.DateOfBirth.to, config.LOCALE_DATE_FORMAT);
+                }
+            }
             if (peopleQuerySettings.additionalProps) {
                 angular.forEach($scope.propKeys, function(propKey) {
                     var findedKeys = peopleQuerySettings.additionalProps.filter(function (query) {
@@ -36,15 +47,16 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
                             propKey.input.from = serviceUtil.formatDate(propKey.input.from, config.LOCALE_DATE_FORMAT);
                             propKey.input.to = serviceUtil.formatDate(propKey.input.to, config.LOCALE_DATE_FORMAT);
                         }
-                        $scope.showFilters = true;
                     } else {
                         propKey.input = undefined;
                     }
                 });
             }
-            if (peopleQuerySettings.odataFilter) odataFilter = peopleQuerySettings.odataFilter;
+            if (peopleQuerySettings.odataFilter) {
+                $scope.showFilters = true;
+                odataFilter = peopleQuerySettings.odataFilter;
+            }
         }
-
 
         $scope.getPropertyValuesByKeyId = function (keyId) {
             return propValues.filter(function (item) {
@@ -52,15 +64,19 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
             });
         };
 
+        function getSkip() {
+            return ($scope.pagination.currentPage - 1) * $scope.pagination.pageSize || 0;
+        };
+
         $scope.getIndex = function(ind) {
-            return ($scope.currentPage - 1) * config.pageSize + ind + 1;
+            return getSkip() + ind + 1;
         };
 
         $scope.loadingPeople = true;
-        setPeopleOnPage(($scope.currentPage - 1) * config.pageSize);
+        setPeopleOnPage();
 
         $scope.edit = function (person) {
-            $location.path('/person/' + person.Id + '/' + $scope.currentPage);
+            $location.path('/person/' + person.Id + '/' + $scope.pagination.currentPage);
         };
 
         $scope.delete = function (person) {
@@ -70,12 +86,12 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
             }
             $rootScope.errorMsg = '';
             peopleData.remove({ id: person.Id },function () {
-                    setPeopleOnPage(($scope.currentPage - 1) * config.pageSize);
+                setPeopleOnPage();
                 }, errorHandler);
         };
 
         $scope.addNew = function () {
-            $location.path('/person/new/' + $scope.currentPage);
+            $location.path('/person/new/' + $scope.pagination.currentPage);
         };
 
         function errorHandler(e) {
@@ -88,8 +104,8 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
             $location.path("/people/" + newPageNumber);
         };
         
-        function setPeopleOnPage(skipItems) {
-            peopleData.getPageItems({ skip: skipItems||0, filter: odataFilter }, successHandler, errorHandler);
+        function setPeopleOnPage() {
+            peopleData.getPageItems({ skip: getSkip(), filter: odataFilter }, successHandler, errorHandler);
         };
 
         function successHandler(data) {
@@ -111,7 +127,7 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
 
                 return p;
             });
-            $scope.totalItems = data['@odata.count'];
+            $scope.pagination.totalItems = data['@odata.count'];
 
             //console.debug(new Date().getTime() - start);
             //function getFilterKeys() {
@@ -177,8 +193,6 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
 
         function getODataFilterQuery() {
             var filterStr = '', filterInnerStr = '',
-                filterQuery = $scope.query,
-                //filterPattern = "substringof(:fieldName, ':val') eq true",
                 filterPatterns = {
                     string: "indexof(:fieldName,':val') ne -1",
                     num: ":fieldName eq :val",
@@ -197,22 +211,113 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
                 }
                 return baseStr;
             };
-            // filter by base properties
-            //for (var prop in filterQuery) {
-            //    if (filterQuery.hasOwnProperty(prop)) {
-            //        var val = filterQuery[prop];
-            //        if (!val || val.length === 0) continue;
-            //        filterStr = concatIfExist(filterStr, " and ") + filterPattern.replace(':fieldName', prop).replace(':val', val);
+
+            // ---------------------------- filter by base properties ----------------------------
+            //redundant/hard way
+            //Object.keys(filterPatterns).forEach(function(patternName) {
+            //    var propNames = $scope.query[patternName];
+            //    if (propNames) {
+            //        Object.keys(propNames).forEach(function(propName) {
+            //            if (patternName === 'interval') {
+            //                var interval = $scope.query[patternName];
+            //                Object.keys(interval).forEach(function (type) {
+            //                    Object.keys(interval[type]).forEach(function (intervalPropName) {
+            //                        var valFrom, valTo;
+            //                        if (type === 'date') {
+            //                            valFrom = serviceUtil.formatDate(interval.date[intervalPropName].from, DATE_FORMAT) + 'Z';
+            //                            valTo = serviceUtil.formatDate(interval.date[intervalPropName].to, DATE_FORMAT) + 'Z';
+            //                        } else {
+            //                            valFrom = interval[type][intervalPropName].from;
+            //                            valTo = interval[type][intervalPropName].to;
+            //                        }
+            //                        if (valFrom && valTo) {
+            //                            filterStr = concatIfExist(filterStr, " and ") + filterPatterns[patternName]
+            //                                .replace(/:fieldName/g, intervalPropName)
+            //                                .replace(/:from/g, valFrom)
+            //                                .replace(/:to/g, valTo);
+            //                        }
+            //                    });
+            //                });
+            //            } else {
+            //                var val = $scope.query[patternName][propName];
+            //                if (val && patternName === 'ref') val = val.Id;
+            //                if (val) {
+            //                    filterStr = concatIfExist(filterStr, " and ") + filterPatterns[patternName]
+            //                        .replace(/:fieldName/g, propName)
+            //                        .replace(/:val/g, val);
+            //                }
+            //            }
+            //        });
             //    }
-            //}
-            for (var prop in filterQuery.string) {
-                if (filterQuery.string.hasOwnProperty(prop)) {
-                    var val = filterQuery.string[prop];
-                    if (!val || val.length === 0) continue;
-                    filterStr = concatIfExist(filterStr, " and ") + filterPatterns.string.replace(/:fieldName/g, prop).replace(/:val/g, val);
+            //});
+
+            //simple way
+            if ($scope.query) {
+
+                if ($scope.query.name) {
+                    Object.keys($scope.query.name).forEach(function(propName) {
+                        var val = $scope.query.name[propName];
+                        if (val) {
+                            filterStr = concatIfExist(filterStr, " and ") + filterPatterns.string
+                                .replace(/:fieldName/g, propName)
+                                .replace(/:val/g, val);
+                        }
+                    });   
+                }
+
+                if ($scope.query.DateOfBirth) {
+                    var valFrom = $scope.query.DateOfBirth.from,
+                        valTo = $scope.query.DateOfBirth.to;
+                    if (valFrom && valTo) {
+                        filterStr = concatIfExist(filterStr, " and ") + filterPatterns.interval
+                            .replace(/:fieldName/g, 'DateOfBirth')
+                            .replace(/:from/g, serviceUtil.formatDate($scope.query.DateOfBirth.from, DATE_FORMAT) + 'Z')
+                            .replace(/:to/g, serviceUtil.formatDate($scope.query.DateOfBirth.to, DATE_FORMAT) + 'Z');
+                    }
+                }
+
+                if ($scope.query.ref) {
+                    Object.keys($scope.query.ref).forEach(function (propName) {
+                        var val = $scope.query.ref[propName];
+                        if (val && val.Id) {
+                            filterStr = concatIfExist(filterStr, " and ") + filterPatterns.ref
+                                .replace(/:fieldName/g, propName)
+                                .replace(/:val/g, val.Id);
+                        }
+                    });
+                }
+
+                if ($scope.query.House) {
+                    filterStr = concatIfExist(filterStr, " and ") + filterPatterns.string
+                        .replace(/:fieldName/g, "House")
+                        .replace(/:val/g, $scope.query.House);
+                }
+
+                if ($scope.query.Apartment) {
+                    var valFrom = $scope.query.Apartment.from,
+                        valTo = $scope.query.Apartment.to;
+                    if (valFrom && valTo) {
+                        filterStr = concatIfExist(filterStr, " and ") + filterPatterns.interval
+                            .replace(/:fieldName/g, 'Apartment')
+                            .replace(/:from/g, valFrom)
+                            .replace(/:to/g, valTo);
+                    }
+                }
+
+                if ($scope.query.PrecinctNum) {
+                    filterStr = concatIfExist(filterStr, " and ") + filterPatterns.num
+                        .replace(/:fieldName/g, "PrecinctAddress/Precinct/Number")
+                        .replace(/:val/g, $scope.query.PrecinctNum);
+                }
+
+                if ($scope.query.HouseType) {
+                    filterStr = concatIfExist(filterStr, " and ") + filterPatterns.num
+                        .replace(/:fieldName/g, "PrecinctAddress/HouseType")
+                        .replace(/:val/g, $scope.query.HouseType);
                 }
             }
-            // filter by additional properties
+
+            //---------------------------- filter by additional properties ----------------------------
             angular.forEach($scope.propKeys, function (propKey) {
                 filterInnerStr = '';
                 if (propKey.input) {
@@ -227,6 +332,7 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
                             .replace(/:innerPattern/g, filterInnerStr);
                     } else if ((propKeyType === 'date' || propKeyType === 'number') && propKey.input.from && propKey.input.to) {
                         //console.log(propKey.input.from.toISOString());
+                        //todo: for type 'date' try to use odata cast to Edm.DataTime 
                         filterStr = concatIfExist(filterStr, " and ") + filterPatternPropInterval
                             .replace(/:from/g, propKeyType === 'date' ? serviceUtil.formatDate(propKey.input.from, DATE_FORMAT) + 'Z' : propKey.input.from)
                             .replace(/:to/g, propKeyType === 'date' ? serviceUtil.formatDate(propKey.input.to, DATE_FORMAT) + 'Z' : propKey.input.to);
@@ -247,6 +353,18 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
             return filterStr;
         };
 
+        $scope.resetFilter = function () {
+            if (odataFilter) {
+                angular.forEach($scope.propKeys, function (propKey) {
+                    if (propKey.input) propKey.input = undefined;
+                });
+                $scope.query = {};
+                odataFilter = undefined;
+                filterSettings.remove('people');
+                setPeopleOnPage();
+            }
+        };
+
         $scope.applyFilter = function () {
             $scope.filtering = true;
             var filterQuery = getODataFilterQuery();
@@ -260,19 +378,14 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
                     odataFilter: odataFilter
                 });
                 setPeopleOnPage();
-            }
+            } else {
+                if (odataFilter) {
+                    $scope.resetFilter();
+                } else {
+                    $scope.filtering = false;
+                }
+            }  
         };
-
-        //temp function
-        //$scope.onFilterChange = function () {
-        //    if ($scope.filterQuery.LastName || $scope.filterQuery.FirstName || $scope.filterQuery.MidleName) {
-        //        filterSettings.set('people_name', $scope.filterQuery);
-        //    } else {
-        //        filterSettings.remove('people_name');
-        //    }
-        //    setFilterString();
-        //    setPeopleOnPage();
-        //};
 
         $scope.toggleSelection = function (propKey,checkedValue) {
             function indexOf(arr, val) {
@@ -303,18 +416,6 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
 
         $scope.onSelectFilterStreet = function ($item, $model, $label, input) {
             input.Street = $item;
-        };
-
-        $scope.resetFilter = function () {
-            if (odataFilter) {
-                angular.forEach($scope.propKeys, function (propKey) {
-                    if (propKey.input) propKey.input = undefined;
-                });
-                $scope.query = {};
-                odataFilter = undefined;
-                filterSettings.remove('people');
-                setPeopleOnPage();
-            }
         };
 
         $scope.checkedPropValue = function (propKey, checkVal) {
