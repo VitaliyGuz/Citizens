@@ -127,6 +127,7 @@ districtControllers.controller('editDistrictController', ['$rootScope', '$scope'
         $scope.save = function () {
             $scope.saving = true;
             $rootScope.errorMsg = '';
+            // todo: model factory
             var district = {
                 "Id": 0,
                 "Number": 0,

@@ -48,8 +48,8 @@
     <input ng-model="selected.regionPart.Name" type="text" class="form-control" required>
 </script>
 <script type="text/ng-template" id="editRegion">
-    <select class="form-control" ng-options="r.Id as r.Name for r in regions"
-            ng-model="selected.regionPart.RegionId" required>
+    <select class="form-control" ng-options="r as r.Name for r in regions track by r.Id"
+            ng-model="selected.regionPart.Region" required>
         <option value='' disabled>-Необхідно вибрати-</option>
     </select>
 </script>

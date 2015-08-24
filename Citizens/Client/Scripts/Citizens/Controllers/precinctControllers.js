@@ -110,8 +110,8 @@ precinctControllers.controller("listPrecinctsController", ['$location', '$rootSc
         };
     }]);
 
-precinctControllers.controller("editPrecinctController", ['$location', '$rootScope', '$scope', 'serviceUtil', 'config', 'precinctData', 'districtData', 'precinctAddressesData', 'resolvedData', 'userData', 'usersHolder','houseTypes',
-    function ($location, $rootScope, $scope, serviceUtil, config, precinctData, districtData, precinctAddressesData, resolvedData, userData, usersHolder, houseTypes) {
+precinctControllers.controller("editPrecinctController", ['$location', '$rootScope', '$scope', 'serviceUtil', 'config', 'precinctData', 'districtData', 'precinctAddressesData', 'resolvedData', 'userData', 'usersHolder', 'houseTypes', 'modelFactory',
+    function ($location, $rootScope, $scope, serviceUtil, config, precinctData, districtData, precinctAddressesData, resolvedData, userData, usersHolder, houseTypes, modelFactory) {
         var copyAddressMode, editableAddress, editablePrecinctDistrict, editableUserPrecinct;
         $rootScope.pageTitle = 'Дільниця';
         $scope.saving = {};
@@ -259,35 +259,18 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
 
             $rootScope.errorMsg = '';
             $scope.saving.precinct = true;
-            // todo: model factory
-            var precinct = {
-                "Id": 0,
-                "Number": 0,
-                "CityId": 0,
-                "StreetId": 0,
-                "House": '',
-                "RegionPartId": 0,
-                "lat": 0,
-                "lng": 0,
-                "location_type": '',
-                "NeighborhoodId":0
-            };
-
-            serviceUtil.copyProperties($scope.precinct, precinct);
+            
+            var precinct = modelFactory.createObject('precinct', $scope.precinct);
             if ($scope.addMode) {
-                precinctData.save(precinct, function (newItem) {
-                    successHandler({ id: newItem.Id });
-                }, errorHandler);
+                precinctData.save(precinct, successHandler, errorHandler);
             } else {
-                precinctData.update({ id: $scope.precinct.Id }, precinct, function () {
-                    successHandler({ id: $scope.precinct.Id });
-                }, errorHandler);
+                precinctData.update({ id: $scope.precinct.Id }, precinct, successHandler, errorHandler);
             }
             function successHandler(resp) {
                 $scope.saving.precinct = false;
                 if ($scope.addMode) {
                     $scope.addMode = false;
-                    $scope.precinct.Id = resp.id;
+                    $scope.precinct.Id = resp.Id;
                     $rootScope.successMsg = 'Дільницю успішно створено!';
                 } else {
                     //$scope.precincts[$rootScope.editInd] = res;
@@ -323,16 +306,8 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
             }
             $rootScope.errorMsg = '';
             $scope.saving.address = true;
-            // todo: factory method
-            var address = {
-                "CityId": 0,
-                "StreetId": 0,
-                "House": '',
-                "PrecinctId": 0,
-                "HouseType": null,
-                "Apartments": null
-            };
-            serviceUtil.copyProperties($scope.selected.address, address);
+            
+            var address = modelFactory.createObject('precinctAddress',$scope.selected.address);
             address.PrecinctId = $scope.precinct.Id;
             if ($scope.addAddressMode || copyAddressMode) {
                 savePrecinctAddresses();
@@ -579,20 +554,15 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
 
             var ok = confirm("Буде створено " + (endNumb - startNumb + 1) + " адрес. Продовжити?");
             if (!ok) return;
-            // todo: model factory
-            function Address(house) {
-                this.CityId = $scope.autocomplete.CityId,
-                this.StreetId = $scope.autocomplete.StreetId,
-                this.House = house.toString(),
-                this.PrecinctId = $scope.precinct.Id;
-                this.HouseType = $scope.autocomplete.HouseType;
-            };
-
+            
             function getArrayAddresses() {
                 var arr = [], houseNumb;
                 houseNumb = startNumb;
                 while (houseNumb <= endNumb) {
-                    arr.push(new Address(houseNumb));
+                    var address = modelFactory.createObject('precinctAddress', $scope.autocomplete);
+                    address.House = houseNumb.toString();
+                    address.PrecinctId = $scope.precinct.Id;
+                    arr.push(address);
                     houseNumb++;
                 }
                 return arr;
@@ -731,17 +701,9 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
                 return;
             };
             $rootScope.errorMsg = '';
-            // todo: factory method
-            var address = {
-                "CityId": 0,
-                "StreetId": 0,
-                "House": '',
-                "PrecinctId": 0,
-                "HouseType": null,
-                "Apartments": null
-            };
             $scope.saving.address = true;
-            serviceUtil.copyProperties(selectedAddress, address);
+
+            var address = modelFactory.createObject('precinctAddress', selectedAddress);
             address.PrecinctId = $scope.selected.newPrecinctId;
             precinctAddressesData.update(serviceUtil.getAddressKey(address), address, function () {
                 $scope.changingPresinct = false;
@@ -803,7 +765,7 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
 
     }]);
 
-precinctControllers.controller('geocodingController', ['$scope', '$rootScope', '$timeout', 'precinctData', 'serviceUtil', 'refreshToken', function ($scope, $rootScope, $timeout, precinctData, serviceUtil, refreshToken) {
+precinctControllers.controller('geocodingController', ['$scope', '$rootScope', '$timeout', 'precinctData', 'serviceUtil', 'refreshToken', 'modelFactory', function ($scope, $rootScope, $timeout, precinctData, serviceUtil, refreshToken, modelFactory) {
     var precincts,
         length,
         nextPrecinct,
@@ -881,20 +843,7 @@ precinctControllers.controller('geocodingController', ['$scope', '$rootScope', '
                 }
             }
             if (status === google.maps.GeocoderStatus.OK) {
-                // todo: model factory
-                var raw = {
-                    "Id": 0,
-                    "Number": 0,
-                    "CityId": 0,
-                    "StreetId": 0,
-                    "House": '',
-                    "RegionPartId": 0,
-                    "lat": 0,
-                    "lng": 0,
-                    "location_type": '',
-                    "NeighborhoodId": 0
-                };
-                serviceUtil.copyProperties(precinct, raw);
+                var raw = modelFactory.createObject('precinct', precinct);
                 precinctData.update({ id: precinct.Id }, raw, function () {
                     $rootScope.geocoging.progressNow = Math.round(iter++ / length * 100);
                     console.debug(precinct.Id + " [" + new Date().toLocaleString() + "] delay: " + delay.getValue());

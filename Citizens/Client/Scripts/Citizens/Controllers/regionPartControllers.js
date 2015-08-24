@@ -2,8 +2,8 @@
 
 var regionPartControllers = angular.module('regionPartControllers', ['regionPartServices']);
 
-regionPartControllers.controller("listRegionPartsController", ['$rootScope', '$location','$timeout', '$scope', 'config', 'serviceUtil', 'regionPartData', 'regionData', 'regionPartTypes',
-    function ($rootScope, $location, $timeout, $scope, config, serviceUtil, regionPartData, regionData, regionPartTypes) {
+regionPartControllers.controller("listRegionPartsController", ['$rootScope', '$location', '$timeout', '$scope', 'config', 'serviceUtil', 'regionPartData', 'regionData', 'regionPartTypes', 'modelFactory',
+    function ($rootScope, $location, $timeout, $scope, config, serviceUtil, regionPartData, regionData, regionPartTypes, modelFactory) {
         var editInd;
         $rootScope.pageTitle = 'Райони';
         $scope.saving = false;
@@ -45,10 +45,9 @@ regionPartControllers.controller("listRegionPartsController", ['$rootScope', '$l
                 if (!ok) return;
             }
             $rootScope.errorMsg = '';
-            regionPartData.remove({ id: regionPart.Id },
-                function() {
-                    $rootScope.regionParts.splice($scope.getIndex(regionPart), 1);
-                }, errorHandler);
+            regionPartData.remove({ id: regionPart.Id }, function() {
+                $rootScope.regionParts.splice($scope.getIndex(regionPart), 1);
+            }, errorHandler);
         };
 
         $scope.save = function() {
@@ -57,29 +56,13 @@ regionPartControllers.controller("listRegionPartsController", ['$rootScope', '$l
                 return;
             }
             $scope.saving = true;
-
-            // todo: factory method
-            var regionPart = {
-                "Id": 0,
-                "Name": '',
-                "RegionId": 0,
-                "RegionPartType": ''
-            }
-            serviceUtil.copyProperties($scope.selected.regionPart, regionPart);
+            $rootScope.errorMsg = '';
+            if ($scope.selected.regionPart.Region) $scope.selected.regionPart.RegionId = $scope.selected.regionPart.Region.Id;
+            var regionPart = modelFactory.createObject('regionPart', $scope.selected.regionPart);
             if ($scope.addMode) {
-                regionPartData.save(regionPart,
-                    function(newItem) {
-                        regionPartData.getById({ id: newItem.Id }, function (res) {
-                            querySuccessHandler(res);
-                        }, errorHandler);
-                    }, errorHandler);
+                regionPartData.save(regionPart, successHandler, errorHandler);
             } else {
-                regionPartData.update({ id: $scope.selected.regionPart.Id }, regionPart,
-                    function() {
-                        regionPartData.getById({ id: $scope.selected.regionPart.Id }, function (res) {
-                            querySuccessHandler(res, editInd);
-                        }, errorHandler);
-                    }, errorHandler);
+                regionPartData.update({ id: $scope.selected.regionPart.Id }, regionPart, successHandler, errorHandler);
             }
         };
 
@@ -105,19 +88,19 @@ regionPartControllers.controller("listRegionPartsController", ['$rootScope', '$l
             $rootScope.errorMsg = serviceUtil.getErrorMessage(e);
         };
 
-        function querySuccessHandler(res,ind) {
+        function successHandler(res) {
             $scope.saving = false;
-            if (ind == undefined) {
-                $rootScope.regionParts.push(res);
+            if ($scope.addMode) {
+                $scope.selected.regionPart.Id = res.Id;
+                $rootScope.regionParts.push($scope.selected.regionPart);
             } else {
-                $rootScope.regionParts[ind] = res;
+                $rootScope.regionParts[editInd] = $scope.selected.regionPart;
             }           
             $rootScope.regionParts.sort(serviceUtil.compareByName);
             $scope.reset();
         };
 
         $scope.onPageChange = function (newPageNumber) {
-            //todo: cache regionData and change location path without reload page
             //$location.path("/region-parts/" + newPageNumber);
             //$location.search("currPage", newPageNumber);
         };

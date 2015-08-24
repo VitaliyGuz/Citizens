@@ -45,8 +45,8 @@
     <input ng-model="selected.street.Name" type="text" class="form-control" ng-required="true">
 </script>
 <script type="text/ng-template" id="editType">
-    <select class="form-control" ng-options="t.Id as t.Name for t in typesStreet"
-            ng-model="selected.street.StreetTypeId" required>
+    <select class="form-control" ng-options="t as t.Name for t in typesStreet track by t.Id"
+            ng-model="selected.street.StreetType" required>
         <option value='' disabled>-Тип-</option>
     </select>
 </script>

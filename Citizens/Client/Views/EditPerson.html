@@ -31,17 +31,17 @@
     <div class="form-horizontal">
         <div class="form-group col-lg-3">
             <label>Населений пункт</label>
-            <input type="text" ng-change="person.CityId=0" typeahead-on-select="onSelectCity($item, $model, $label)" ng-model="person.City"
-                   typeahead="c.Id as c.CityType.Name +' '+c.Name + ' (' + c.RegionPart.Name + ' р-н)' for c in cities | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control" required>
+            <input type="text" typeahead-on-select="onSelectCity($item)" ng-model="person.address.City"
+                   typeahead="c as c.CityType.Name +' '+c.Name + ' (' + c.RegionPart.Name + ' р-н)' for c in cities | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control" required>
         </div>
         <div class="form-group col-lg-3">
             <label>Вулиця</label>
-            <input type="text" ng-change="person.StreetId=0" typeahead-on-select="onSelectStreet($item, $model, $label)" ng-model="person.Street"
-                   typeahead="s.Id as s.StreetType.Name +' '+ s.Name for s in streets | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control" required>
+            <input type="text" typeahead-on-select="onSelectStreet($item)" ng-model="person.address.Street"
+                   typeahead="s as s.StreetType.Name +' '+ s.Name for s in streets | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control" required>
         </div>
         <div class="form-group col-lg-2">
             <label>Будинок</label>
-            <input ng-model="person.House" type="text" class="form-control" required>
+            <input ng-model="person.address.House" type="text" class="form-control" required>
         </div>
         <div class="form-group col-lg-1">
             <label>Кв.</label>
@@ -55,8 +55,8 @@
         </div>
         <div class="form-group col-lg-2">
             <label>Дільниця</label>
-            <input type="text" typeahead-on-select="onSelectPrecinctNumber($item, $model, $label)" ng-model="person.Precinct"
-                   typeahead="p.Id as p.Number for p in precincts | filter: {Number:$viewValue} | orderByStartsWith:{Number:$viewValue} | limitTo:10" class="form-control" required>
+            <input type="text" ng-model="person.address.Precinct"
+                   typeahead="p as p.Number for p in precincts | filter: {Number:$viewValue} | orderByStartsWith:{Number:$viewValue} | limitTo:10" class="form-control" required>
         </div>
     </div>
     <div class="row">
@@ -86,7 +86,7 @@
     </thead>
     <tbody>
         <tr ng-show="addPropertyMode" ng-include="'edit'"></tr>
-        <tr ng-repeat="prop in additionalProperties" ng-include="getTemplate(prop)"></tr>
+        <tr ng-repeat="prop in person.additionalProperties" ng-include="getTemplate(prop)"></tr>
     </tbody>
 </table>
 <script type="text/ng-template" id="display">

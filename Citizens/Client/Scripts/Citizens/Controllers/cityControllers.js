@@ -64,8 +64,8 @@ cityControllers.controller("listCitiesController", ['$rootScope', '$location', '
         };
     }]);
 
-cityControllers.controller('editCityController', ['$rootScope', '$scope', '$location', 'cityData', 'serviceUtil', 'cityRegionPartsData', 'config', 'resolvedData',
-    function ($rootScope, $scope, $location, cityData, serviceUtil, cityRegionPartsData, config, resolvedData) {
+cityControllers.controller('editCityController', ['$rootScope', '$scope', '$location', 'cityData', 'serviceUtil', 'cityRegionPartsData', 'config', 'resolvedData', 'modelFactory',
+    function ($rootScope, $scope, $location, cityData, serviceUtil, cityRegionPartsData, config, resolvedData, modelFactory) {
         var editInd, editableCityDistrict, addMode;
         $rootScope.pageTitle = 'Населений пункт';
         $scope.saving = false;
@@ -87,15 +87,7 @@ cityControllers.controller('editCityController', ['$rootScope', '$scope', '$loca
         $scope.save = function () {
             $scope.saving = true;
             $rootScope.errorMsg = '';
-            // todo: factory method
-            var city = {
-                "Id": 0,
-                "Name": '',
-                "CityTypeId": 0,
-                "IncludedToRegionPart": null,
-                "RegionPartId": 0
-            }
-            serviceUtil.copyProperties($scope.city, city);
+            var city = modelFactory.createObject('city', $scope.city);
             if (addMode) {
                 cityData.save(city,
                     function (newItem) {

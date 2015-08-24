@@ -159,10 +159,10 @@ app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider',
             templateUrl: 'Views/Login.html',
             controller: 'loginController'
         }).
-        //when('/register', {
-        //    templateUrl: 'Views/Register.html',
-        //    controller: 'registerController'
-        //}).
+        when('/register', {
+            templateUrl: 'Views/Register.html',
+            controller: 'registerController'
+        }).
         when('/logout', {
             resolve: {
                 logout: function ($location, Credentials, usersHolder) {
@@ -185,7 +185,7 @@ app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider',
 }]);
 
 app.constant("config", Object.freeze({
-    baseUrl: 'https://poltava2015.azurewebsites.net',//'http://localhost:6600',//, 'http://poltava2015.azurewebsites.net', 'http://apicitizens.azurewebsites.net', #Deploy
+    baseUrl: 'https://poltava2015.azurewebsites.net',//'http://localhost:6600','http://poltava2015.azurewebsites.net', 'http://apicitizens.azurewebsites.net', #Deploy
     pageSize: 20, // by default 20
     pageSizeTabularSection: 10,
     checkDeleteItem: true,
@@ -225,7 +225,8 @@ app.factory("serviceUtil", ["$filter", '$routeParams', function ($filter, $route
         copyProperties: function (source, destination) {
             for (var prop in destination) {
                 if (destination.hasOwnProperty(prop)) {
-                    destination[prop] = source[prop];
+                    var val = source[prop];
+                    if(val) destination[prop] = source[prop];
                 }
             }
         },
@@ -517,6 +518,90 @@ app.directive('accessPermissions', ['checkPermissions', function (checkPermissio
             }
         }
     };
+}]);
+
+app.factory('modelFactory', ['serviceUtil', function (serviceUtil) {
+    // optional props have value null
+    var models = {
+        person: {
+            "Id": 0,
+            "LastName": '',
+            "FirstName": '',
+            "MidleName": '',
+            "DateOfBirth": null,
+            "Gender": null,
+            "CityId": 0,
+            "StreetId": 0,
+            "House": '',
+            "Apartment": null
+        },
+        precinct: {
+            "Id": 0,
+            "Number": 0,
+            "CityId": null,
+            "StreetId": null,
+            "House": '',
+            "RegionPartId": null,
+            "lat": null,
+            "lng": null,
+            "location_type": '',
+            "NeighborhoodId": null
+        },
+        precinctAddress: {
+            "CityId": 0,
+            "StreetId": 0,
+            "House": '',
+            "PrecinctId": null,
+            "HouseType": null,
+            "Apartments": null
+        },
+        city: {
+            "Id": 0,
+            "Name": '',
+            "CityTypeId": 0,
+            "IncludedToRegionPart": false,
+            "RegionPartId": 0
+        },
+        personAdditionalProperty: {
+            "PersonId": 0,
+            "PropertyKeyId": 0,
+            "IntValue": null,
+            "StringValue": '',
+            "DateTimeValue": null,
+            "PropertyValueId": null
+        },
+        regionPart: {
+            "Id": 0,
+            "Name": '',
+            "RegionId": 0,
+            "RegionPartType": ''
+        },
+        street: {
+            "Id": 0,
+            "Name": '',
+            "StreetTypeId": 0
+        }
+    };
+    
+    function EmptyModel(json) {
+        angular.extend(this, json);
+    };
+    
+    return {
+        createObject: function(modelName, source) {
+            var model = new EmptyModel(models[modelName]);
+            if (source) {
+                if (angular.isArray(source)) {
+                    angular.forEach(source, function(src) {
+                        serviceUtil.copyProperties(src, model);
+                    });
+                } else {
+                    serviceUtil.copyProperties(source, model);
+                }
+            }
+            return model;
+        }
+    }
 }]);
 
 //app.directive('myDatepicker', ['serviceUtil',function (serviceUtil) {

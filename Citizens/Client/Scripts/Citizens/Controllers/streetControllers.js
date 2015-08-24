@@ -2,8 +2,8 @@
 
 var streetControllers = angular.module('streetControllers', ['streetServices']);
 
-streetControllers.controller("listStreetsController", ['$location', '$rootScope', '$scope', 'streetData', 'typeStreetData', 'config', 'serviceUtil',
-    function ($location, $rootScope, $scope, streetData, typeStreetData, config, serviceUtil) {
+streetControllers.controller("listStreetsController", ['$location', '$rootScope', '$scope', 'streetData', 'typeStreetData', 'config', 'serviceUtil', 'modelFactory',
+    function ($location, $rootScope, $scope, streetData, typeStreetData, config, serviceUtil, modelFactory) {
         var editInd;
         $rootScope.pageTitle = 'Вулиці';
         
@@ -51,32 +51,23 @@ streetControllers.controller("listStreetsController", ['$location', '$rootScope'
         $scope.save = function () {
             $rootScope.errorMsg = '';
             $scope.saving = true;
-            var street = {
-                "Id": 0,
-                "Name": '',
-                "StreetTypeId": 0
-            }
-            serviceUtil.copyProperties($scope.selected.street, street);
+            if ($scope.selected.street.StreetType) $scope.selected.street.StreetTypeId = $scope.selected.street.StreetType.Id;
+            var street = modelFactory.createObject('street', $scope.selected.street);
             if ($scope.addMode) {
-                streetData.save(street,
-                    function (newItem) {
-                        streetData.getById({ id: newItem.Id }, function (res) {
-                            $scope.saving = false;
-                            $rootScope.streets.push(res);
-                            $rootScope.streets.sort(serviceUtil.compareByName);
-                            $scope.reset();
-                        }, errorHandler);
-                    }, errorHandler);
+                streetData.save(street, function (newItem) {
+                    $scope.saving = false;
+                    $scope.selected.street.Id = newItem.Id;
+                    $rootScope.streets.push($scope.selected.street);
+                    $rootScope.streets.sort(serviceUtil.compareByName);
+                    $scope.reset();
+                }, errorHandler);
             } else {
-                streetData.update({ id: $scope.selected.street.Id }, street,
-                    function () {
-                        streetData.getById({ id: $scope.selected.street.Id }, function (res) {
-                            $scope.saving = false;
-                            $rootScope.streets[editInd] = res;
-                            $rootScope.streets.sort(serviceUtil.compareByName);
-                            $scope.reset();
-                        }, errorHandler);
-                    }, errorHandler);
+                streetData.update({ id: $scope.selected.street.Id }, street, function () {
+                    $scope.saving = false;
+                    $rootScope.streets[editInd] = $scope.selected.street;
+                    $rootScope.streets.sort(serviceUtil.compareByName);
+                    $scope.reset();
+                }, errorHandler);
             }
         };
 
@@ -103,7 +94,6 @@ streetControllers.controller("listStreetsController", ['$location', '$rootScope'
         };
 
         $scope.onPageChange = function (newPageNumber) {
-            //todo: change location path without reload page
             //$location.path("/streets/" + newPageNumber);
         };
 }]);
