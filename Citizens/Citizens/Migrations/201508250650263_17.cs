@@ -25,8 +25,8 @@ namespace Citizens.Migrations
             CreateIndex("dbo.PersonChangeHistory", "House");
             CreateIndex("dbo.People", new[] { "CityId", "StreetId", "House" });
             CreateIndex("dbo.People", "House");
-            AddForeignKey("dbo.People", new[] { "CityId", "StreetId", "House" }, "dbo.PrecinctAddresses", new[] { "CityId", "StreetId", "House" }, cascadeDelete: true);
-            AddForeignKey("dbo.PersonChangeHistory", new[] { "CityId", "StreetId", "House" }, "dbo.PrecinctAddresses", new[] { "CityId", "StreetId", "House" }, cascadeDelete: true);
+            AddForeignKey("dbo.People", new[] { "CityId", "StreetId", "House" }, "dbo.PrecinctAddresses", new[] { "CityId", "StreetId", "House" }, cascadeDelete: false);
+            AddForeignKey("dbo.PersonChangeHistory", new[] { "CityId", "StreetId", "House" }, "dbo.PrecinctAddresses", new[] { "CityId", "StreetId", "House" }, cascadeDelete: false);
         }
         
         public override void Down()

@@ -46,6 +46,9 @@ namespace Citizens.Models
 
         public int? Apartment { get; set; }
 
+        [StringLength(20)]
+        public string ApartmentStr { get; set; }
+
         public City City { get; set; }
 
         public Street Street { get; set; }
