@@ -22,13 +22,26 @@ namespace Citizens.Models
 
         [Key]
         [Column(Order = 2)]
-        [StringLength(10)]
+        [StringLength(20)]
         [Required()]
         public string House { get; set; }
+
+        public int? HouseNumber { get; set; }
+
+        [StringLength(5)]
+        public string HouseLetter { get; set; }
+
+        [StringLength(10)]
+        public string HouseFraction { get; set; }
+
+        [StringLength(5)]
+        public string HouseBuilding { get; set; }
 
         public HouseType? HouseType { get; set; }
 
         public int? Apartments { get; set; }
+
+        public int? PostIndex { get; set; }
 
         public int PrecinctId { get; set; }
 
