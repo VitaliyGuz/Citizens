@@ -194,7 +194,7 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
         function getODataFilterQuery() {
             var filterStr = '', filterInnerStr = '',
                 filterPatterns = {
-                    string: "indexof(:fieldName,':val') ne -1",
+                    string: "startswith(:fieldName, ':val') eq true",
                     num: ":fieldName eq :val",
                     ref: ":fieldNameId eq :val",
                     interval: ":fieldName ge :from and :fieldName le :to"
