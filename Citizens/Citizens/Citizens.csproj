@@ -298,6 +298,10 @@
     <Compile Include="Migrations\201508251144039_18.Designer.cs">
       <DependentUpon>201508251144039_18.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201508260056440_19.cs" />
+    <Compile Include="Migrations\201508260056440_19.Designer.cs">
+      <DependentUpon>201508260056440_19.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\CityRegionPart.cs" />
     <Compile Include="Models\District.cs" />
@@ -398,6 +402,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201508251144039_18.resx">
       <DependentUpon>201508251144039_18.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201508260056440_19.resx">
+      <DependentUpon>201508260056440_19.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

@@ -21,7 +21,7 @@ namespace Citizens.Models
         [StringLength(20)]
         public string MidleName { get; set; }
 
-        [StringLength(20)]
+        [StringLength(25)]
         public string LastName { get; set; }
 
         public DateTime? DateOfBirth { get; set; }
