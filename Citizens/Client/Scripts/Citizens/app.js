@@ -223,12 +223,16 @@ app.factory("serviceUtil", ["$filter", '$routeParams', function ($filter, $route
             return a.Name.localeCompare(b.Name);
         },
         copyProperties: function (source, destination) {
-            for (var prop in destination) {
-                if (destination.hasOwnProperty(prop)) {
-                    var val = source[prop];
-                    if(val) destination[prop] = source[prop];
-                }
-            }
+            //for (var prop in destination) {
+            //    if (destination.hasOwnProperty(prop)) {
+            //        var val = source[prop];
+            //        if(val) destination[prop] = source[prop];
+            //    }
+            //}
+            Object.keys(destination).forEach(function(prop) {
+                var val = source[prop];
+                if (val != undefined) destination[prop] = source[prop];
+            });
         },
         getAddressKey: function (address) {
             return { cityId: address.CityId, streetId: address.StreetId, house: address.House };
