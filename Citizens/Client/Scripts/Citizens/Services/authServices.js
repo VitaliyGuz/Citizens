@@ -13,8 +13,8 @@ authServices.service('Login', ['$http', 'Credentials', 'config', 'SuccessTokenHa
         Credentials.clear();
         $http(req).success(function (response) {
             SuccessTokenHandler(response, callback);
-        }).error(function (e) {
-            callback({ success: false, error: e });
+        }).error(function (errData, errStatus) {
+            callback({ success: false, error: { data: errData, status: errStatus } });
         });
     }
 }]);
@@ -22,8 +22,8 @@ authServices.service('Login', ['$http', 'Credentials', 'config', 'SuccessTokenHa
 authServices.service('SuccessTokenHandler', ['GetUserInfo', 'Credentials', 'GetManageInfo', function (GetUserInfo, Credentials, GetManageInfo) {
     return function (response, callback) {
         var token = response.token_type + ' ' + response.access_token;
-        var errorHandler = function(e) {
-            if (callback) callback({ success: false, error: e });
+        var errorHandler = function(errData, errStatus) {
+            if (callback) callback({ success: false, error: { data: errData, status: errStatus } });
         };
         GetUserInfo(token).success(function (userInfo) {
             GetManageInfo(token).success(function (manageInfo) {
@@ -82,8 +82,8 @@ authServices.factory('ExternalLogin', ['$http', 'Credentials', 'config', 'Succes
                     if (provider && provider.Url) {
                         callback({ success: true, externalProviderUrl: config.baseUrl + provider.Url });
                     }
-                }).error(function(e) {
-                    callback({ success: false, error: e });
+                }).error(function (errData, errStatus) {
+                    callback({ success: false, error: { data: errData, status: errStatus } });
                 });
         },
         complete: function (externalAccessToken, providerName, callback) {
@@ -91,8 +91,8 @@ authServices.factory('ExternalLogin', ['$http', 'Credentials', 'config', 'Succes
             $http.get(config.baseUrl + '/api/Account/ObtainLocalAccessToken?provider=' + providerName + '&externalAccessToken=' + externalAccessToken)
                 .success(function (response) {
                     SuccessTokenHandler(response, callback);
-                }).error(function(e) {
-                    callback({ success: false, error: e });
+                }).error(function (errData, errStatus) {
+                    callback({ success: false, error: { data: errData, status: errStatus } });
                 });
         }
     }
@@ -117,9 +117,9 @@ authServices.service('Registration', ['$http', 'Credentials', 'config', 'Success
     function register(request, callback) {
         Credentials.clear();
         $http(request).success(function (response) {
-            SuccessTokenHandler(response, callback);
-        }).error(function (e) {
-            callback({ success: false, error: e });
+            SuccessTokenHandler(response.Result, callback);
+        }).error(function (errData, errStatus) {
+            callback({ success: false, error: { data: errData, status: errStatus } });
         });
     };
 
@@ -130,8 +130,8 @@ authServices.service('refreshToken', ['$http', '$rootScope', 'Credentials', 'con
         $http.get(config.baseUrl + '/api/Account/RefreshToken').success(function (resp) {
             Credentials.set(resp.token_type + ' ' + resp.access_token, resp.expires_in, $rootScope.UserInfo);
             callback({success: true});
-        }).error(function (e) {
-            callback({ success: false, error: e });
+        }).error(function (errData, errStatus) {
+            callback({ success: false, error: { data: errData, status: errStatus } });
         });
     }
 }]);

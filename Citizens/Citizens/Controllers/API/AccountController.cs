@@ -532,7 +532,7 @@ namespace Citizens.Controllers.API
 
             var tokenExpiration = TimeSpan.FromMinutes(Convert.ToDouble(ConfigurationManager.AppSettings["AccessTokenExpireTimeSpanMinutes"]));
 
-            ApplicationUser user = await UserManager.FindByNameAsync(userName);
+            ApplicationUser user = await UserManager.FindByNameAsync(userName).ConfigureAwait(false);
 
             ClaimsIdentity identity = await user.GenerateUserIdentityAsync(UserManager,
                OAuthDefaults.AuthenticationType);
