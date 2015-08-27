@@ -59,6 +59,8 @@ namespace Citizens.Models
         public PrecinctAddress PrecinctAddress { get; set; }
 
         public ICollection<PersonAdditionalProperty> PersonAdditionalProperties { get; set; }
+
+        public ICollection<WorkArea> WorkAreas { get; set; }
     }
 
     public class Person : PersonBase

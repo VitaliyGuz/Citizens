@@ -45,11 +45,15 @@ namespace Citizens.Models
 
         public int PrecinctId { get; set; }
 
+        public int? WorkAreaId { get; set; }
+        
         public City City { get; set; }
 
         public Street Street { get; set; }
 
         public Precinct Precinct { get; set; }
+
+        public WorkArea WorkArea { get; set; }
 
         public ICollection<Person> Persons { get; set; }
 
