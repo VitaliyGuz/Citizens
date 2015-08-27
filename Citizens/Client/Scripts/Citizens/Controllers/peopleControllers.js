@@ -23,6 +23,7 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
         propValues = genlPeopleData.propValues;
         
         $scope.houseTypes.push({ val: undefined, desc: '-Всі типи-' });
+        $scope.houseTypes.push({ val: 'null', desc: 'Без типу' });
         houseTypes.forEach(function (type) {
             $scope.houseTypes.push({ val: "Citizens.Models.HouseType':type'".replace(/:type/g, type), desc: type });
         });
