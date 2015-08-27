@@ -63,7 +63,7 @@
                     <div ng-switch-when="refStreet">
                         <label>{{propKey.Name}}:</label>
                         <input type="text" typeahead-on-select="onSelectFilterStreet($item, $model, $label, propKey.input)" ng-model="propKey.input.Street"
-                               typeahead="s.Id as s.StreetType.Name +' '+ s.Name for s in streets | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control" required>
+                               typeahead="s.Id as s.StreetType.Name +' '+ s.Name for s in streets | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:15" class="form-control" required>
                     </div>
                 </div>
                 <hr/>
@@ -109,7 +109,7 @@
             </div>
             <div class="form-group">
                 <label>Вулиця:</label>
-                <input typeahead="s as s.StreetType.Name +' '+ s.Name for s in streets | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10"
+                <input typeahead="s as s.StreetType.Name +' '+ s.Name for s in streets | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:15"
                        ng-model="query.ref.Street" type="text" class="form-control">
             </div>
             <div class="form-group">
