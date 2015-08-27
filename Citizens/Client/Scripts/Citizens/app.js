@@ -238,15 +238,16 @@ app.factory("serviceUtil", ["$filter", '$routeParams', function ($filter, $route
             return { cityId: address.CityId, streetId: address.StreetId, house: address.House };
         },
         formatDate: function (date, pattern) {
-            if (angular.isString(date)) {
-                var parsedDate = this.dateParse(date);
-                if (parsedDate) {
-                    return $filter("date")(parsedDate, pattern);
-                } else {
-                    return undefined;
-                }
-            }
-            return $filter("date")(date, pattern);
+            //if (angular.isString(date)) {
+            //    var parsedDate = this.dateParse(date);
+            //    if (parsedDate) {
+            //        return $filter("date")(parsedDate, pattern);
+            //    } else {
+            //        return undefined;
+            //    }
+            //}
+            var d = this.dateParse(date);
+            return d ? $filter("date") (d, pattern) : undefined;
         },
         getRouteParam: function (paramName) {
             var param = $routeParams[paramName], intParam;
@@ -258,15 +259,24 @@ app.factory("serviceUtil", ["$filter", '$routeParams', function ($filter, $route
             }
             return undefined;
         },
-        dateParse: function (dateText) {
-            if (!dateText) return undefined;
+        dateParse: function (date) {
+            if(!date) return undefined;
+            if (angular.isDate(date)) return date;
             var regex = /^(\d{2}).(\d{2}).(\d{4})/,
-                maches = regex.exec(dateText);
+                maches = regex.exec(date);
             if (maches) {
                 return new Date(maches[3], maches[2] - 1, maches[1]);
             } else {
                 return undefined;
             }
+        },
+        formatDateToISO: function (date, setHours) {
+            var d = this.dateParse(date);
+            if (d && setHours) {
+                if (setHours.startOfDay) d.setHours(0, 0, 0, 0);
+                if (setHours.endOfDay) d.setHours(23, 59, 59, 999);
+            }
+            return d ? d.toISOString() : undefined;
         }
     };
 }]);

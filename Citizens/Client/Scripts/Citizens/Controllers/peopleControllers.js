@@ -4,7 +4,7 @@ var peopleControllers = angular.module('peopleControllers', ['peopleServices', '
 
 peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$location', 'peopleData', 'config', 'serviceUtil', 'genlPeopleData', 'filterSettings','houseTypes',
     function ($rootScope, $scope, $location, peopleData, config, serviceUtil, genlPeopleData, filterSettings,houseTypes) {
-        var propValues = [], DATE_FORMAT = 'yyyy-MM-ddT00:00:00', odataFilter;
+        var propValues = [], odataFilter;
         
         $rootScope.pageTitle = 'Фізичні особи';
         $scope.tableHead = ['№', 'П.І.Б.', 'Дата народження', 'Адреса', 'Дії'];
@@ -224,8 +224,8 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
             //                    Object.keys(interval[type]).forEach(function (intervalPropName) {
             //                        var valFrom, valTo;
             //                        if (type === 'date') {
-            //                            valFrom = serviceUtil.formatDate(interval.date[intervalPropName].from, DATE_FORMAT) + 'Z';
-            //                            valTo = serviceUtil.formatDate(interval.date[intervalPropName].to, DATE_FORMAT) + 'Z';
+            //                            valFrom = serviceUtil.formatDateToISO(interval.date[intervalPropName].from,{startOfDay: true});
+            //                            valTo = serviceUtil.formatDateToISO(interval.date[intervalPropName].to,{endOfDay: true});
             //                        } else {
             //                            valFrom = interval[type][intervalPropName].from;
             //                            valTo = interval[type][intervalPropName].to;
@@ -271,8 +271,8 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
                     if (valFrom && valTo) {
                         filterStr = concatIfExist(filterStr, " and ") + filterPatterns.interval
                             .replace(/:fieldName/g, 'DateOfBirth')
-                            .replace(/:from/g, serviceUtil.formatDate($scope.query.DateOfBirth.from, DATE_FORMAT) + 'Z')
-                            .replace(/:to/g, serviceUtil.formatDate($scope.query.DateOfBirth.to, DATE_FORMAT) + 'Z');
+                            .replace(/:from/g, serviceUtil.formatDateToISO($scope.query.DateOfBirth.from, { startOfDay: true }))
+                            .replace(/:to/g, serviceUtil.formatDateToISO($scope.query.DateOfBirth.to, { endOfDay: true }));
                     }
                 }
 
@@ -334,8 +334,8 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
                         //console.log(propKey.input.from.toISOString());
                         //todo: for type 'date' try to use odata cast to Edm.DataTime 
                         filterStr = concatIfExist(filterStr, " and ") + filterPatternPropInterval
-                            .replace(/:from/g, propKeyType === 'date' ? serviceUtil.formatDate(propKey.input.from, DATE_FORMAT) + 'Z' : propKey.input.from)
-                            .replace(/:to/g, propKeyType === 'date' ? serviceUtil.formatDate(propKey.input.to, DATE_FORMAT) + 'Z' : propKey.input.to);
+                            .replace(/:from/g, propKeyType === 'date' ? serviceUtil.formatDateToISO(propKey.input.from, {startOfDay: true}) : propKey.input.from)
+                            .replace(/:to/g, propKeyType === 'date' ? serviceUtil.formatDateToISO(propKey.input.to, { endOfDay: true }) : propKey.input.to);
                     } else if (propKeyType === 'text' && propKey.input.length > 0) {
                         filterStr = concatIfExist(filterStr, " and ") + filterPatternProp
                             .replace(/:val/g, "'" + propKey.input + "'");
@@ -429,7 +429,7 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
 
 peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$location', 'peopleData', 'serviceUtil', 'precinctData', 'precinctAddressesData', 'additionalPropsData', 'propertyTypes', 'config', 'resolvedData', 'genlPeopleData', 'houseTypes', 'modelFactory',
     function ($rootScope, $scope, $location, peopleData, serviceUtil, precinctData, precinctAddressesData, additionalPropsData, propertyTypes, config, resolvedData, genlPeopleData, houseTypes, modelFactory) {
-        var addMode = true, editInd, propValues = [], DATE_FORMAT = 'yyyy-MM-ddT00:00:00+00:00';
+        var addMode = true, editInd, propValues = [], DATE_FORMAT = 'yyyy-MM-ddT00:00:00+02:00';
         $rootScope.pageTitle = 'Фізична особа';
         $scope.tableHead = ['№', 'Назва', 'Значення'];
         $scope.selected = { property: {} };
@@ -625,8 +625,7 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
                     $scope.isPrimitive = false;
                 }
                 if (typeStr === 'date') {
-                    //$scope.selected.property.Value = new Date(prop.value.desc);
-                    $scope.selected.property.Value = serviceUtil.formatDate(new Date(prop.value.desc),'dd.MM.yyyy');
+                    $scope.selected.property.Value = serviceUtil.formatDate(new Date(prop.value.desc), config.LOCALE_DATE_FORMAT);
                 } else if (typeStr === 'number') {
                     $scope.selected.property.Value = Number(prop.value.desc);
                 } else {
