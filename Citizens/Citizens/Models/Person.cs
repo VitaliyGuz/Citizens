@@ -16,12 +16,18 @@ namespace Citizens.Models
         public virtual int Id { get; set; }
 
         [StringLength(20)]
+        [Required]
+        [Index]
         public string FirstName { get; set; }
 
         [StringLength(20)]
+        [Required]
+        [Index]
         public string MidleName { get; set; }
 
         [StringLength(25)]
+        [Required]
+        [Index]
         public string LastName { get; set; }
 
         public DateTime? DateOfBirth { get; set; }
@@ -31,10 +37,13 @@ namespace Citizens.Models
         [ForeignKey("PrecinctAddress")]
         [Column(Order = 3)]
         [Required]
+        [Index]
         public int CityId { get; set; }
 
         [ForeignKey("PrecinctAddress")]
         [Column(Order = 4)]
+        [Required]
+        [Index]
         public int StreetId { get; set; }
 
         [ForeignKey("PrecinctAddress")]
