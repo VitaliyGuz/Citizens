@@ -64,6 +64,7 @@ namespace Citizens
             builder.EntitySet<Neighborhood>("Neighborhoods");
             builder.EntitySet<UserRegion>("UserRegions");
             builder.EntitySet<UserRegionPart>("UserRegionParts");
+            builder.EntitySet<WorkArea>("WorkAreas");
 
             builder.EntitySet<ApplicationUser>("Users");
             //builder.EntitySet<IdentityUserClaim>("Claims");
@@ -78,6 +79,18 @@ namespace Citizens
                 .Collection
                 .Action("RemoveRange")
                 .CollectionParameter<UserPrecinct>("Array");
+
+            builder.EntityType<WorkArea>()
+                .Collection
+                .Action("CountPeopleAtAddresses")
+                .ReturnsCollection<AddressCountPeople>()
+                .CollectionParameter<AddressCountPeople>("Addresses");
+
+            builder.EntityType<WorkArea>()
+                .Collection
+                .Action("CountPeopleAtPrecincts")
+                .ReturnsCollection<AddressCountPeople>()
+                .CollectionParameter<AddressCountPeople>("Precincts");
 
             //builder.EntitySet<IdentityUserRole>("UserRoles");
             //builder.EntitySet<ApplicationUserLogin>("Logins");

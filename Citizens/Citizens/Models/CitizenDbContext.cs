@@ -90,6 +90,8 @@ namespace Citizens.Models
         public DbSet<ApplicationUserClaim> Claims { get; set; }
         public DbSet<ApplicationUserLogin> Logins { get; set; }
 
+        public DbSet<WorkArea> WorkAreas { get; set; }
+
         
 
         

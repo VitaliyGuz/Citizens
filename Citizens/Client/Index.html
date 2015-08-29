@@ -38,6 +38,7 @@
     <script src="Scripts/Citizens/Services/userServices.js"></script>
     <script src="Scripts/Citizens/Services/authServices.js"></script>
     <script src="Scripts/Citizens/Services/neighborhoodServices.js"></script>
+    <script src="Scripts/Citizens/Services/workAreaServises.js"></script>
     <!-- CONTROLLERS  -->
     <script src="Scripts/Citizens/Controllers/peopleControllers.js"></script>
     <script src="Scripts/Citizens/Controllers/authControllers.js"></script>
@@ -49,6 +50,7 @@
     <script src="Scripts/Citizens/Controllers/uploadXlsController.js"></script>
     <script src="Scripts/Citizens/Controllers/districtControllers.js"></script>
     <script src="Scripts/Citizens/Controllers/neighborhoodControllers.js"></script>
+    <script src="Scripts/Citizens/Controllers/workAreaControllers.js"></script>
     <!-- GEOCODE -->
     <!--<script src="https://maps.googleapis.com/maps/api/js?sensor=false&language=uk&key=AIzaSyD5rEzPHikmpU-4W2Nu__A7CeJgTYEe_lg"></script>-->
     <title>Citizens</title>
@@ -66,7 +68,17 @@
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav" ng-if="UserInfo">
                     <li><a href="/people" class="navbar-brand">Фізичні особи</a></li>
-                    <li><a href="/precincts">Дільниці</a></li>
+                    <!--<li><a href="/precincts">Дільниці</a></li>-->
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                            Дільниці
+                            <span class="caret"></span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a href="/precincts">Виборчі дільниці</a></li>
+                            <li><a href="/work-areas">Робочі дільниці</a></li>
+                        </ul>
+                    </li>
                     <li><a href="/streets">Вулиці</a></li>
                     <li><a href="/cities">Населені пункти</a></li>
                     <li><a href="/region-parts">Райони</a></li>

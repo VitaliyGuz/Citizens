@@ -4,7 +4,7 @@ var app = angular.module("citizens",
     [
         'ngRoute', 'ngCookies',
         'angularUtils.directives.dirPagination','ui.bootstrap',
-        'peopleControllers', 'streetControllers', 'regionPartControllers', 'cityControllers', 'authControllers', 'precinctControllers', 'uploadXlsModule', 'districtControllers', 'userControllers', 'neighborhoodControllers'
+        'peopleControllers', 'streetControllers', 'regionPartControllers', 'cityControllers', 'authControllers', 'precinctControllers', 'uploadXlsModule', 'districtControllers', 'userControllers', 'neighborhoodControllers', 'workAreaControllers'
     ]
 );
 
@@ -108,6 +108,23 @@ app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider',
             resolve: {
                 commonData: function (commonData) { return commonData.asyncLoad() }
             }
+        },
+        routeListWorkAreas = {
+            templateUrl: 'Views/ListWorkAreas.html',
+            controller: 'listWorkAreasController',
+            resolve: {
+                commonData: function (commonData) { return commonData.asyncLoad() }
+            }
+        },
+        routeEditWorkArea = {
+            templateUrl: 'Views/EditWorkArea.html',
+            controller: 'editWorkAreaController',
+            resolve: {
+                commonData: function (commonData) { return commonData.asyncLoad() },
+                resolvedData: function ($route, workAreaDataService) {
+                    return workAreaDataService.asyncLoad($route.current.params.id);
+                }
+            }
         };
 
     $routeProvider.
@@ -144,6 +161,12 @@ app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider',
         when('/user/:id/:currPage', routeEditUser).
         when('/neighborhoods', routeNeighborhoods).
         when('/neighborhoods/:currPage', routeNeighborhoods).
+        when('/work-areas', routeListWorkAreas).
+        when('/work-areas/:currPage', routeListWorkAreas).
+        when('/work-area/new', routeEditWorkArea).
+        when('/work-area/new/:currPage', routeEditWorkArea).
+        when('/work-area/:id', routeEditWorkArea).
+        when('/work-area/:id/:currPage', routeEditWorkArea).
         when('/uploadXls', {
             templateUrl: 'Views/Admin/UploadXls.html',
             controller: 'uploadXlsController',
@@ -202,7 +225,7 @@ app.filter('checkApartment', function () {
     };
 });
 
-app.factory("serviceUtil", ["$filter", '$routeParams', function ($filter, $routeParams) {
+app.factory("serviceUtil", ["$filter", '$routeParams', '$rootScope', function ($filter, $routeParams, $rootScope) {
     return {
         getErrorMessage: function (error) {
             var errMsg, errDetail;
@@ -277,8 +300,82 @@ app.factory("serviceUtil", ["$filter", '$routeParams', function ($filter, $route
                 if (setHours.endOfDay) d.setHours(23, 59, 59, 999);
             }
             return d ? d.toISOString() : undefined;
+        },
+        addressToString: function(address) {
+            if (address.City && address.Street && address.House) {
+                return  address.City.CityType.Name + address.City.Name + ' ' +
+                        address.Street.StreetType.Name + address.Street.Name + ' ' +
+                        address.House + $filter("checkApartment")(address.Apartment);
+            } else {
+                return undefined;
+            }   
+        },
+        expandAddress: function (obj) {
+            if (obj.CityId) {
+                obj.City = $rootScope.cities.filter(function (c) {
+                    return c.Id === obj.CityId;
+                })[0];
+            }
+            if (obj.StreetId) {
+                obj.Street = $rootScope.streets.filter(function (c) {
+                    return c.Id === obj.StreetId;
+                })[0];
+            }
+        },
+        //todo: sort on server-side
+        sortAddresses: function (addresses) {
+            function parseHouseNumber(strNumber) {
+                var houseNumbRegex = /(\d*)?([а-яА-Я]*)?\/?(\d*)/i,
+                    housingRegex = /к.(\d*)/i,
+                    matches = houseNumbRegex.exec(strNumber),
+                    housing = housingRegex.exec(strNumber) || 0;
+                return { beforeSlash: parseInt(matches[1]), letter: matches[2] || '', afterSlash: parseInt(matches[3]) || 0, housing: housing[1] || 0 };
+            };
+
+            function compareHouses(h1, h2) {
+                var compInt = h1.beforeSlash - h2.beforeSlash, compLetter, compAfterSlash;
+                if (compInt === 0) {
+                    compLetter = h1.letter.localeCompare(h2.letter);
+                    if (compLetter === 0) {
+                        compAfterSlash = h1.afterSlash - h2.afterSlash;
+                        if (compAfterSlash === 0) {
+                            return h1.housing - h2.housing;
+                        } else {
+                            return compAfterSlash;
+                        }
+                    } else {
+                        return compLetter;
+                    }
+                } else {
+                    return compInt;
+                }
+            };
+
+            var compareByNameFn =  this.compareByName;
+
+            function compareAddresses(a1, a2) {
+                var compCity = compareByNameFn(a1.City, a2.City);
+                var compStreet = compareByNameFn(a1.Street, a2.Street);
+                var compTypeStreet = compareByNameFn(a1.Street.StreetType, a2.Street.StreetType);
+                var compHouse = compareHouses(parseHouseNumber(a1.House), parseHouseNumber(a2.House));
+                if (compCity === 0) {
+                    if (compStreet === 0) {
+                        if (compTypeStreet === 0) {
+                            return compHouse;
+                        } else {
+                            return compTypeStreet;
+                        }
+                    } else {
+                        return compStreet;
+                    }
+                } else {
+                    return compCity;
+                }
+            };
+
+            if (addresses) addresses.sort(compareAddresses);
         }
-    };
+    }
 }]);
 
 app.run(["$rootScope", "$timeout", '$location', 'Credentials', 'checkPermissions', function ($rootScope, $timeout, $location, Credentials, checkPermissions) {
@@ -565,9 +662,15 @@ app.factory('modelFactory', ['serviceUtil', function (serviceUtil) {
             "CityId": 0,
             "StreetId": 0,
             "House": '',
+            "HouseNumber": 0,
+            "HouseLetter": '',
+            "HouseFraction": '',
+            "HouseBuilding": '',
             "PrecinctId": null,
             "HouseType": null,
-            "Apartments": null
+            "Apartments": null,
+            "PostIndex": null,
+            "WorkAreaId": null
         },
         city: {
             "Id": 0,
@@ -594,6 +697,12 @@ app.factory('modelFactory', ['serviceUtil', function (serviceUtil) {
             "Id": 0,
             "Name": '',
             "StreetTypeId": 0
+        },
+        workArea: {
+            "Id": 0,
+            "Number": 0,
+            "PrecinctId": 0,
+            "TopId": 0
         }
     };
     

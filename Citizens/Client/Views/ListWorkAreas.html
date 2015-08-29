@@ -1,0 +1,57 @@
+﻿<!--<h3>Дільниці</h3>-->
+<h5 ng-show="loader.loadingWorkAreas">Завантаження... <i class="fa fa-refresh fa-spin"></i></h5>
+<h6 ng-show="loader.calcPeople">Виконується підрахунок кількості фізичних осіб... <i class="fa fa-refresh fa-spin"></i></h6>
+<hr>
+<div class="row form-inline">
+    <div class="col-md-6">
+        <form ng-submit="applyFilter()">
+            <label>Пошук:</label>
+            <input ng-model="query[queryBy]" type="text" class="form-control" placeholder="Введіть слово">
+            <label>по:</label>
+            <select ng-model="queryBy" ng-change="query = {}" class="form-control">
+                <option value="Precinct/Number">Дільниця</option>
+                <option value="Top/LastName">Прізвище відповідального</option>
+            </select>
+            <button type="submit" class="btn btn-success" title="Виконати пошук">
+                <span class="glyphicon glyphicon-search"></span>
+            </button>
+        </form>
+    </div>
+    <div class="col-md-3">
+        <button ng-click="addWorkArea()" class="btn btn-success" title="Створити нову робочу дільницю">
+            <span class="glyphicon glyphicon-plus"></span> Створити
+        </button>
+    </div>
+    <div class="col-md-3">
+        <button ng-click="calcPeopleAtPrecincts()" class="btn btn-success">
+            <span class="glyphicon glyphicon-refresh"></span> Обчислити к-сть фізосіб
+        </button>
+    </div>
+</div>
+<hr>
+<table class="table table-striped table-condensed">
+    <thead>
+        <tr>
+            <th ng-repeat="thName in tableHead">{{thName}}</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr dir-paginate="workArea in workAreas | itemsPerPage: pagination.pageSize" current-page="pagination.currentPage" total-items="pagination.totalItems" pagination-id="workAreasPagination">
+            <td>{{ getIndex($index) }}</td>
+            <td>{{ workArea.Precinct.Number }}.{{ workArea.Number }}</td>
+            <td>{{ workArea.Top.LastName }} {{ workArea.Top.FirstName }} {{ workArea.Top.MidleName }}</td>
+            <td>{{ workArea.countPeople }}</td>
+            <td>
+                <button class="btn btn-xs" ng-click="edit(workArea)" title="Редагувати">
+                    <span class="glyphicon glyphicon-edit"></span>
+                </button>
+                <button class="btn btn-xs" ng-click="delete(workArea)" title="Видалити">
+                    <span class="glyphicon glyphicon-trash"></span>
+                </button>
+            </td>
+        </tr>
+    </tbody>
+</table>
+<hr>
+<dir-pagination-controls boundary-links="true" on-page-change="onPageChange(newPageNumber)" pagination-id="workAreasPagination"></dir-pagination-controls>
+

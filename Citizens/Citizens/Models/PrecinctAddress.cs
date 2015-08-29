@@ -60,4 +60,13 @@ namespace Citizens.Models
         public ICollection<PersonChangeHistory> PersonChangeHistory { get; set; }
 
     }
+
+    public class AddressCountPeople
+    {
+        public int CityId { get; set; }
+        public int StreetId { get; set; }
+        public string House { get; set; }
+        public int PrecinctId { get; set; }
+        public int? CountPeople { get; set; }
+    }
 }

@@ -210,6 +210,7 @@
     <Compile Include="Controllers\API\UsersController.cs" />
     <Compile Include="Controllers\API\AccountController.cs" />
     <Compile Include="Controllers\API\NamesController.cs" />
+    <Compile Include="Controllers\API\WorkAreasController.cs" />
     <Compile Include="Extensions\BaseActionFilter.cs" />
     <Compile Include="Extensions\PathAndSlashEscapeODataPathHandler.cs" />
     <Compile Include="Extensions\PersonFilterAttribute.cs" />
