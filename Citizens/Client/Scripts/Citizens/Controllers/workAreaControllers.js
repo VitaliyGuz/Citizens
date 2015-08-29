@@ -322,6 +322,8 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
         $scope.calcPeopleAtAddresses = function () {
             if (!$scope.data.precinctAddresses || $scope.data.precinctAddresses.length === 0) return;
             $scope.loader.calcPeople = true;
+            $scope.totalCount.workArea = 0;
+            $scope.totalCount.precinct = 0;
             var addresses = $scope.data.precinctAddresses.map(function (a) {
                 return {
                     CityId: a.CityId,
