@@ -184,7 +184,7 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
             function updatePrecinctAddresses(newWorkArea) {
                 if (addMode) {
                     $scope.data.workArea.Id = newWorkArea.Id;
-                    $scope.data.workAreaId = newWorkArea.Id;
+                    $scope.data.workAreaId = newWorkArea.Id;//don't remove
                 }
                 var addressesForUpdate = $scope.data.precinctAddresses.filter(function(a) {
                     return a.isDeselected || a.isSelected;
@@ -248,11 +248,11 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
         };
 
         $scope.checked = function(address) {
-            return address.WorkAreaId || address.isSelected;
+            return (address.WorkAreaId && address.WorkAreaId === $scope.data.workArea.Id) | address.isSelected;
         };
 
         $scope.toggleSelection = function (address) {
-            if (address.WorkAreaId) {
+            if (address.WorkAreaId && address.WorkAreaId === $scope.data.workArea.Id) {
                 address.isDeselected = address.isDeselected ? false : true;
                 if (address.countPeople) {
                     if (address.isDeselected) {
@@ -275,7 +275,7 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
         };
 
         $scope.markAddress = function (address) {
-            if (address.WorkAreaId) {
+            if (address.WorkAreaId && address.WorkAreaId === $scope.data.workArea.Id) {
                 return address.isDeselected ? "alert-danger" : "alert-success";
             } else {
                 return address.isSelected ? "alert-warning" : "";
@@ -338,7 +338,7 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
                          })[0];
                          if (finded) {
                              a.countPeople = finded.CountPeople;
-                             if (a.WorkAreaId) $scope.totalCount.workArea += finded.CountPeople;
+                             if (a.WorkAreaId === $scope.data.workArea.Id) $scope.totalCount.workArea += finded.CountPeople;
                              $scope.totalCount.precinct += finded.CountPeople;
                          }
                     });
