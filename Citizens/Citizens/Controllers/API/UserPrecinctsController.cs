@@ -288,7 +288,7 @@ namespace Citizens.Controllers.API
 
             var savingUserRegionParts = savingUserPrecincts
                .GroupJoin(db.Precincts, up => up.PrecinctId, p => p.Id, (k, v) => new { k.UserId, Precincts = v })
-               .SelectMany(x => x.Precincts.DefaultIfEmpty(), (x, y) => y.RegionPartId != null ? new UserRegionPart { UserId = x.UserId, RegionPartId = (int)y.RegionPartId } : null)
+               .SelectMany(x => x.Precincts.DefaultIfEmpty(), (x, y) => y.RegionPartId != null ? new UserRegionPart { UserId = x.UserId, RegionPartId = (int)y.RegionPartId } : new UserRegionPart { UserId = string.Empty, RegionPartId = 0 })
                .Distinct(new UserRegionPartComparer())
                .Where(r => IsCountEqualTotal(r.RegionPartId, r.UserId, savingUserPrecincts.Length));
 
@@ -332,6 +332,7 @@ namespace Citizens.Controllers.API
 
         private bool IsCountEqualTotal(int regionPartId, string userId, int countSave)
         {
+            if (regionPartId == 0 || userId.Equals(string.Empty)) return false; 
             return countSave + GetCountUserPrecinctsByRegionPartId(regionPartId, userId) == GetTotalPrecinctsByRegionPartId(regionPartId);
         }
 
