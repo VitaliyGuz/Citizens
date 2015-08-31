@@ -53,6 +53,9 @@ namespace Citizens.Models
         [Required()]
         public string House { get; set; }
 
+        [Required]
+        public int MajorId { get; set; }
+
         public int? Apartment { get; set; }
 
         [StringLength(20)]
@@ -61,6 +64,8 @@ namespace Citizens.Models
         public City City { get; set; }
 
         public Street Street { get; set; }
+
+        public Person Major { get; set; }
 
         [NotMapped]
         public int PrecinctId { get; set; }

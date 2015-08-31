@@ -315,6 +315,10 @@
     <Compile Include="Migrations\201508280956572_22.Designer.cs">
       <DependentUpon>201508280956572_22.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201508310934033_23.cs" />
+    <Compile Include="Migrations\201508310934033_23.Designer.cs">
+      <DependentUpon>201508310934033_23.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\CityRegionPart.cs" />
     <Compile Include="Models\District.cs" />
@@ -428,6 +432,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201508280956572_22.resx">
       <DependentUpon>201508280956572_22.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201508310934033_23.resx">
+      <DependentUpon>201508310934033_23.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
