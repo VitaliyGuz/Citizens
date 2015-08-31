@@ -162,7 +162,10 @@
     <None Include="Scripts\jQuery\jquery-2.1.4.intellisense.js" />
     <Content Include="Scripts\Citizens\Controllers\districtControllers.js" />
     <Content Include="Scripts\Citizens\Controllers\neighborhoodControllers.js" />
+    <Content Include="Scripts\Citizens\Controllers\streetTypesControllers.js" />
+    <Content Include="Scripts\Citizens\Controllers\workAreaControllers.js" />
     <Content Include="Scripts\Citizens\Services\neighborhoodServices.js" />
+    <Content Include="Scripts\Citizens\Services\workAreaServises.js" />
     <Content Include="Scripts\jQuery\jquery-2.1.4.js" />
     <Content Include="Scripts\jQuery\jquery-2.1.4.min.js" />
     <Content Include="Scripts\jQuery\jquery-2.1.4.min.map" />
@@ -219,11 +222,13 @@
     <Content Include="Views\EditPerson.html" />
     <Content Include="Views\EditPrecinct.html" />
     <Content Include="Views\Admin\GeocodingPrecincts.html" />
+    <Content Include="Views\EditWorkArea.html" />
     <Content Include="Views\ErrorPages\403.tpl.html" />
     <Content Include="Views\ListCities.html" />
     <Content Include="Views\ListDistricts.html" />
     <Content Include="Views\ListPeople.html" />
     <Content Include="Views\ListPrecincts.html" />
+    <Content Include="Views\ListWorkAreas.html" />
     <Content Include="Views\Login.html" />
     <Content Include="Views\Neighborhoods.html" />
     <Content Include="Views\RegionParts.html" />
