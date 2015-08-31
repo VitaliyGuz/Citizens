@@ -59,6 +59,17 @@
                    typeahead="p as p.Number for p in precincts | filter: {Number:$viewValue} | orderByStartsWith:{Number:$viewValue} | limitTo:10" class="form-control" required>
         </div>
     </div>
+    <div class="form-horizontal">
+        <div class="form-group col-lg-6">
+            <label>Відповідальний</label>
+            <input typeahead="p as p.label for p in getPeopleByName($viewValue)" typeahead-on-select="onSelectMajor($item)"
+                   type="text" ng-model="person.Major" typeahead-loading="loadingPeople" typeahead-no-results="noResults" typeahead-min-length="10" class="form-control" required>
+            <i ng-show="loadingPeople" class="fa fa-refresh fa-spin"></i>
+            <div ng-show="noResults">
+                <i class="glyphicon glyphicon-remove"></i> Фізособу не знайдено
+            </div>
+        </div>
+    </div>
     <div class="row">
         <div class="col-lg-12">
             <button type="submit" class="btn btn-sm btn-success" title="Зберегти зміни">

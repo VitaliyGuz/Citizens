@@ -124,8 +124,8 @@ workAreaControllers.controller("listWorkAreasController", ['$location', '$rootSc
         };
     }]);
 
-workAreaControllers.controller("editWorkAreaController", ['$location', '$rootScope', '$scope', 'serviceUtil', 'config', 'precinctData', 'precinctAddressesData', 'resolvedData', 'workAreaResource', 'modelFactory', 'houseTypes','peopleData',
-    function ($location, $rootScope, $scope, serviceUtil, config, precinctData, precinctAddressesData, resolvedData, workAreaResource, modelFactory, houseTypes,peopleData) {
+workAreaControllers.controller("editWorkAreaController", ['$location', '$rootScope', '$scope', 'serviceUtil', 'config', 'precinctData', 'precinctAddressesData', 'resolvedData', 'workAreaResource', 'modelFactory', 'houseTypes', 'dataForEditPersonPage',
+    function ($location, $rootScope, $scope, serviceUtil, config, precinctData, precinctAddressesData, resolvedData, workAreaResource, modelFactory, houseTypes, dataForEditPersonPage) {
         var odataFilterPattern = ":fieldName eq ':val'";
 
         $rootScope.pageTitle = 'Робоча дільниця';
@@ -145,9 +145,7 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
         if (!$scope.data.precinctAddresses) $scope.data.precinctAddresses = [];
 
         if ($scope.data.workArea) {
-            $scope.data.workArea.Top.formatedDateOfBirth = new Date($scope.data.workArea.Top.DateOfBirth).toLocaleDateString();
-            serviceUtil.expandAddress($scope.data.workArea.Top);
-            $scope.data.workArea.Top.address = serviceUtil.addressToString($scope.data.workArea.Top);
+            $scope.data.workArea.Top.label = dataForEditPersonPage.getPersonLabel($scope.data.workArea.Top);
         }
         
         $scope.saveChanges = function () {
@@ -282,29 +280,7 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
             }
         };
 
-        $scope.getPeopleByName = function (viewValue) {
-            var names = viewValue.split(" "), filterQuery;
-            if (names.length < 3) return [];
-            var name = {
-                LastName: names[0],
-                FirstName: names[1],
-                MidleName: names[2]
-            };
-            Object.keys(name).forEach(function(prop) {
-                filterQuery = filterQuery ? filterQuery + " and " : "&$filter=";
-                filterQuery = filterQuery + odataFilterPattern
-                    .replace(/:fieldName/g, prop)
-                    .replace(/:val/g, name[prop]);
-            });
-            return peopleData.getPageItems({ skip: 0, filter: filterQuery }).$promise.then(function(res) {
-                return res.value.map(function (person) {
-                    person.formatedDateOfBirth = new Date(person.DateOfBirth).toLocaleDateString();
-                    serviceUtil.expandAddress(person);
-                    person.address = serviceUtil.addressToString(person);
-                    return person;
-                });
-            });
-        };
+        $scope.getPeopleByName = dataForEditPersonPage.typeaheadPersonByNameFn();
 
         $scope.onSelectPrecinct = function(item) {
             $scope.loader.loadingPrecinctAddresses = true;

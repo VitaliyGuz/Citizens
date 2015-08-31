@@ -5,7 +5,7 @@ angular.module("peopleServices", ['ngResource', 'precinctServices']).
         var urlOdata = config.baseUrl + '/odata/People',
             order = '&$orderby=LastName,FirstName,MidleName',
             expand = '?$expand=City($expand=CityType,RegionPart),Street($expand=StreetType)',
-            expandWithProps = expand + ",PrecinctAddress($expand=Precinct),PersonAdditionalProperties($expand=PropertyKey,PropertyValue)",
+            expandWithProps = expand + ",Major,PrecinctAddress($expand=Precinct),PersonAdditionalProperties($expand=PropertyKey,PropertyValue)",
             //paginate = "&$count=true&$skip=:skip&$top=" + config.pageSize,
             paginate = "$count=true&$skip=:skip"; // page size on server-side
 
@@ -66,7 +66,7 @@ angular.module("peopleServices", ['ngResource', 'precinctServices']).
         }
     }])
     .factory('dataForEditPersonPage', ['$q', 'serviceUtil', 'peopleData', 'precinctData', function ($q, serviceUtil, peopleData, precinctData) {
-
+        //todo: merge "dataForEditPersonPage" and "genlPeopleData" to "peopleDataService"
         function getPersonPromise(routeParam) {
             var deferred = $q.defer();
             if (routeParam) {
@@ -108,7 +108,47 @@ angular.module("peopleServices", ['ngResource', 'precinctServices']).
                 }, errorHandler);
 
                 return deferred.promise;
-            }
+            },
+            getPersonLabel: function (person) {
+                serviceUtil.expandAddress(person);
+                var strAddress = serviceUtil.addressToString(person),
+                    dateOfBirth = new Date(person.DateOfBirth),
+                    srtDateOfBirth = serviceUtil.isEmptyDate(dateOfBirth) ? '' : ', ' + dateOfBirth.toLocaleDateString() + ' р.н.';
+                strAddress = strAddress ? ', ' + strAddress : '';
+                return person.LastName + ' ' + person.FirstName + ' ' + person.MidleName + '' + srtDateOfBirth + '' + strAddress;
+            },
+            typeaheadPersonByNameFn: function () {
+                var odataFilterPattern = ":propName eq ':val'";
+                var getPersonLabel = this.getPersonLabel;
+                return function (viewValue) {
+                    var names = viewValue.split(" "), filterQuery;
+                    if (names.length < 3) return [];
+                    var name = {
+                        LastName: names[0],
+                        FirstName: names[1],
+                        MidleName: names[2]
+                    };
+                    if (names.length > 3) {
+                        for (var i = 3; i < names.length; i++) {
+                            name.MidleName += ' ' + names[i];
+                        }
+                    }
+                    Object.keys(name).forEach(function (prop) {
+                        filterQuery = filterQuery ? filterQuery + " and " : "&$filter=";
+                        filterQuery = filterQuery + odataFilterPattern
+                            .replace(/:propName/g, prop)
+                            .replace(/:val/g, name[prop]);
+                    });
+
+                    return peopleData.getPageItems({ skip: 0, filter: filterQuery }).$promise.then(function (res) {
+                        return res.value.map(function (person) {
+                            person.label = getPersonLabel(person);
+                            return person;
+                        });
+                    });
+                }
+            },
+            resource: peopleData
         };
     }])
     .factory('genlPeopleData', ['$q', 'additionalPropsData', 'propertyTypes', 'serviceUtil', function ($q, additionalPropsData, propertyTypes, serviceUtil) {

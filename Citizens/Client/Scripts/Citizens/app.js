@@ -301,6 +301,10 @@ app.factory("serviceUtil", ["$filter", '$routeParams', '$rootScope', function ($
             }
             return d ? d.toISOString() : undefined;
         },
+        isEmptyDate: function (date) {
+            if(!date) return true;
+            return date.getTime() === new Date(1900, 0, 1).getTime();
+        },
         addressToString: function(address) {
             if (address.City && address.Street && address.House) {
                 return  address.City.CityType.Name + address.City.Name + ' ' +
@@ -644,7 +648,8 @@ app.factory('modelFactory', ['serviceUtil', function (serviceUtil) {
             "CityId": 0,
             "StreetId": 0,
             "House": '',
-            "Apartment": null
+            "Apartment": null,
+            "MajorId":0
         },
         precinct: {
             "Id": 0,

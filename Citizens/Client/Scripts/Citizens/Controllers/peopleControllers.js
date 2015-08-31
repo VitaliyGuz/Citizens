@@ -428,8 +428,8 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
 
     }]);
 
-peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$location', 'peopleData', 'serviceUtil', 'precinctData', 'precinctAddressesData', 'additionalPropsData', 'propertyTypes', 'config', 'resolvedData', 'genlPeopleData', 'houseTypes', 'modelFactory',
-    function ($rootScope, $scope, $location, peopleData, serviceUtil, precinctData, precinctAddressesData, additionalPropsData, propertyTypes, config, resolvedData, genlPeopleData, houseTypes, modelFactory) {
+peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$location', 'peopleData', 'serviceUtil', 'precinctData', 'precinctAddressesData', 'additionalPropsData', 'propertyTypes', 'config', 'resolvedData', 'genlPeopleData', 'houseTypes', 'modelFactory', 'dataForEditPersonPage',
+    function ($rootScope, $scope, $location, peopleData, serviceUtil, precinctData, precinctAddressesData, additionalPropsData, propertyTypes, config, resolvedData, genlPeopleData, houseTypes, modelFactory, dataForEditPersonPage) {
         var addMode = true, editInd, propValues = [], DATE_FORMAT = 'yyyy-MM-ddT00:00:00+02:00';
         $rootScope.pageTitle = 'Фізична особа';
         $scope.tableHead = ['№', 'Назва', 'Значення'];
@@ -451,6 +451,7 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
                 if (resolvedData.person.DateOfBirth) {
                     $scope.dateOfBirth = serviceUtil.formatDate(new Date(resolvedData.person.DateOfBirth), config.LOCALE_DATE_FORMAT);
                 }
+                resolvedData.person.Major.label = dataForEditPersonPage.getPersonLabel(resolvedData.person.Major);
                 $scope.person.address = resolvedData.person.PrecinctAddress;
                 $scope.person.address.City = resolvedData.person.City;
                 $scope.person.address.Street = resolvedData.person.Street;
@@ -530,6 +531,11 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
                 return;
             };
 
+            if ($scope.person.Major && !$scope.person.Major.Id) {
+                $rootScope.errorMsg = "Відповідального '" + $scope.person.Major + "' не знайдено";
+                return;
+            };
+
             $rootScope.errorMsg = '';
             $scope.saving = true;
             var person = modelFactory.createObject('person', [$scope.person, $scope.person.address]);
@@ -598,6 +604,10 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
             $scope.selected.property.ValueId = $model;
         };
         
+        $scope.onSelectMajor = function ($item) {
+            $scope.person.MajorId = $item.Id;
+        };
+
         $scope.onChangePropertyKey = function () {
             $scope.selected.property.Key.PropertyType.html.indexOf('ref') === 0  ? $scope.isPrimitive = false : $scope.isPrimitive = true;
             $scope.selected.property.Value = '';
@@ -720,4 +730,7 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
                 $scope.person.additionalProperties.splice(ind, 1);
             }, errorHandler);
         };
+
+        $scope.getPeopleByName = dataForEditPersonPage.typeaheadPersonByNameFn();
+        
     }]);
