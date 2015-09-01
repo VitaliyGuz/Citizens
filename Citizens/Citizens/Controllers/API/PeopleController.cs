@@ -29,7 +29,7 @@ namespace Citizens.Controllers.API
     builder.EntitySet<Street>("Streets"); 
     config.Routes.MapODataRoute("odata", "odata", builder.GetEdmModel());
     */
-    [Logger(Roles = "SuperAdministrators")]        
+         
     public class PeopleController : ODataController
     {
         private CitizenDbContext db = new CitizenDbContext();
@@ -37,7 +37,7 @@ namespace Citizens.Controllers.API
         // GET: odata/People
         [EnableQuery(PageSize=20, MaxNodeCount = 200)]
         [PersonFilter]
-        [Logger(Roles = "Operators")] 
+        [Logger(Roles = "Operators, SuperAdministrators")] 
 
         public IQueryable<Person> GetPeople(ODataQueryOptions opts)
         //public IQueryable<Person> GetPeople()
@@ -150,13 +150,14 @@ namespace Citizens.Controllers.API
         // GET: odata/People(5)
         [EnableQuery]
         [PersonFilter]
-        [Logger(Roles = "Operators")] 
+        [Logger(Roles = "Operators, SuperAdministrators")] 
         public SingleResult<Person> GetPerson([FromODataUri] int key)
         {
             return SingleResult.Create(db.People.Where(person => person.Id == key));
         }
 
         // PUT: odata/People(5)
+        [Logger(Roles = "SuperAdministrators")]
         public async Task<IHttpActionResult> Put([FromODataUri] int key, Delta<Person> patch)
         {
             Validate(patch.GetEntity());
@@ -194,6 +195,7 @@ namespace Citizens.Controllers.API
         }
 
         // POST: odata/People
+        [Logger(Roles = "SuperAdministrators")]
         public async Task<IHttpActionResult> Post(Person person)
         {
             if (!ModelState.IsValid)
@@ -246,6 +248,7 @@ namespace Citizens.Controllers.API
         }
 
         // DELETE: odata/People(5)
+        [Logger(Roles = "SuperAdministrators")]
         public async Task<IHttpActionResult> Delete([FromODataUri] int key)
         {
             Person person = await db.People.FindAsync(key);

@@ -29,14 +29,14 @@ namespace Citizens.Controllers.API
     builder.EntitySet<Street>("Streets"); 
     config.Routes.MapODataRoute("odata", "odata", builder.GetEdmModel());
     */
-    [Logger(Roles = "SuperAdministrators")]        
+            
     public class PrecinctsController : ODataController
     {
         private CitizenDbContext db = new CitizenDbContext();
 
         // GET: odata/Precincts
         [EnableQuery(MaxExpansionDepth = 3)]
-        [Logger(Roles = "Operators")] 
+        [Logger(Roles = "Operators, SuperAdministrators")] 
         [PrecinctFilter]
         public IQueryable<Precinct> GetPrecincts()
         {
@@ -45,7 +45,7 @@ namespace Citizens.Controllers.API
 
         // GET: odata/Precincts(5)
         [EnableQuery(MaxExpansionDepth = 3)]
-        [Logger(Roles = "Operators")] 
+        [Logger(Roles = "Operators, SuperAdministrators")] 
         [PrecinctFilter]
         public SingleResult<Precinct> GetPrecinct([FromODataUri] int key)
         {
@@ -53,6 +53,7 @@ namespace Citizens.Controllers.API
         }
 
         // PUT: odata/Precincts(5)
+        [Logger(Roles = "SuperAdministrators")]
         public async Task<IHttpActionResult> Put([FromODataUri] int key, Delta<Precinct> patch)
         {
             Validate(patch.GetEntity());
@@ -90,6 +91,7 @@ namespace Citizens.Controllers.API
         }
 
         // POST: odata/Precincts
+        [Logger(Roles = "SuperAdministrators")]
         public async Task<IHttpActionResult> Post(Precinct precinct)
         {
             //if (precinct.DistrictId == 0)
@@ -127,6 +129,7 @@ namespace Citizens.Controllers.API
         // PATCH: odata/Precincts(5)
         [AcceptVerbs("PATCH", "MERGE")]
         [ODataRoute("Precincts")]
+        [Logger(Roles = "SuperAdministrators")]
         public async Task<IHttpActionResult> Patch(Precinct precinct)
         {
 
@@ -203,6 +206,7 @@ namespace Citizens.Controllers.API
         }
 
         // DELETE: odata/Precincts(5)
+        [Logger(Roles = "SuperAdministrators")]
         public async Task<IHttpActionResult> Delete([FromODataUri] int key)
         {
             Precinct precinct = await db.Precincts.FindAsync(key);

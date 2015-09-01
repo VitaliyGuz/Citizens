@@ -26,7 +26,7 @@ namespace Citizens.Controllers.API
     builder.EntitySet<IdentityUserRole>("IdentityUserRoles"); 
     config.Routes.MapODataRoute("odata", "odata", builder.GetEdmModel());
     */
-    [Logger(Roles = "SuperAdministrators")]        
+     
     public class RolesController : ODataController
     {
         private CitizenDbContext db = new CitizenDbContext();

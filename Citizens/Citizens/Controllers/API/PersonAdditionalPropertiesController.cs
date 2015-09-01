@@ -28,14 +28,14 @@ namespace Citizens.Controllers.API
     builder.EntitySet<PropertyValue>("PropertyValues"); 
     config.Routes.MapODataRoute("odata", "odata", builder.GetEdmModel());
     */
-    [Logger(Roles = "SuperAdministrators")]        
+    
     public class PersonAdditionalPropertiesController : ODataController
     {
         private CitizenDbContext db = new CitizenDbContext();
 
         // GET: odata/PersonAdditionalProperties
         [EnableQuery]
-        [Logger(Roles = "Operators")] 
+        [Logger(Roles = "Operators, SuperAdministrators")] 
         public IQueryable<PersonAdditionalProperty> GetPersonAdditionalProperties()
         {
             return db.PersonAdditionalProperties;
@@ -43,7 +43,7 @@ namespace Citizens.Controllers.API
 
         // GET: odata/PersonAdditionalProperties(5)
         [EnableQuery]
-        [Logger(Roles = "Operators")] 
+        [Logger(Roles = "Operators, SuperAdministrators")] 
         [ODataRoute("PersonAdditionalProperties(PersonId={personId}, PropertyKeyId={propertyKeyId})")]
         public SingleResult<PersonAdditionalProperty> GetPersonAdditionalProperty([FromODataUri] int personId, [FromODataUri] int propertyKeyId)
         {

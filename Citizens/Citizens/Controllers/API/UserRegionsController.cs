@@ -18,14 +18,14 @@ namespace Citizens.Controllers.API
     builder.EntitySet<ApplicationUser>("ApplicationUsers"); 
     config.Routes.MapODataRoute("odata", "odata", builder.GetEdmModel());
     */
-    [Logger(Roles = "SuperAdministrators")]        
+      
     public class UserRegionsController : ODataController
     {
         private CitizenDbContext db = new CitizenDbContext();
 
         // GET: odata/UserRegions
         [EnableQuery]
-        [Logger(Roles = "Operators")] 
+        [Logger(Roles = "Operators, SuperAdministrators")] 
         public IQueryable<UserRegion> GetUserRegions()
         {
             return db.UserRegions;
@@ -33,13 +33,14 @@ namespace Citizens.Controllers.API
 
         // GET: odata/UserRegions(5)
         [EnableQuery]
-        [Logger(Roles = "Operators")] 
+        [Logger(Roles = "Operators, SuperAdministrators")] 
         public SingleResult<UserRegion> GetUserRegion([FromODataUri] string key)
         {
             return SingleResult.Create(db.UserRegions.Where(userRegion => userRegion.UserId == key));
         }
 
         // PUT: odata/UserRegions(5)
+        [Logger(Roles = "SuperAdministrators")]
         public IHttpActionResult Put([FromODataUri] string key, Delta<UserRegion> patch)
         {
             Validate(patch.GetEntity());
@@ -77,6 +78,7 @@ namespace Citizens.Controllers.API
         }
 
         // POST: odata/UserRegions
+        [Logger(Roles = "SuperAdministrators")]
         public IHttpActionResult Post(UserRegion userRegion)
         {
             if (!ModelState.IsValid)
@@ -107,6 +109,7 @@ namespace Citizens.Controllers.API
 
         // PATCH: odata/UserRegions(5)
         [AcceptVerbs("PATCH", "MERGE")]
+        [Logger(Roles = "SuperAdministrators")]
         public IHttpActionResult Patch([FromODataUri] string key, Delta<UserRegion> patch)
         {
             Validate(patch.GetEntity());
@@ -144,6 +147,7 @@ namespace Citizens.Controllers.API
         }
 
         // DELETE: odata/UserRegions(5)
+        [Logger(Roles = "SuperAdministrators")]
         public IHttpActionResult Delete([FromODataUri] string key)
         {
             UserRegion userRegion = db.UserRegions.Find(key);

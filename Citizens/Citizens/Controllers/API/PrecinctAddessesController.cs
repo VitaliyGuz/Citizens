@@ -22,14 +22,14 @@ namespace Citizens.Controllers.API
     builder.EntitySet<Street>("Streets"); 
     config.Routes.MapODataRoute("odata", "odata", builder.GetEdmModel());
     */
-    [Logger(Roles = "SuperAdministrators")]        
+           
     public class PrecinctAddressesController : ODataController
     {
         private CitizenDbContext db = new CitizenDbContext();
 
         // GET: odata/PrecinctAddresses
         [EnableQuery]
-        [Logger(Roles = "Operators")] 
+        [Logger(Roles = "Operators, SuperAdministrators")] 
         [PrecinctAddressesFilter]
         public IQueryable<PrecinctAddress> GetPrecinctAddresses()
         {
@@ -38,7 +38,7 @@ namespace Citizens.Controllers.API
 
         // GET: odata/PrecinctAddresses(5)
         [EnableQuery]
-        [Logger(Roles = "Operators")] 
+        [Logger(Roles = "Operators, SuperAdministrators")] 
         [ODataRoute("PrecinctAddresses(CityId={cityId}, StreetId={streetId}, House={house})")]
         [PrecinctAddressesFilter]
         public SingleResult<PrecinctAddress> GetPrecinctAddresses([FromODataUri] int cityId, [FromODataUri] int? streetId, [FromODataUri] string house)
@@ -48,6 +48,7 @@ namespace Citizens.Controllers.API
 
         // PUT: odata/PrecinctAddresses(5)
         [ODataRoute("PrecinctAddresses(CityId={cityId}, StreetId={streetId}, House={house})")]
+        [Logger(Roles = "Operators, SuperAdministrators")]
         public async Task<IHttpActionResult> Put([FromODataUri] int cityId, [FromODataUri] int? streetId, [FromODataUri] string house, [FromBody] Delta<PrecinctAddress> patch)
         {
             Validate(patch.GetEntity());
@@ -91,6 +92,7 @@ namespace Citizens.Controllers.API
         }
 
         // POST: odata/PrecinctAddresses
+        [Logger(Roles = "Operators, SuperAdministrators")]
         public async Task<IHttpActionResult> Post(PrecinctAddress precinctAddress)
         {
             var textConflict = "";
@@ -140,6 +142,7 @@ namespace Citizens.Controllers.API
 
         // PATCH: odata/PrecinctAddresses(5)
         [AcceptVerbs("PATCH", "MERGE")]
+        [Logger(Roles = "Operators, SuperAdministrators")]
         [ODataRoute("PrecinctAddresses(CityId={cityId}, StreetId={streetId}, House={house})")]
         public async Task<IHttpActionResult> Patch([FromODataUri] int cityId, [FromODataUri] int? streetId, [FromODataUri] string house, [FromBody] Delta<PrecinctAddress> patch)
         {
@@ -185,6 +188,7 @@ namespace Citizens.Controllers.API
 
         // DELETE: odata/PrecinctAddresses(5)
         [ODataRoute("PrecinctAddresses(CityId={cityId}, StreetId={streetId}, House={house})")]
+        [Logger(Roles = "SuperAdministrators")]
         public async Task<IHttpActionResult> Delete([FromODataUri] int cityId, [FromODataUri] int? streetId, [FromODataUri] string house)
         {
             object[] key = new object[3];

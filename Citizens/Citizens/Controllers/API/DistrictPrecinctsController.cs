@@ -26,14 +26,14 @@ namespace Citizens.Controllers.API
     builder.EntitySet<Precinct>("Precincts"); 
     config.Routes.MapODataRoute("odata", "odata", builder.GetEdmModel());
     */
-    [Logger(Roles = "SuperAdministrators")]        
+           
     public class DistrictPrecinctsController : ODataController
     {
         private CitizenDbContext db = new CitizenDbContext();
 
         // GET: odata/DistrictPrecincts
         [EnableQuery]
-        [Logger(Roles = "Operators")] 
+        [Logger(Roles = "Operators, SuperAdministrators")] 
         public IQueryable<DistrictPrecinct> GetDistrictPrecincts()
         {
             return db.DistrictPrecincts;
@@ -41,7 +41,7 @@ namespace Citizens.Controllers.API
 
         // GET: odata/DistrictPrecincts(5,5)
         [EnableQuery]
-        [Logger(Roles = "Operators")] 
+        [Logger(Roles = "Operators, SuperAdministrators")] 
         [ODataRoute("DistrictPrecincts(DistrictId={districtId}, PrecinctId={precinctId})")]
         public SingleResult<DistrictPrecinct> GetDistrictPrecinct([FromODataUri] int districtId, [FromODataUri] int precinctId)
         {
@@ -49,6 +49,7 @@ namespace Citizens.Controllers.API
         }
 
         // PUT: odata/DistrictPrecincts(5)
+        [Logger(Roles = "SuperAdministrators")] 
         [ODataRoute("DistrictPrecincts(DistrictId={districtId}, PrecinctId={precinctId})")]
         public async Task<IHttpActionResult> Put([FromODataUri] int districtId, [FromODataUri] int precinctId, Delta<DistrictPrecinct> patch)
         {
@@ -95,6 +96,7 @@ namespace Citizens.Controllers.API
         }
 
         // POST: odata/DistrictPrecincts
+        [Logger(Roles = "SuperAdministrators")] 
         public async Task<IHttpActionResult> Post(DistrictPrecinct districtPrecinct)
         {
             if (!ModelState.IsValid)
@@ -125,6 +127,7 @@ namespace Citizens.Controllers.API
 
         // PATCH: odata/DistrictPrecincts(5)
         [AcceptVerbs("PATCH", "MERGE")]
+        [Logger(Roles = "SuperAdministrators")] 
         [ODataRoute("DistrictPrecincts(DistrictId={districtId}, PrecinctId={precinctId})")]
         public async Task<IHttpActionResult> Patch([FromODataUri] int districtId, [FromODataUri] int precinctId, Delta<DistrictPrecinct> patch)
         {
@@ -168,6 +171,7 @@ namespace Citizens.Controllers.API
         }
 
         // DELETE: odata/DistrictPrecincts(5)
+        [Logger(Roles = "SuperAdministrators")] 
         [ODataRoute("DistrictPrecincts(DistrictId={districtId}, PrecinctId={precinctId})")]
         public async Task<IHttpActionResult> Delete([FromODataUri] int districtId, [FromODataUri] int precinctId)
         {

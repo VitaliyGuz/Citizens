@@ -23,14 +23,14 @@ namespace Citizens.Controllers.API
     builder.EntitySet<Election>("Elections");
     config.Routes.MapODataRoute("odata", "odata", builder.GetEdmModel());
     */
-    [Logger(Roles = "SuperAdministrators")]        
+          
     public class ElectionsController : ODataController
     {
         private CitizenDbContext db = new CitizenDbContext();
 
         // GET: odata/Elections
         [EnableQuery]
-        [Logger(Roles = "Operators")] 
+        [Logger(Roles = "Operators, SuperAdministrators")] 
         public IQueryable<Election> GetElections()
         {
             return db.Elections;
@@ -38,13 +38,14 @@ namespace Citizens.Controllers.API
 
         // GET: odata/Elections(5)
         [EnableQuery]
-        [Logger(Roles = "Operators")] 
+        [Logger(Roles = "Operators, SuperAdministrators")] 
         public SingleResult<Election> GetElection([FromODataUri] int key)
         {
             return SingleResult.Create(db.Elections.Where(election => election.Id == key));
         }
 
         // PUT: odata/Elections(5)
+        [Logger(Roles = "SuperAdministrators")]
         public async Task<IHttpActionResult> Put([FromODataUri] int key, Delta<Election> patch)
         {
             Validate(patch.GetEntity());
@@ -82,6 +83,7 @@ namespace Citizens.Controllers.API
         }
 
         // POST: odata/Elections
+        [Logger(Roles = "SuperAdministrators")]
         public async Task<IHttpActionResult> Post(Election election)
         {
             if (!ModelState.IsValid)
@@ -97,6 +99,7 @@ namespace Citizens.Controllers.API
 
         // PATCH: odata/Elections(5)
         [AcceptVerbs("PATCH", "MERGE")]
+        [Logger(Roles = "SuperAdministrators")]
         public async Task<IHttpActionResult> Patch([FromODataUri] int key, Delta<Election> patch)
         {
             Validate(patch.GetEntity());
@@ -134,6 +137,7 @@ namespace Citizens.Controllers.API
         }
 
         // DELETE: odata/Elections(5)
+        [Logger(Roles = "SuperAdministrators")]
         public async Task<IHttpActionResult> Delete([FromODataUri] int key)
         {
             Election election = await db.Elections.FindAsync(key);

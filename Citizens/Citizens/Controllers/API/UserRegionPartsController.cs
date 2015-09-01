@@ -27,14 +27,14 @@ namespace Citizens.Controllers.API
     config.Routes.MapODataRoute("odata", "odata", builder.GetEdmModel());
     */
 
-    [Logger(Roles = "SuperAdministrators")]        
+            
     public class UserRegionPartsController : ODataController
     {
         private CitizenDbContext db = new CitizenDbContext();
 
         // GET: odata/UserRegionParts
         [EnableQuery]
-        [Logger(Roles = "Operators")] 
+        [Logger(Roles = "Operators, SuperAdministrators")] 
         public IQueryable<UserRegionPart> GetUserRegionParts()
         {
             return db.UserRegionParts;
@@ -42,7 +42,7 @@ namespace Citizens.Controllers.API
 
         // GET: odata/UserRegionParts(5)
         [EnableQuery]
-        [Logger(Roles = "Operators")] 
+        [Logger(Roles = "Operators, SuperAdministrators")] 
         [ODataRoute("UserRegionParts(UserId={userId}, RegionPartId={regionPartId})")]
         public SingleResult<UserRegionPart> GetUserRegionPart([FromODataUri] string userId, [FromODataUri] int regionPartId)
         {
@@ -51,6 +51,7 @@ namespace Citizens.Controllers.API
 
         // PUT: odata/UserRegionParts(5)
         [ODataRoute("UserRegionParts(UserId={userId}, RegionPartId={regionPartId})")]
+        [Logger(Roles = "SuperAdministrators")]
         public IHttpActionResult Put([FromODataUri] string userId, [FromODataUri] int regionPartId, Delta<UserRegionPart> patch)
         {
             Validate(patch.GetEntity());
@@ -92,6 +93,7 @@ namespace Citizens.Controllers.API
         }
 
         // POST: odata/UserRegionParts
+        [Logger(Roles = "SuperAdministrators")]
         public async Task<IHttpActionResult> Post(UserRegionPart userRegionPart)
         {
             if (!ModelState.IsValid)
@@ -135,6 +137,7 @@ namespace Citizens.Controllers.API
 
         // PATCH: odata/UserRegionParts(5)
         [AcceptVerbs("PATCH", "MERGE")]
+        [Logger(Roles = "SuperAdministrators")]
         public IHttpActionResult Patch([FromODataUri] string userId, [FromODataUri] int regionPartId, Delta<UserRegionPart> patch)
         {
             Validate(patch.GetEntity());
@@ -175,6 +178,7 @@ namespace Citizens.Controllers.API
 
         // DELETE: odata/UserRegionParts(5)
         [ODataRoute("UserRegionParts(UserId={userId}, RegionPartId={regionPartId})")]
+        [Logger(Roles = "SuperAdministrators")]
         public async Task<IHttpActionResult> Delete([FromODataUri] string userId, [FromODataUri] int regionPartId)
         {
             object[] key = new object[2];

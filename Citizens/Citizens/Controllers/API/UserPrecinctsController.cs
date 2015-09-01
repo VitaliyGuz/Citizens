@@ -22,7 +22,7 @@ namespace Citizens.Controllers.API
     config.Routes.MapODataRoute("odata", "odata", builder.GetEdmModel());
     */
 
-    [Logger(Roles = "SuperAdministrators")]        
+           
     
     public class UserPrecinctsController : ODataController
     {
@@ -31,7 +31,7 @@ namespace Citizens.Controllers.API
         // GET: odata/UserPrecincts
 
         [EnableQuery]
-        [Logger(Roles = "Operators")] 
+        [Logger(Roles = "Operators, SuperAdministrators")] 
         public IQueryable<UserPrecinct> GetUserPrecincts()
         {
             return db.UserPrecincts;
@@ -39,7 +39,7 @@ namespace Citizens.Controllers.API
 
         // GET: odata/UserPrecincts(5)
         [EnableQuery]
-        [Logger(Roles = "Operators")] 
+        [Logger(Roles = "Operators, SuperAdministrators")] 
         [ODataRoute("UserPrecincts(UserId={userId}, PrecinctId={precinctId})")]
         public SingleResult<UserPrecinct> GetUserPrecinct([FromODataUri] string userId, [FromODataUri] int precinctId)
         {
@@ -48,6 +48,7 @@ namespace Citizens.Controllers.API
 
         // PUT: odata/UserPrecincts(5)
         [ODataRoute("UserPrecincts(UserId={userId}, PrecinctId={precinctId})")]
+        [Logger(Roles = "SuperAdministrators")]
         public async Task<IHttpActionResult> Put([FromODataUri] string userId, [FromODataUri] int precinctId, Delta<UserPrecinct> patch)
         {
             UserPrecinct dbEntity = patch.GetEntity();
@@ -96,6 +97,7 @@ namespace Citizens.Controllers.API
         }
 
         // POST: odata/UserPrecincts
+        [Logger(Roles = "SuperAdministrators")]
         public async Task<IHttpActionResult> Post(UserPrecinct userPrecinct)
         {
             if (!ModelState.IsValid)
@@ -125,6 +127,7 @@ namespace Citizens.Controllers.API
             return Created(userPrecinct);
         }
 
+        [Logger(Roles = "SuperAdministrators")]
         private async Task AddUserRegionPartAsync(UserPrecinct modelUserPrecinct)
         {
             var precinct = await db.Precincts.FindAsync(modelUserPrecinct.PrecinctId);
@@ -138,6 +141,7 @@ namespace Citizens.Controllers.API
             }
         }
 
+        [Logger(Roles = "SuperAdministrators")]
         private async Task RemoveUserRegionPartAsync(string userId, int precinctId)
         {
             var precinct = await db.Precincts.FindAsync(precinctId);
@@ -149,6 +153,7 @@ namespace Citizens.Controllers.API
 
         // PATCH: odata/UserPrecincts(5)
         [AcceptVerbs("PATCH", "MERGE")]
+        [Logger(Roles = "SuperAdministrators")]
         public async Task<IHttpActionResult> Patch([FromODataUri] string userId, [FromODataUri] int precinctId, Delta<UserPrecinct> patch)
         {
             Validate(patch.GetEntity());
@@ -191,6 +196,7 @@ namespace Citizens.Controllers.API
         }
 
         // DELETE: odata/UserPrecincts(5)
+        [Logger(Roles = "SuperAdministrators")]
         [ODataRoute("UserPrecincts(UserId={userId}, PrecinctId={precinctId})")]
         public async Task<IHttpActionResult> Delete([FromODataUri] string userId, [FromODataUri] int precinctId)
         {

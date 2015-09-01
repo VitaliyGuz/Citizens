@@ -36,7 +36,7 @@ namespace Citizens.Controllers.API
 
         // GET: odata/Cities
         [EnableQuery]
-        [Logger(Roles = "Operators")] 
+        [Logger(Roles = "Operators, SuperAdministrators")] 
         public IQueryable<City> GetCities()
         {
             return db.Cities;
@@ -44,7 +44,7 @@ namespace Citizens.Controllers.API
 
         // GET: odata/Cities(5)
         [EnableQuery]
-        [Logger(Roles = "Operators")] 
+        [Logger(Roles = "Operators, SuperAdministrators")] 
         public SingleResult<City> GetCity([FromODataUri] int key)
         {
             return SingleResult.Create(db.Cities.Where(city => city.Id == key));

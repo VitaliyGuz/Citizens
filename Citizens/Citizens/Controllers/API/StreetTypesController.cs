@@ -24,14 +24,14 @@ namespace Citizens.Controllers.API
     builder.EntitySet<StreetType>("StreetTypes");
     config.Routes.MapODataRoute("odata", "odata", builder.GetEdmModel());
     */
-    [Logger(Roles = "SuperAdministrators")]        
+         
     public class StreetTypesController : ODataController
     {
         private CitizenDbContext db = new CitizenDbContext();
 
         // GET: odata/StreetTypes
         [EnableQuery]
-        [Logger(Roles = "Operators")] 
+        [Logger(Roles = "Operators, SuperAdministrators")] 
         public IQueryable<StreetType> GetStreetTypes()
         {
             return db.StreetTypes;
@@ -39,13 +39,14 @@ namespace Citizens.Controllers.API
 
         // GET: odata/StreetTypes(5)
         [EnableQuery]
-        [Logger(Roles = "Operators")] 
+        [Logger(Roles = "Operators, SuperAdministrators")] 
         public SingleResult<StreetType> GetStreetType([FromODataUri] int key)
         {
             return SingleResult.Create(db.StreetTypes.Where(streetType => streetType.Id == key));
         }
 
         // PUT: odata/StreetTypes(5)
+        [Logger(Roles = "SuperAdministrators")]
         public async Task<IHttpActionResult> Put([FromODataUri] int key, Delta<StreetType> patch)
         {
             Validate(patch.GetEntity());
@@ -83,6 +84,7 @@ namespace Citizens.Controllers.API
         }
 
         // POST: odata/StreetTypes
+        [Logger(Roles = "SuperAdministrators")]
         public async Task<IHttpActionResult> Post(StreetType streetType)
         {
             if (!ModelState.IsValid)
@@ -98,6 +100,7 @@ namespace Citizens.Controllers.API
 
         // PATCH: odata/StreetTypes(5)
         [AcceptVerbs("PATCH", "MERGE")]
+        [Logger(Roles = "SuperAdministrators")]
         public async Task<IHttpActionResult> Patch([FromODataUri] int key, Delta<StreetType> patch)
         {
             Validate(patch.GetEntity());
@@ -135,6 +138,7 @@ namespace Citizens.Controllers.API
         }
 
         // DELETE: odata/StreetTypes(5)
+        [Logger(Roles = "SuperAdministrators")]
         public async Task<IHttpActionResult> Delete([FromODataUri] int key)
         {
             StreetType streetType = await db.StreetTypes.FindAsync(key);

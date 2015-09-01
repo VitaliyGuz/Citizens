@@ -25,14 +25,14 @@ namespace Citizens.Controllers.API
     builder.EntitySet<Precinct>("Precincts"); 
     config.Routes.MapODataRoute("odata", "odata", builder.GetEdmModel());
     */
-    [Logger(Roles = "SuperAdministrators")]        
+            
     public class DistrictsController : ODataController
     {
         private CitizenDbContext db = new CitizenDbContext();
 
         // GET: odata/Districts
         [EnableQuery]
-        [Logger(Roles = "Operators")] 
+        [Logger(Roles = "Operators, SuperAdministrators")] 
         public IQueryable<District> GetDistricts()
         {
             return db.Districts;
@@ -40,13 +40,14 @@ namespace Citizens.Controllers.API
 
         // GET: odata/Districts(5)
         [EnableQuery]
-        [Logger(Roles = "Operators")] 
+        [Logger(Roles = "Operators, SuperAdministrators")] 
         public SingleResult<District> GetDistrict([FromODataUri] int key)
         {
             return SingleResult.Create(db.Districts.Where(district => district.Id == key));
         }
 
         // PUT: odata/Districts(5)
+        [Logger(Roles = "SuperAdministrators")]
         public async Task<IHttpActionResult> Put([FromODataUri] int key, Delta<District> patch)
         {
             Validate(patch.GetEntity());
@@ -84,6 +85,7 @@ namespace Citizens.Controllers.API
         }
 
         // POST: odata/Districts
+        [Logger(Roles = "SuperAdministrators")]
         public async Task<IHttpActionResult> Post(District district)
         {
             if (!ModelState.IsValid)
@@ -99,6 +101,7 @@ namespace Citizens.Controllers.API
 
         // PATCH: odata/Districts(5)
         [AcceptVerbs("PATCH", "MERGE")]
+        [Logger(Roles = "SuperAdministrators")]
         public async Task<IHttpActionResult> Patch([FromODataUri] int key, Delta<District> patch)
         {
             Validate(patch.GetEntity());
@@ -136,6 +139,7 @@ namespace Citizens.Controllers.API
         }
 
         // DELETE: odata/Districts(5)
+        [Logger(Roles = "SuperAdministrators")]
         public async Task<IHttpActionResult> Delete([FromODataUri] int key)
         {
             District district = await db.Districts.FindAsync(key);

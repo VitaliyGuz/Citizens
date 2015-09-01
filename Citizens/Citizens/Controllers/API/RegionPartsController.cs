@@ -25,14 +25,14 @@ namespace Citizens.Controllers.API
     builder.EntitySet<Region>("Regions"); 
     config.Routes.MapODataRoute("odata", "odata", builder.GetEdmModel());
     */
-    [Logger(Roles = "SuperAdministrators")]        
+   
     public class RegionPartsController : ODataController
     {
         private CitizenDbContext db = new CitizenDbContext();
 
         // GET: odata/RegionParts
         [EnableQuery]
-        [Logger(Roles = "Operators")] 
+        [Logger(Roles = "Operators, SuperAdministrators")] 
         public IQueryable<RegionPart> GetRegionParts()
         {
             return db.RegionParts;
@@ -40,13 +40,14 @@ namespace Citizens.Controllers.API
 
         // GET: odata/RegionParts(5)
         [EnableQuery]
-        [Logger(Roles = "Operators")] 
+        [Logger(Roles = "Operators, SuperAdministrators")] 
         public SingleResult<RegionPart> GetRegionPart([FromODataUri] int key)
         {
             return SingleResult.Create(db.RegionParts.Where(regionPart => regionPart.Id == key));
         }
 
         // PUT: odata/RegionParts(5)
+        [Logger(Roles = "SuperAdministrators")]
         public async Task<IHttpActionResult> Put([FromODataUri] int key, Delta<RegionPart> patch)
         {
             Validate(patch.GetEntity());
@@ -84,6 +85,7 @@ namespace Citizens.Controllers.API
         }
 
         // POST: odata/RegionParts
+        [Logger(Roles = "SuperAdministrators")]
         public async Task<IHttpActionResult> Post(RegionPart regionPart)
         {
             if (!ModelState.IsValid)
@@ -99,6 +101,7 @@ namespace Citizens.Controllers.API
 
         // PATCH: odata/RegionParts(5)
         [AcceptVerbs("PATCH", "MERGE")]
+        [Logger(Roles = "SuperAdministrators")]
         public async Task<IHttpActionResult> Patch([FromODataUri] int key, Delta<RegionPart> patch)
         {
             Validate(patch.GetEntity());
@@ -136,6 +139,7 @@ namespace Citizens.Controllers.API
         }
 
         // DELETE: odata/RegionParts(5)
+        [Logger(Roles = "SuperAdministrators")]
         public async Task<IHttpActionResult> Delete([FromODataUri] int key)
         {
             RegionPart regionPart = await db.RegionParts.FindAsync(key);

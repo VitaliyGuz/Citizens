@@ -25,14 +25,14 @@ namespace Citizens.Controllers.API
     builder.EntitySet<RegionPart>("RegionParts"); 
     config.Routes.MapODataRoute("odata", "odata", builder.GetEdmModel());
     */
-    [Logger(Roles = "SuperAdministrators")]        
+    
     public class RegionsController : ODataController
     {
         private CitizenDbContext db = new CitizenDbContext();
 
         // GET: odata/Regions
         [EnableQuery]
-        [Logger(Roles = "Operators")] 
+        [Logger(Roles = "Operators, SuperAdministrators")] 
         public IQueryable<Region> GetRegions()
         {
             return db.Regions;
@@ -40,13 +40,14 @@ namespace Citizens.Controllers.API
 
         // GET: odata/Regions(5)
         [EnableQuery]
-        [Logger(Roles = "Operators")] 
+        [Logger(Roles = "Operators, SuperAdministrators")] 
         public SingleResult<Region> GetRegion([FromODataUri] int key)
         {
             return SingleResult.Create(db.Regions.Where(region => region.Id == key));
         }
 
         // PUT: odata/Regions(5)
+        [Logger(Roles = "SuperAdministrators")]
         public async Task<IHttpActionResult> Put([FromODataUri] int key, Delta<Region> patch)
         {
             Validate(patch.GetEntity());
@@ -84,6 +85,7 @@ namespace Citizens.Controllers.API
         }
 
         // POST: odata/Regions
+        [Logger(Roles = "SuperAdministrators")]
         public async Task<IHttpActionResult> Post(Region region)
         {
             if (!ModelState.IsValid)
@@ -99,6 +101,7 @@ namespace Citizens.Controllers.API
 
         // PATCH: odata/Regions(5)
         [AcceptVerbs("PATCH", "MERGE")]
+        [Logger(Roles = "SuperAdministrators")]
         public async Task<IHttpActionResult> Patch([FromODataUri] int key, Delta<Region> patch)
         {
             Validate(patch.GetEntity());
@@ -136,6 +139,7 @@ namespace Citizens.Controllers.API
         }
 
         // DELETE: odata/Regions(5)
+        [Logger(Roles = "SuperAdministrators")]
         public async Task<IHttpActionResult> Delete([FromODataUri] int key)
         {
             Region region = await db.Regions.FindAsync(key);

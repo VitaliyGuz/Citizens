@@ -23,14 +23,14 @@ namespace Citizens.Controllers.API
     builder.EntitySet<Neighborhood>("Neighborhoods");
     config.Routes.MapODataRoute("odata", "odata", builder.GetEdmModel());
     */
-    [Logger(Roles = "SuperAdministrators")]        
+            
     public class NeighborhoodsController : ODataController
     {
         private CitizenDbContext db = new CitizenDbContext();
 
         // GET: odata/Neighborhoods
         [EnableQuery]
-        [Logger(Roles = "Operators")] 
+        [Logger(Roles = "Operators, SuperAdministrators")] 
         public IQueryable<Neighborhood> GetNeighborhoods()
         {
             return db.Neighborhoods;
@@ -38,13 +38,14 @@ namespace Citizens.Controllers.API
 
         // GET: odata/Neighborhoods(5)
         [EnableQuery]
-        [Logger(Roles = "Operators")] 
+        [Logger(Roles = "Operators, SuperAdministrators")] 
         public SingleResult<Neighborhood> GetNeighborhood([FromODataUri] int key)
         {
             return SingleResult.Create(db.Neighborhoods.Where(neighborhood => neighborhood.Id == key));
         }
 
         // PUT: odata/Neighborhoods(5)
+        [Logger(Roles = "SuperAdministrators")]
         public async Task<IHttpActionResult> Put([FromODataUri] int key, Delta<Neighborhood> patch)
         {
             Validate(patch.GetEntity());
@@ -82,6 +83,7 @@ namespace Citizens.Controllers.API
         }
 
         // POST: odata/Neighborhoods
+        [Logger(Roles = "SuperAdministrators")]
         public async Task<IHttpActionResult> Post(Neighborhood neighborhood)
         {
             if (!ModelState.IsValid)
@@ -97,6 +99,7 @@ namespace Citizens.Controllers.API
 
         // PATCH: odata/Neighborhoods(5)
         [AcceptVerbs("PATCH", "MERGE")]
+        [Logger(Roles = "SuperAdministrators")]
         public async Task<IHttpActionResult> Patch([FromODataUri] int key, Delta<Neighborhood> patch)
         {
             Validate(patch.GetEntity());
@@ -134,6 +137,7 @@ namespace Citizens.Controllers.API
         }
 
         // DELETE: odata/Neighborhoods(5)
+        [Logger(Roles = "SuperAdministrators")]
         public async Task<IHttpActionResult> Delete([FromODataUri] int key)
         {
             Neighborhood neighborhood = await db.Neighborhoods.FindAsync(key);

@@ -26,14 +26,14 @@ namespace Citizens.Controllers.API
     builder.EntitySet<RegionPart>("RegionParts"); 
     config.Routes.MapODataRoute("odata", "odata", builder.GetEdmModel());
     */
-    [Logger(Roles = "SuperAdministrators")]        
+            
     public class CityRegionPartsController : ODataController
     {
         private CitizenDbContext db = new CitizenDbContext();
 
         // GET: odata/CityRegionParts
         [EnableQuery]
-        [Logger(Roles = "Operators")] 
+        [Logger(Roles = "Operators, SuperAdministrators")] 
         public IQueryable<CityRegionPart> GetCityRegionParts()
         {
             return db.CityRegionParts;
@@ -41,7 +41,7 @@ namespace Citizens.Controllers.API
 
         // GET: odata/CityRegionParts(5, 5)
         [EnableQuery]
-        [Logger(Roles = "Operators")] 
+        [Logger(Roles = "Operators, SuperAdministrators")] 
         [ODataRoute("CityRegionParts(CityId={cityId}, RegionPartId={regionPartId})")]
         public SingleResult<CityRegionPart> GetCityRegionPart([FromODataUri] int cityId, [FromODataUri] int regionPartId)
         {
@@ -50,6 +50,7 @@ namespace Citizens.Controllers.API
 
         // PUT: odata/CityRegionParts(5, 5)
         [ODataRoute("CityRegionParts(CityId={cityId}, RegionPartId={regionPartId})")]
+        [Logger(Roles = "SuperAdministrators")]
         public async Task<IHttpActionResult> Put([FromODataUri] int cityId, [FromODataUri] int regionPartId, Delta<CityRegionPart> patch)
         {
             CityRegionPart dbEntity = patch.GetEntity();
@@ -94,6 +95,7 @@ namespace Citizens.Controllers.API
         }
 
         // POST: odata/CityRegionParts
+        [Logger(Roles = "SuperAdministrators")]
         public async Task<IHttpActionResult> Post(CityRegionPart cityRegionPart)
         {
             if (!ModelState.IsValid)
@@ -123,6 +125,7 @@ namespace Citizens.Controllers.API
         }
 
         // PATCH: odata/CityRegionParts(5)
+        [Logger(Roles = "SuperAdministrators")]
         [AcceptVerbs("PATCH", "MERGE")]
         [ODataRoute("CityRegionParts(CityId={cityId}, RegionPartId={regionPartId})")]
         public async Task<IHttpActionResult> Patch([FromODataUri] int cityId, [FromODataUri] int regionPartId, Delta<CityRegionPart> patch)
@@ -167,6 +170,7 @@ namespace Citizens.Controllers.API
         }
 
         // DELETE: odata/CityRegionParts(5)
+        [Logger(Roles = "SuperAdministrators")]
         [ODataRoute("CityRegionParts(CityId={cityId}, RegionPartId={regionPartId})")]
         public async Task<IHttpActionResult> Delete([FromODataUri] int cityId, [FromODataUri] int regionPartId)
         {

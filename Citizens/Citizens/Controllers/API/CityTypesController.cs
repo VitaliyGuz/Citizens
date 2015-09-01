@@ -24,14 +24,14 @@ namespace Citizens.Controllers.API
     builder.EntitySet<CityType>("CityTypes");
     config.Routes.MapODataRoute("odata", "odata", builder.GetEdmModel());
     */
-    [Logger(Roles = "SuperAdministrators")]        
+     
     public class CityTypesController : ODataController
     {
         private CitizenDbContext db = new CitizenDbContext();
 
         // GET: odata/CityTypes
         [EnableQuery]
-        [Logger(Roles = "Operators")] 
+        [Logger(Roles = "Operators, SuperAdministrators")] 
         public IQueryable<CityType> GetCityTypes()
         {
             return db.CityTypes;
@@ -39,13 +39,14 @@ namespace Citizens.Controllers.API
 
         // GET: odata/CityTypes(5)
         [EnableQuery]
-        [Logger(Roles = "Operators")] 
+        [Logger(Roles = "Operators, SuperAdministrators")] 
         public SingleResult<CityType> GetCityType([FromODataUri] int key)
         {
             return SingleResult.Create(db.CityTypes.Where(cityType => cityType.Id == key));
         }
 
         // PUT: odata/CityTypes(5)
+        [Logger(Roles = "SuperAdministrators")]   
         public async Task<IHttpActionResult> Put([FromODataUri] int key, Delta<CityType> patch)
         {
             Validate(patch.GetEntity());
@@ -83,6 +84,7 @@ namespace Citizens.Controllers.API
         }
 
         // POST: odata/CityTypes
+       [Logger(Roles = "SuperAdministrators")]   
         public async Task<IHttpActionResult> Post(CityType cityType)
         {
             if (!ModelState.IsValid)
@@ -98,6 +100,7 @@ namespace Citizens.Controllers.API
 
         // PATCH: odata/CityTypes(5)
         [AcceptVerbs("PATCH", "MERGE")]
+        [Logger(Roles = "SuperAdministrators")]   
         public async Task<IHttpActionResult> Patch([FromODataUri] int key, Delta<CityType> patch)
         {
             Validate(patch.GetEntity());
@@ -135,6 +138,7 @@ namespace Citizens.Controllers.API
         }
 
         // DELETE: odata/CityTypes(5)
+        [Logger(Roles = "SuperAdministrators")]   
         public async Task<IHttpActionResult> Delete([FromODataUri] int key)
         {
             CityType cityType = await db.CityTypes.FindAsync(key);

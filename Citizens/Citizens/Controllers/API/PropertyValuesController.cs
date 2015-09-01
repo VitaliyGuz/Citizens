@@ -25,14 +25,14 @@ namespace Citizens.Controllers.API
     builder.EntitySet<PropertyKey>("PropertyKeys"); 
     config.Routes.MapODataRoute("odata", "odata", builder.GetEdmModel());
     */
-    [Logger(Roles = "SuperAdministrators")]        
+          
     public class PropertyValuesController : ODataController
     {
         private CitizenDbContext db = new CitizenDbContext();
 
         // GET: odata/PropertyValues
         [EnableQuery]
-        [Logger(Roles = "Operators")] 
+        [Logger(Roles = "Operators, SuperAdministrators")] 
         public IQueryable<PropertyValue> GetPropertyValues()
         {
             return db.PropertyValues;
@@ -40,13 +40,14 @@ namespace Citizens.Controllers.API
 
         // GET: odata/PropertyValues(5)
         [EnableQuery]
-        [Logger(Roles = "Operators")] 
+        [Logger(Roles = "Operators, SuperAdministrators")] 
         public SingleResult<PropertyValue> GetPropertyValue([FromODataUri] int key)
         {
             return SingleResult.Create(db.PropertyValues.Where(propertyValue => propertyValue.Id == key));
         }
 
         // PUT: odata/PropertyValues(5)
+        [Logger(Roles = "SuperAdministrators")]
         public async Task<IHttpActionResult> Put([FromODataUri] int key, Delta<PropertyValue> patch)
         {
             Validate(patch.GetEntity());
@@ -84,6 +85,7 @@ namespace Citizens.Controllers.API
         }
 
         // POST: odata/PropertyValues
+        [Logger(Roles = "SuperAdministrators")]
         public async Task<IHttpActionResult> Post(PropertyValue propertyValue)
         {
             if (!ModelState.IsValid)
@@ -99,6 +101,7 @@ namespace Citizens.Controllers.API
 
         // PATCH: odata/PropertyValues(5)
         [AcceptVerbs("PATCH", "MERGE")]
+        [Logger(Roles = "SuperAdministrators")]
         public async Task<IHttpActionResult> Patch([FromODataUri] int key, Delta<PropertyValue> patch)
         {
             Validate(patch.GetEntity());
@@ -136,6 +139,7 @@ namespace Citizens.Controllers.API
         }
 
         // DELETE: odata/PropertyValues(5)
+        [Logger(Roles = "SuperAdministrators")]
         public async Task<IHttpActionResult> Delete([FromODataUri] int key)
         {
             PropertyValue propertyValue = await db.PropertyValues.FindAsync(key);
