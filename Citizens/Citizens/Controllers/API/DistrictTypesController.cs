@@ -24,12 +24,14 @@ namespace Citizens.Controllers.API
     builder.EntitySet<DistrictType>("DistrictTypes");
     config.Routes.MapODataRoute("odata", "odata", builder.GetEdmModel());
     */
+    [Logger(Roles = "SuperAdministrators")]        
     public class DistrictTypesController : ODataController
     {
         private CitizenDbContext db = new CitizenDbContext();
 
         // GET: odata/DistrictTypes
         [EnableQuery]
+        [Logger(Roles = "Operators")] 
         public IQueryable<DistrictType> GetDistrictTypes()
         {
             return db.DistrictTypes;
@@ -37,6 +39,7 @@ namespace Citizens.Controllers.API
 
         // GET: odata/DistrictTypes(5)
         [EnableQuery]
+        [Logger(Roles = "Operators")] 
         public SingleResult<DistrictType> GetDistrictType([FromODataUri] int key)
         {
             return SingleResult.Create(db.DistrictTypes.Where(districtType => districtType.Id == key));

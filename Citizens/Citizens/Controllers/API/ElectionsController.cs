@@ -23,12 +23,14 @@ namespace Citizens.Controllers.API
     builder.EntitySet<Election>("Elections");
     config.Routes.MapODataRoute("odata", "odata", builder.GetEdmModel());
     */
+    [Logger(Roles = "SuperAdministrators")]        
     public class ElectionsController : ODataController
     {
         private CitizenDbContext db = new CitizenDbContext();
 
         // GET: odata/Elections
         [EnableQuery]
+        [Logger(Roles = "Operators")] 
         public IQueryable<Election> GetElections()
         {
             return db.Elections;
@@ -36,6 +38,7 @@ namespace Citizens.Controllers.API
 
         // GET: odata/Elections(5)
         [EnableQuery]
+        [Logger(Roles = "Operators")] 
         public SingleResult<Election> GetElection([FromODataUri] int key)
         {
             return SingleResult.Create(db.Elections.Where(election => election.Id == key));

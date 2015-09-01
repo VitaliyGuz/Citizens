@@ -20,7 +20,9 @@ namespace Citizens.Controllers.API
     builder.EntitySet<Precinct>("Precincts"); 
     builder.EntitySet<AppUser>("AppUsers"); 
     config.Routes.MapODataRoute("odata", "odata", builder.GetEdmModel());
-    */    
+    */
+
+    [Logger(Roles = "SuperAdministrators")]        
     
     public class UserPrecinctsController : ODataController
     {
@@ -29,6 +31,7 @@ namespace Citizens.Controllers.API
         // GET: odata/UserPrecincts
 
         [EnableQuery]
+        [Logger(Roles = "Operators")] 
         public IQueryable<UserPrecinct> GetUserPrecincts()
         {
             return db.UserPrecincts;
@@ -36,6 +39,7 @@ namespace Citizens.Controllers.API
 
         // GET: odata/UserPrecincts(5)
         [EnableQuery]
+        [Logger(Roles = "Operators")] 
         [ODataRoute("UserPrecincts(UserId={userId}, PrecinctId={precinctId})")]
         public SingleResult<UserPrecinct> GetUserPrecinct([FromODataUri] string userId, [FromODataUri] int precinctId)
         {

@@ -13,6 +13,8 @@ using System.Web.OData;
 using System.Web.OData.Routing;
 using Citizens.Models;
 
+
+
 namespace Citizens.Controllers.API
 {
     /*
@@ -27,12 +29,14 @@ namespace Citizens.Controllers.API
     builder.EntitySet<Region>("Regions"); 
     config.Routes.MapODataRoute("odata", "odata", builder.GetEdmModel());
     */
+    [Logger(Roles = "SuperAdministrators")]        
     public class CitiesController : ODataController
     {
         private CitizenDbContext db = new CitizenDbContext();
 
         // GET: odata/Cities
         [EnableQuery]
+        [Logger(Roles = "Operators")] 
         public IQueryable<City> GetCities()
         {
             return db.Cities;
@@ -40,6 +44,7 @@ namespace Citizens.Controllers.API
 
         // GET: odata/Cities(5)
         [EnableQuery]
+        [Logger(Roles = "Operators")] 
         public SingleResult<City> GetCity([FromODataUri] int key)
         {
             return SingleResult.Create(db.Cities.Where(city => city.Id == key));

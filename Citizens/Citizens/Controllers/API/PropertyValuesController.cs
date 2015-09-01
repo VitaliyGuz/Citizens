@@ -25,12 +25,14 @@ namespace Citizens.Controllers.API
     builder.EntitySet<PropertyKey>("PropertyKeys"); 
     config.Routes.MapODataRoute("odata", "odata", builder.GetEdmModel());
     */
+    [Logger(Roles = "SuperAdministrators")]        
     public class PropertyValuesController : ODataController
     {
         private CitizenDbContext db = new CitizenDbContext();
 
         // GET: odata/PropertyValues
         [EnableQuery]
+        [Logger(Roles = "Operators")] 
         public IQueryable<PropertyValue> GetPropertyValues()
         {
             return db.PropertyValues;
@@ -38,6 +40,7 @@ namespace Citizens.Controllers.API
 
         // GET: odata/PropertyValues(5)
         [EnableQuery]
+        [Logger(Roles = "Operators")] 
         public SingleResult<PropertyValue> GetPropertyValue([FromODataUri] int key)
         {
             return SingleResult.Create(db.PropertyValues.Where(propertyValue => propertyValue.Id == key));

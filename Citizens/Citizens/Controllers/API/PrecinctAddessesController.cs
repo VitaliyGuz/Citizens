@@ -22,12 +22,14 @@ namespace Citizens.Controllers.API
     builder.EntitySet<Street>("Streets"); 
     config.Routes.MapODataRoute("odata", "odata", builder.GetEdmModel());
     */
+    [Logger(Roles = "SuperAdministrators")]        
     public class PrecinctAddressesController : ODataController
     {
         private CitizenDbContext db = new CitizenDbContext();
 
         // GET: odata/PrecinctAddresses
         [EnableQuery]
+        [Logger(Roles = "Operators")] 
         [PrecinctAddressesFilter]
         public IQueryable<PrecinctAddress> GetPrecinctAddresses()
         {
@@ -36,6 +38,7 @@ namespace Citizens.Controllers.API
 
         // GET: odata/PrecinctAddresses(5)
         [EnableQuery]
+        [Logger(Roles = "Operators")] 
         [ODataRoute("PrecinctAddresses(CityId={cityId}, StreetId={streetId}, House={house})")]
         [PrecinctAddressesFilter]
         public SingleResult<PrecinctAddress> GetPrecinctAddresses([FromODataUri] int cityId, [FromODataUri] int? streetId, [FromODataUri] string house)

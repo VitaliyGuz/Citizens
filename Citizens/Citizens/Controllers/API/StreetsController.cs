@@ -25,12 +25,14 @@ namespace Citizens.Controllers.API
     builder.EntitySet<StreetType>("StreetTypes"); 
     config.Routes.MapODataRoute("odata", "odata", builder.GetEdmModel());
     */
+    [Logger(Roles = "SuperAdministrators")]        
     public class StreetsController : ODataController
     {
         private CitizenDbContext db = new CitizenDbContext();
 
         // GET: odata/Streets
         [EnableQuery]
+        [Logger(Roles = "Operators")] 
         public IQueryable<Street> GetStreets()
         {
             return db.Streets.Except(db.Streets.Where(street => street.Name == "Без вулиці"));
@@ -38,6 +40,7 @@ namespace Citizens.Controllers.API
 
         // GET: odata/Streets(5)
         [EnableQuery]
+        [Logger(Roles = "Operators")] 
         public SingleResult<Street> GetStreet([FromODataUri] int key)
         {
             return SingleResult.Create(db.Streets.Where(street => street.Id == key));

@@ -25,12 +25,14 @@ namespace Citizens.Controllers.API
     builder.EntitySet<Region>("Regions"); 
     config.Routes.MapODataRoute("odata", "odata", builder.GetEdmModel());
     */
+    [Logger(Roles = "SuperAdministrators")]        
     public class RegionPartsController : ODataController
     {
         private CitizenDbContext db = new CitizenDbContext();
 
         // GET: odata/RegionParts
         [EnableQuery]
+        [Logger(Roles = "Operators")] 
         public IQueryable<RegionPart> GetRegionParts()
         {
             return db.RegionParts;
@@ -38,6 +40,7 @@ namespace Citizens.Controllers.API
 
         // GET: odata/RegionParts(5)
         [EnableQuery]
+        [Logger(Roles = "Operators")] 
         public SingleResult<RegionPart> GetRegionPart([FromODataUri] int key)
         {
             return SingleResult.Create(db.RegionParts.Where(regionPart => regionPart.Id == key));

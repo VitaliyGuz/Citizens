@@ -20,10 +20,12 @@ namespace Citizens.Controllers.API
     builder.EntitySet<Person>("People"); 
     config.Routes.MapODataRoute("odata", "odata", builder.GetEdmModel());
     */
+    [Logger(Roles = "SuperAdministrators")]        
     public class WorkAreasController : ODataController
     {
         private CitizenDbContext db = new CitizenDbContext();
 
+        [Logger(Roles = "Operators")]        
         // GET: odata/WorkAreas
         [EnableQuery]
         public IQueryable<WorkArea> GetWorkAreas()
@@ -32,6 +34,7 @@ namespace Citizens.Controllers.API
         }
 
         // GET: odata/WorkAreas(5)
+        [Logger(Roles = "Operators")] 
         [EnableQuery]
         public SingleResult<WorkArea> GetWorkArea([FromODataUri] int key)
         {
@@ -39,6 +42,7 @@ namespace Citizens.Controllers.API
         }
 
         // PUT: odata/WorkAreas(5)
+        [Logger(Roles = "Operators")] 
         public IHttpActionResult Put([FromODataUri] int key, Delta<WorkArea> patch)
         {
             Validate(patch.GetEntity());
@@ -76,6 +80,7 @@ namespace Citizens.Controllers.API
         }
 
         // POST: odata/WorkAreas
+        [Logger(Roles = "Operators")] 
         public IHttpActionResult Post(WorkArea workArea)
         {
             if (!ModelState.IsValid)
@@ -91,6 +96,7 @@ namespace Citizens.Controllers.API
 
         // PATCH: odata/WorkAreas(5)
         [AcceptVerbs("PATCH", "MERGE")]
+        [Logger(Roles = "Operators")] 
         public IHttpActionResult Patch([FromODataUri] int key, Delta<WorkArea> patch)
         {
             Validate(patch.GetEntity());
@@ -128,6 +134,7 @@ namespace Citizens.Controllers.API
         }
 
         // DELETE: odata/WorkAreas(5)
+        [Logger(Roles = "Operators")] 
         public IHttpActionResult Delete([FromODataUri] int key)
         {
             WorkArea workArea = db.WorkAreas.Find(key);

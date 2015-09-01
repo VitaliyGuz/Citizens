@@ -29,6 +29,7 @@ namespace Citizens.Controllers.API
     builder.EntitySet<Street>("Streets"); 
     config.Routes.MapODataRoute("odata", "odata", builder.GetEdmModel());
     */
+    [Logger(Roles = "SuperAdministrators")]        
     public class PeopleController : ODataController
     {
         private CitizenDbContext db = new CitizenDbContext();
@@ -36,6 +37,7 @@ namespace Citizens.Controllers.API
         // GET: odata/People
         [EnableQuery(PageSize=20, MaxNodeCount = 200)]
         [PersonFilter]
+        [Logger(Roles = "Operators")] 
 
         public IQueryable<Person> GetPeople(ODataQueryOptions opts)
         //public IQueryable<Person> GetPeople()
@@ -148,6 +150,7 @@ namespace Citizens.Controllers.API
         // GET: odata/People(5)
         [EnableQuery]
         [PersonFilter]
+        [Logger(Roles = "Operators")] 
         public SingleResult<Person> GetPerson([FromODataUri] int key)
         {
             return SingleResult.Create(db.People.Where(person => person.Id == key));
