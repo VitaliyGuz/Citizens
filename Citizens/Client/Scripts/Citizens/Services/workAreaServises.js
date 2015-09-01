@@ -12,9 +12,9 @@ angular.module("workAreaServices", ['ngResource', 'precinctServices'])
                 params.paginate = { skip: "@skip", filter: '@filter' };
             return $resource('', {},
             {
-                'getAll': { method: 'GET', params: params.filter, url: urlOdata + expand + ":filter", cache: false },
+                'getAll': { method: 'GET', params: params.filter, url: urlOdata + expand + "&$orderby=PrecinctId,Number" + ":filter", cache: false },
                 'getById': { method: 'GET', params: params.id, url: urlOdata + "(:id)" + expand },
-                'getPageItems': { method: 'GET', params: params.paginate, url: urlOdata + expand + ":filter" + paginate },
+                'getPageItems': { method: 'GET', params: params.paginate, url: urlOdata + expand + "&$orderby=PrecinctId,Number" + ":filter" + paginate },
                 'update': { method: 'PUT', params: params.id, url: urlOdata + "(:id)" },
                 'save': { method: "POST", url: urlOdata },
                 'getCountPeopleAtAddresses': { method: 'POST', url: urlOdata + "/CountPeopleAtAddresses" },
