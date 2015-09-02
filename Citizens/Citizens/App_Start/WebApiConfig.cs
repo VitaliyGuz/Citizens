@@ -39,7 +39,6 @@ namespace Citizens
                 routeTemplate: "api/{controller}/{id}",
                 defaults: new { id = RouteParameter.Optional }
             );
-
             config.Filters.Add(new LoggerAttribute() { Roles = "Operators, Administrators, SuperAdministrators, ReadOnly" });
             // Web API configuration and services
             ODataConventionModelBuilder builder = new ODataConventionModelBuilder();
@@ -91,6 +90,20 @@ namespace Citizens
                 .Action("CountPeopleAtPrecincts")
                 .ReturnsCollection<AddressCountPeople>()
                 .CollectionParameter<AddressCountPeople>("Precincts");
+
+            builder.EntityType<Person>().Property(p => p.CountSupporters);
+
+            builder.EntityType<WorkArea>()
+                .Collection
+                .Action("GetMajors")
+                .ReturnsCollectionFromEntitySet<Person>("People")
+                .CollectionParameter<AddressCountPeople>("Addresses");
+
+            builder.EntityType<WorkArea>()
+                .Collection
+                .Action("GetSupporters")
+                .ReturnsCollectionFromEntitySet<Person>("People")
+                .CollectionParameter<AddressCountPeople>("Addresses");
 
             //builder.EntitySet<IdentityUserRole>("UserRoles");
             //builder.EntitySet<ApplicationUserLogin>("Logins");

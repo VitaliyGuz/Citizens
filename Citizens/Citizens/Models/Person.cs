@@ -82,6 +82,9 @@ namespace Citizens.Models
         [Key]
         [Column(Order = 0)]
         public override int Id { get; set; }
+        
+        [NotMapped]
+        public int CountSupporters { get; set; }
     }
 
     [Table("PersonChangeHistory")]

@@ -231,5 +231,65 @@ namespace Citizens.Controllers.API
 
             return Ok(response);
         }
+
+        [HttpPost]
+        public IHttpActionResult GetMajors(ODataActionParameters parameters)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var paramAddresses = parameters["Addresses"] as IEnumerable<AddressCountPeople>;
+            if (paramAddresses == null) return BadRequest("Not found property 'Addresses'");
+
+            var addresses = paramAddresses as List<AddressCountPeople> ?? paramAddresses.ToList();
+            if (addresses.Count == 0) return Ok();
+
+            var response = addresses
+                .Join(db.People.Include("Major"),
+                    a => new { a.CityId, a.StreetId, a.House },
+                    person => new { person.CityId, person.StreetId, person.House }, (a, p) => p)
+                .GroupBy(k => k.Major, g => g.Id, (k, g) => new Person
+                {
+                    Id = k.Id,
+                    FirstName = k.FirstName,
+                    LastName = k.LastName,
+                    MidleName = k.MidleName,
+                    CityId = k.CityId,
+                    StreetId = k.StreetId,
+                    House = k.House,
+                    Apartment = k.Apartment,
+                    ApartmentStr = k.ApartmentStr,
+                    DateOfBirth = k.DateOfBirth,
+                    Gender = k.Gender,
+                    MajorId = k.MajorId,
+                    CountSupporters = g.Distinct().Count()
+                })
+                .Where(p => !p.LastName.Equals(string.Empty) && !p.MidleName.Equals(string.Empty) && !p.FirstName.Equals(string.Empty));
+
+            return Ok(response);
+        }
+
+        [HttpPost]
+        public IHttpActionResult GetSupporters(ODataActionParameters parameters)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var paramAddresses = parameters["Addresses"] as IEnumerable<AddressCountPeople>;
+            if (paramAddresses == null) return BadRequest("Not found property 'Addresses'");
+
+            var addresses = paramAddresses as List<AddressCountPeople> ?? paramAddresses.ToList();
+            if (addresses.Count == 0) return Ok();
+
+            var response = addresses
+                .Join(db.People,
+                    a => new { a.CityId, a.StreetId, a.House },
+                    person => new { person.CityId, person.StreetId, person.House }, (a, p) => p)
+                .Except(db.People.Where(p => p.LastName.Equals(string.Empty) && p.MidleName.Equals(string.Empty) && p.FirstName.Equals(string.Empty)));
+
+            return Ok(response);
+        }
     }
 }

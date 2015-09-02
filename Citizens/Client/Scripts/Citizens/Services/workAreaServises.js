@@ -19,6 +19,8 @@ angular.module("workAreaServices", ['ngResource', 'precinctServices'])
                 'save': { method: "POST", url: urlOdata },
                 'getCountPeopleAtAddresses': { method: 'POST', url: urlOdata + "/CountPeopleAtAddresses" },
                 'getCountPeopleAtPrecincts': { method: 'POST', url: urlOdata + "/CountPeopleAtPrecincts" },
+                'getMajors': { method: 'POST', url: urlOdata + "/GetMajors" },
+                'getSupporters': { method: 'POST', url: urlOdata + "/GetSupporters" },
                 'remove': { method: 'DELETE', params: params.id, url: urlOdata + "(:id)" }
             });
         }

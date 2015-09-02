@@ -61,7 +61,7 @@
     </div>
     <div class="form-horizontal">
         <div class="form-group col-lg-6">
-            <label>Відповідальний</label>
+            <label>Відповідальний (старший)</label>
             <input typeahead="p as p.label for p in getPeopleByName($viewValue)" typeahead-on-select="onSelectMajor($item)"
                    type="text" ng-model="person.Major" typeahead-loading="loadingPeople" typeahead-no-results="noResults" typeahead-min-length="10" class="form-control" required>
             <i ng-show="loadingPeople" class="fa fa-refresh fa-spin"></i>

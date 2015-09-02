@@ -221,7 +221,7 @@ app.constant("config", Object.freeze({
 
 app.filter('checkApartment', function () {
     return function (input) {
-        return input > 0 ? ", кв." + input : '';
+        return input ? ", кв." + input : '';
     };
 });
 
@@ -362,11 +362,13 @@ app.factory("serviceUtil", ["$filter", '$routeParams', '$rootScope', function ($
                 var compStreet = compareByNameFn(a1.Street, a2.Street);
                 var compTypeStreet = compareByNameFn(a1.Street.StreetType, a2.Street.StreetType);
                 var compHouse = compareHouses(parseHouseNumber(a1.House), parseHouseNumber(a2.House));
+                var compApartment = 0;
+                if (a1.Apartment && a2.Apartment) compApartment = a1.Apartment - a2.Apartment;
                 if (compCity === 0) {
                     if (compStreet === 0) {
                         if (compTypeStreet === 0) {
-                            return compHouse;
-                        } else {
+                            return compHouse === 0 ? compApartment : compHouse;
+                            } else {
                             return compTypeStreet;
                         }
                     } else {
@@ -649,6 +651,7 @@ app.factory('modelFactory', ['serviceUtil', function (serviceUtil) {
             "StreetId": 0,
             "House": '',
             "Apartment": null,
+            "ApartmentStr": '',
             "MajorId":0
         },
         precinct: {
