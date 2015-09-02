@@ -95,20 +95,24 @@ namespace Citizens.Controllers.API
         [Logger(Roles = "Operators, SuperAdministrators")]
         public async Task<IHttpActionResult> Post(PrecinctAddress precinctAddress)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             var textConflict = "";
 
-            if (precinctAddress.StreetId == null)
+            if (precinctAddress.StreetId == 0)
             {
-                precinctAddress.StreetId = 1;
+                var nullStreet = db.Streets.Where(s => s.Name.Equals(string.Empty)).FirstOrDefault();
+                if (nullStreet == null) return BadRequest();
+                precinctAddress.StreetId = nullStreet.Id;
             }
             if (precinctAddress.House == null)
             {
                 precinctAddress.House = "";
             }
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+           
 
             db.PrecinctAddresses.Add(precinctAddress);
 

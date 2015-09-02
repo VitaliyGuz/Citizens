@@ -23,7 +23,7 @@ namespace Citizens.Models
         [Key]
         [Column(Order = 2)]
         [StringLength(20)]
-        [Required()]
+        [Required(AllowEmptyStrings = true)]
         public string House { get; set; }
 
         public int? HouseNumber { get; set; }

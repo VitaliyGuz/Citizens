@@ -339,7 +339,11 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
                 $scope.saving.address = false;
                 $scope.saving.autocompleteAddresses = false;
                 res.City = $scope.selected.address.City;
-                res.Street = $scope.selected.address.Street;
+                if ($scope.selected.address.Street) {
+                    res.Street = $scope.selected.address.Street;
+                } else {
+                    res.Street = { Name: '', StreetType: {Name:''}}; // empty street
+                }
                 if ($scope.addAddressMode || copyAddressMode) {
                     $scope.precinctAddresses.push(res);
                 } else {

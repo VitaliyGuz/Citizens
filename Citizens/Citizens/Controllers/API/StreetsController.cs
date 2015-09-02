@@ -35,7 +35,7 @@ namespace Citizens.Controllers.API
         [Logger(Roles = "Operators, SuperAdministrators")] 
         public IQueryable<Street> GetStreets()
         {
-            return db.Streets.Except(db.Streets.Where(street => street.Name == "Без вулиці"));
+            return db.Streets.Except(db.Streets.Where(street => street.Name.Equals(string.Empty)));
         }
 
         // GET: odata/Streets(5)
