@@ -88,6 +88,13 @@ namespace Citizens.Controllers.API
                 return BadRequest(ModelState);
             }
 
+            if (workArea.TopId == 0)
+            {
+                var nullPerson = db.People.Where(p => p.LastName.Equals(string.Empty) && p.MidleName.Equals(string.Empty) && p.FirstName.Equals(string.Empty)).FirstOrDefault();
+                if (nullPerson == null) return BadRequest();
+                workArea.TopId = nullPerson.Id;
+            }
+
             db.WorkAreas.Add(workArea);
             db.SaveChanges();
 

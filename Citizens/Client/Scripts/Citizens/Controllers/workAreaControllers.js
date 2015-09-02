@@ -173,7 +173,7 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
             var addMode = !$scope.data.workArea.Id;
             var modelWorkArea = modelFactory.createObject('workArea', $scope.data.workArea);
             modelWorkArea.PrecinctId = $scope.data.workArea.Precinct.Id;
-            modelWorkArea.TopId = $scope.data.workArea.Top.Id;
+            if ($scope.data.workArea.Top && $scope.data.workArea.Top.Id) modelWorkArea.TopId = $scope.data.workArea.Top.Id;
 
             if (addMode) {
                 workAreaResource.save(modelWorkArea, updatePrecinctAddresses, errorHandler);
