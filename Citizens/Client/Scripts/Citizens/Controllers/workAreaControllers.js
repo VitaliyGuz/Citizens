@@ -172,8 +172,12 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
             var addMode = !$scope.data.workArea.Id;
             var modelWorkArea = modelFactory.createObject('workArea', $scope.data.workArea);
             modelWorkArea.PrecinctId = $scope.data.workArea.Precinct.Id;
-            if ($scope.data.workArea.Top && $scope.data.workArea.Top.Id) modelWorkArea.TopId = $scope.data.workArea.Top.Id;
-
+            if ($scope.data.workArea.Top && $scope.data.workArea.Top.Id) {
+                modelWorkArea.TopId = $scope.data.workArea.Top.Id;
+            } else {
+                modelWorkArea.TopId = 0;
+            }
+            
             if (addMode) {
                 workAreaResource.save(modelWorkArea, updatePrecinctAddresses, errorHandler);
             } else {
@@ -429,5 +433,10 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
                     if (count === total) $scope.loader.savingPeople = false;
                 }, errorHandler);
             });
+        };
+
+        $scope.clearTop = function() {
+            $scope.data.workArea.Top = undefined;
+            $scope.data.workArea.TopId = 0;
         };
     }]);
