@@ -62,11 +62,18 @@
     <div class="form-horizontal">
         <div class="form-group col-lg-6">
             <label>Відповідальний (старший)</label>
-            <input typeahead="p as p.label for p in getPeopleByName($viewValue)" typeahead-on-select="onSelectMajor($item)"
-                   type="text" ng-model="person.Major" typeahead-loading="loadingPeople" typeahead-no-results="noResults" typeahead-min-length="10" class="form-control" required>
-            <i ng-show="loadingPeople" class="fa fa-refresh fa-spin"></i>
-            <div ng-show="noResults">
-                <i class="glyphicon glyphicon-remove"></i> Фізособу не знайдено
+            <div class="input-group">
+                <input typeahead="p as p.label for p in getPeopleByName($viewValue)" typeahead-on-select="onSelectMajor($item)"
+                       type="text" ng-model="person.Major" typeahead-loading="loadingPeople" typeahead-no-results="noResults" typeahead-min-length="10" class="form-control">
+                <div ng-show="noResults">
+                    <i class="glyphicon glyphicon-remove"></i> Фізособу не знайдено
+                </div>
+                <span class="input-group-btn">
+                    <button type="button" class="btn btn-default" ng-click="clearMajor()">
+                        <span ng-hide="loadingPeople" class="glyphicon glyphicon-remove"></span>
+                        <i ng-show="loadingPeople" class="fa fa-refresh fa-spin"></i>
+                    </button>
+                </span>
             </div>
         </div>
     </div>

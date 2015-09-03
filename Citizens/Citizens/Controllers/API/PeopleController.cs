@@ -160,7 +160,8 @@ namespace Citizens.Controllers.API
         [Logger(Roles = "SuperAdministrators")]
         public async Task<IHttpActionResult> Put([FromODataUri] int key, Delta<Person> patch)
         {
-            Validate(patch.GetEntity());
+            var entity = patch.GetEntity();
+            Validate(entity);
 
             if (!ModelState.IsValid)
             {
@@ -172,7 +173,12 @@ namespace Citizens.Controllers.API
             {
                 return NotFound();
             }
-
+            if (entity.MajorId == 0)
+            {
+                var emptyPerson = GetEmptyPerson();
+                if (emptyPerson == null) return BadRequest();
+                entity.MajorId = emptyPerson.Id;
+            }
             patch.Put(person);
 
             try
@@ -202,7 +208,12 @@ namespace Citizens.Controllers.API
             {
                 return BadRequest(ModelState);
             }
-
+            if (person.MajorId == 0)
+            {
+                var emptyPerson = GetEmptyPerson();
+                if (emptyPerson == null) return BadRequest();
+                person.MajorId = emptyPerson.Id;
+            }
             db.People.Add(person);
             await db.SaveChangesAsync();
 
@@ -213,7 +224,8 @@ namespace Citizens.Controllers.API
         [AcceptVerbs("PATCH", "MERGE")]
         public async Task<IHttpActionResult> Patch([FromODataUri] int key, Delta<Person> patch)
         {
-            Validate(patch.GetEntity());
+            var entity = patch.GetEntity();
+            Validate(entity);
 
             if (!ModelState.IsValid)
             {
@@ -225,7 +237,12 @@ namespace Citizens.Controllers.API
             {
                 return NotFound();
             }
-
+            if (entity.MajorId == 0)
+            {
+                var emptyPerson = GetEmptyPerson();
+                if (emptyPerson == null) return BadRequest();
+                entity.MajorId = emptyPerson.Id;
+            }
             patch.Patch(person);
 
             try
@@ -296,6 +313,11 @@ namespace Citizens.Controllers.API
         private bool PersonExists(int key)
         {
             return db.People.Count(e => e.Id == key) > 0;
+        }
+
+        private Person GetEmptyPerson()
+        {
+            return db.People.FirstOrDefault(p => p.LastName.Equals(string.Empty) && p.MidleName.Equals(string.Empty) && p.FirstName.Equals(string.Empty));
         }
     }
 }

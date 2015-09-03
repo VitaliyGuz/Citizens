@@ -539,6 +539,7 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
                 return;
             }
             if (!person.Apartment) person.Apartment = null;
+            if (!$scope.person.Major) person.MajorId = 0;
             if ($scope.person.address.Precinct.Id) {
                 savePrecinctAddress({ Id: $scope.person.address.Precinct.Id });
             } else {
@@ -732,5 +733,9 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
         };
 
         $scope.getPeopleByName = peopleDataService.typeaheadPersonByNameFn();
-        
+
+        $scope.clearMajor = function() {
+            $scope.person.Major = undefined;
+            $scope.person.MajorId = 0;
+        };
     }]);
