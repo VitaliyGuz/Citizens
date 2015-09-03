@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Web;
 
@@ -21,6 +22,17 @@ namespace Citizens.Models
         public Person Top { get; set; }
           
         public ICollection<PrecinctAddress> PrecinctAddresses { get; set; }
-        
+
+        [NotMapped]
+        public string AddressesStr { get; set; }
+
+        [NotMapped]
+        public int CountMajors { get; set; }
+
+        [NotMapped]
+        public int CountElectors { get; set; }
+
+        [NotMapped]
+        public int CountHouseholds { get; set; }
     }
 }

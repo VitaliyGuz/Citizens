@@ -331,7 +331,7 @@ namespace Citizens.Controllers.API
             var workAreaIds = paramIds as List<int> ?? paramIds.ToList();
             if (workAreaIds.Count == 0) return Ok();
 
-            var myDataTable = new DataTable("MyDataType");
+            var myDataTable = new DataTable("Ids");
             myDataTable.Columns.Add("Id", typeof(Int32));
             myDataTable.Rows.Add(1);
 
@@ -339,10 +339,38 @@ namespace Citizens.Controllers.API
             {
                 ParameterName = "@Ids",
                 SqlDbType = SqlDbType.Structured,
-                Value = myDataTable
+                Value = myDataTable,
+                TypeName = "Ids"
             };
-            //command.Parameters.Add(parameter); 
-            var response = db.Database.ExecuteSqlCommand("exec SelectWorkAreasWithAddresses @Ids", parameter);
+
+            var sql = @"Declare  @EmptyMajorId int
+Select top 1 @EmptyMajorId = id from people
+where FirstName = ''
+SELECT DISTINCT WorkAreas.Id AS Участок, Streets.Name + ' (' + StreetTypes.Name + ')' AS Улица, PrecinctAddresses.House AS [Номер дома],
+	People.Id as Person, People.ApartmentStr as Apartment, CASE WHEN People.[MajorId]<>@EmptyMajorId THEN 1 ELSE 0 END as Старший
+	into #Temp
+	FROM            People INNER JOIN
+                         PrecinctAddresses ON People.CityId = PrecinctAddresses.CityId AND People.StreetId = PrecinctAddresses.StreetId AND People.House = PrecinctAddresses.House INNER JOIN
+                         WorkAreas ON PrecinctAddresses.WorkAreaId = WorkAreas.Id INNER JOIN
+                         Precincts ON PrecinctAddresses.PrecinctId = Precincts.Id 
+						 INNER JOIN
+                         Streets ON Streets.Id = PrecinctAddresses.StreetId INNER JOIN
+                         StreetTypes ON Streets.StreetTypeId = StreetTypes.Id
+							 inner join @Ids Ids
+							 on Ids.Id = WorkAreas.Id
+SELECT Участок , Улица,( select distinct [Номер дома] + ',' as 'data()' from #Temp t2 where t1.[Улица]=t2.[Улица] and t1.Участок=t2.Участок for xml path('') ) as [Номер дома],
+	Count(Distinct Person) as PeopleCount, Count(Distinct Apartment) as ApartmentCount, Sum(Старший) as Старший
+	into #Temp2
+	FROM            #Temp t1
+	group by Участок , Улица
+SELECT Участок as Id , ( select distinct Улица + [Номер дома] + ',' as 'data()' from #Temp2 t2 where t1.Участок=t2.Участок for xml path('') ) as AddressesStr,
+	Sum(ApartmentCount) as CountHouseholds, Sum(PeopleCount) as CountElectors, Cast(Sum(PeopleCount*0.033) as int) as CountMajorsPlan, Sum(Старший) as CountMajorsFact
+	FROM            #Temp2 t1
+	group by Участок
+";
+
+            var response = db.Database.ExecuteSqlCommand(sql, parameter);
+            //var response = db.Database.SqlQuery<WorkArea>(sql, parameter);
 
             return Ok(response);
         }

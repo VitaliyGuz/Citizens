@@ -68,6 +68,13 @@ namespace Citizens
             builder.EntitySet<ApplicationUser>("Users");
             //builder.EntitySet<IdentityUserClaim>("Claims");
             builder.EntitySet<ApplicationRole>("Roles");
+            
+            // copmuted properties
+            builder.EntityType<Person>().Property(p => p.CountSupporters);
+            builder.EntityType<WorkArea>().Property(p => p.AddressesStr);
+            builder.EntityType<WorkArea>().Property(p => p.CountElectors);
+            builder.EntityType<WorkArea>().Property(p => p.CountMajors);
+            builder.EntityType<WorkArea>().Property(p => p.CountHouseholds);
 
             builder.EntityType<UserPrecinct>()
                 .Collection
@@ -91,8 +98,6 @@ namespace Citizens
                 .ReturnsCollection<AddressCountPeople>()
                 .CollectionParameter<AddressCountPeople>("Precincts");
 
-            builder.EntityType<Person>().Property(p => p.CountSupporters);
-
             builder.EntityType<WorkArea>()
                 .Collection
                 .Action("GetMajors")
@@ -104,6 +109,12 @@ namespace Citizens
                 .Action("GetSupporters")
                 .ReturnsCollectionFromEntitySet<Person>("People")
                 .CollectionParameter<AddressCountPeople>("Addresses");
+
+            builder.EntityType<WorkArea>()
+                .Collection
+                .Action("CaclComputedProperties")
+                .ReturnsCollectionFromEntitySet<WorkArea>("WorkAreas")
+                .CollectionParameter<int>("WorkAreaIds");
 
             //builder.EntitySet<IdentityUserRole>("UserRoles");
             //builder.EntitySet<ApplicationUserLogin>("Logins");
