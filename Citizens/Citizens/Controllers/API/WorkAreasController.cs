@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
 using System.Data.Entity.Infrastructure;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Net;
 using System.Web.Http;
@@ -45,7 +48,8 @@ namespace Citizens.Controllers.API
         [Logger(Roles = "Operators, SuperAdministrators")] 
         public IHttpActionResult Put([FromODataUri] int key, Delta<WorkArea> patch)
         {
-            Validate(patch.GetEntity());
+            var entity = patch.GetEntity();
+            Validate(entity);
 
             if (!ModelState.IsValid)
             {
@@ -57,7 +61,12 @@ namespace Citizens.Controllers.API
             {
                 return NotFound();
             }
-
+            if (entity.TopId == 0)
+            {
+                var emptyPerson = GetEmptyPerson();
+                if (emptyPerson == null) return BadRequest();
+                entity.TopId = emptyPerson.Id;
+            }
             patch.Put(workArea);
 
             try
@@ -90,15 +99,20 @@ namespace Citizens.Controllers.API
 
             if (workArea.TopId == 0)
             {
-                var nullPerson = db.People.Where(p => p.LastName.Equals(string.Empty) && p.MidleName.Equals(string.Empty) && p.FirstName.Equals(string.Empty)).FirstOrDefault();
-                if (nullPerson == null) return BadRequest();
-                workArea.TopId = nullPerson.Id;
+                var emptyPerson = GetEmptyPerson();
+                if (emptyPerson == null) return BadRequest();
+                workArea.TopId = emptyPerson.Id;
             }
 
             db.WorkAreas.Add(workArea);
             db.SaveChanges();
 
             return Created(workArea);
+        }
+
+        private Person GetEmptyPerson()
+        {
+            return db.People.FirstOrDefault(p => p.LastName.Equals(string.Empty) && p.MidleName.Equals(string.Empty) && p.FirstName.Equals(string.Empty));
         }
 
         // PATCH: odata/WorkAreas(5)
@@ -118,7 +132,12 @@ namespace Citizens.Controllers.API
             {
                 return NotFound();
             }
-
+            if (workArea.TopId == 0)
+            {
+                var emptyPerson = GetEmptyPerson();
+                if (emptyPerson == null) return BadRequest();
+                workArea.TopId = emptyPerson.Id;
+            }
             patch.Patch(workArea);
 
             try
@@ -295,6 +314,35 @@ namespace Citizens.Controllers.API
                     a => new { a.CityId, a.StreetId, a.House },
                     person => new { person.CityId, person.StreetId, person.House }, (a, p) => p)
                 .Except(db.People.Where(p => p.LastName.Equals(string.Empty) && p.MidleName.Equals(string.Empty) && p.FirstName.Equals(string.Empty)));
+
+            return Ok(response);
+        }
+
+        [HttpPost]
+        public IHttpActionResult CaclComputedProperties(ODataActionParameters parameters)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var paramIds = parameters["WorkAreaIds"] as IEnumerable<int>;
+            if (paramIds == null) return BadRequest("Not found property 'WorkAreaIds'");
+
+            var workAreaIds = paramIds as List<int> ?? paramIds.ToList();
+            if (workAreaIds.Count == 0) return Ok();
+
+            var myDataTable = new DataTable("MyDataType");
+            myDataTable.Columns.Add("Id", typeof(Int32));
+            myDataTable.Rows.Add(1);
+
+            var parameter = new SqlParameter
+            {
+                ParameterName = "@Ids",
+                SqlDbType = SqlDbType.Structured,
+                Value = myDataTable
+            };
+            //command.Parameters.Add(parameter); 
+            var response = db.Database.ExecuteSqlCommand("exec SelectWorkAreasWithAddresses @Ids", parameter);
 
             return Ok(response);
         }
