@@ -2,8 +2,8 @@
 
 var peopleControllers = angular.module('peopleControllers', ['peopleServices', 'streetServices', 'cityServices', 'precinctServices']);
 
-peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$location', 'peopleData', 'config', 'serviceUtil', 'genlPeopleData', 'filterSettings','houseTypes',
-    function ($rootScope, $scope, $location, peopleData, config, serviceUtil, genlPeopleData, filterSettings,houseTypes) {
+peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$location', 'peopleResource', 'config', 'serviceUtil', 'resolvedAdditionalProperties', 'filterSettings', 'houseTypes',
+    function ($rootScope, $scope, $location, peopleResource, config, serviceUtil, resolvedAdditionalProperties, filterSettings, houseTypes) {
         var propValues = [], odataFilter;
         
         $rootScope.pageTitle = 'Фізичні особи';
@@ -19,8 +19,8 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
         $scope.houseTypes = [];
         $scope.query = {};
 
-        $scope.propKeys = genlPeopleData.propKeys;
-        propValues = genlPeopleData.propValues;
+        $scope.propKeys = resolvedAdditionalProperties.keys;
+        propValues = resolvedAdditionalProperties.values;
         
         $scope.houseTypes.push({ val: undefined, desc: '-Всі типи-' });
         $scope.houseTypes.push({ val: 'null', desc: 'Без типу' });
@@ -86,7 +86,7 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
                 if (!ok) return;
             }
             $rootScope.errorMsg = '';
-            peopleData.remove({ id: person.Id },function () {
+            peopleResource.remove({ id: person.Id },function () {
                 setPeopleOnPage();
                 }, errorHandler);
         };
@@ -106,7 +106,7 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
         };
         
         function setPeopleOnPage() {
-            peopleData.getPageItems({ skip: getSkip(), filter: odataFilter }, successHandler, errorHandler);
+            peopleResource.getPageItems({ skip: getSkip(), filter: odataFilter }, successHandler, errorHandler);
         };
 
         function successHandler(data) {
@@ -117,15 +117,7 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
             //var start = new Date().getTime();
             // include city and street in person model
             $scope.people = people.map(function (p) {
-
-                p.City = $rootScope.cities.filter(function (c) {
-                    return c.Id === p.CityId;
-                })[0];
-
-                p.Street = $rootScope.streets.filter(function (s) {
-                    return s.Id === p.StreetId;
-                })[0];
-
+                serviceUtil.expandAddress(p);
                 return p;
             });
             $scope.pagination.totalItems = data['@odata.count'];
@@ -428,15 +420,15 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
 
     }]);
 
-peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$location', 'peopleData', 'serviceUtil', 'precinctData', 'precinctAddressesData', 'additionalPropsData', 'propertyTypes', 'config', 'resolvedData', 'genlPeopleData', 'houseTypes', 'modelFactory', 'dataForEditPersonPage',
-    function ($rootScope, $scope, $location, peopleData, serviceUtil, precinctData, precinctAddressesData, additionalPropsData, propertyTypes, config, resolvedData, genlPeopleData, houseTypes, modelFactory, dataForEditPersonPage) {
+peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$location', 'serviceUtil', 'precinctData', 'precinctAddressesData', 'config', 'resolvedData', 'houseTypes', 'modelFactory', 'peopleDataService',
+    function ($rootScope, $scope, $location, serviceUtil, precinctData, precinctAddressesData, config, resolvedData, houseTypes, modelFactory, peopleDataService) {
         var addMode = true, editInd, propValues = [], DATE_FORMAT = 'yyyy-MM-ddT00:00:00+02:00';
         $rootScope.pageTitle = 'Фізична особа';
         $scope.tableHead = ['№', 'Назва', 'Значення'];
         $scope.selected = { property: {} };
         
-        $scope.propKeys = genlPeopleData.propKeys;
-        propValues = genlPeopleData.propValues;
+        $scope.propKeys = resolvedData.additionalProps.keys;
+        propValues = resolvedData.additionalProps.values;
         $scope.houseTypes = houseTypes;
         function getPropertyValuesByKeyId (keyId) {
             return propValues.filter(function (item) {
@@ -444,24 +436,24 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
             });
         };
 
-        if (resolvedData) {
-            if (resolvedData.person) {
+        if (resolvedData.data) {
+            if (resolvedData.data.person) {
                 addMode = false;
-                $scope.person = resolvedData.person;
-                if (resolvedData.person.DateOfBirth) {
-                    $scope.dateOfBirth = serviceUtil.formatDate(new Date(resolvedData.person.DateOfBirth), config.LOCALE_DATE_FORMAT);
+                $scope.person = resolvedData.data.person;
+                if (resolvedData.data.person.DateOfBirth) {
+                    $scope.dateOfBirth = serviceUtil.formatDate(new Date(resolvedData.data.person.DateOfBirth), config.LOCALE_DATE_FORMAT);
                 }
-                resolvedData.person.Major.label = dataForEditPersonPage.getPersonLabel(resolvedData.person.Major);
-                $scope.person.address = resolvedData.person.PrecinctAddress;
-                $scope.person.address.City = resolvedData.person.City;
-                $scope.person.address.Street = resolvedData.person.Street;
-                $scope.person.additionalProperties = getPropertyPairs(resolvedData.person.PersonAdditionalProperties);
+                resolvedData.data.person.Major.label = peopleDataService.getPersonLabel(resolvedData.data.person.Major);
+                $scope.person.address = resolvedData.data.person.PrecinctAddress;
+                $scope.person.address.City = resolvedData.data.person.City;
+                $scope.person.address.Street = resolvedData.data.person.Street;
+                $scope.person.additionalProperties = getPropertyPairs(resolvedData.data.person.PersonAdditionalProperties);
             }
-            $scope.precincts = resolvedData.precincts;
+            $scope.precincts = resolvedData.data.precincts;
         }
 
         function getPropertyPairs(properties) {
-            var result, types = propertyTypes.getAll();
+            var result, types = peopleDataService.propertyTypes.getAll();
             function getPair(item) {
                 var pair = { key: item.PropertyKey }, type, val, isTypeEqual;
                 for (var i = 0; i < types.length; i++){
@@ -569,7 +561,7 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
 
             function savePerson() {
                 if (addMode) {
-                    peopleData.save(person, function (res) {
+                    peopleDataService.resource.save(person, function (res) {
                         addMode = false;
                         $scope.saving = false;
                         $scope.person.Id = res.Id;
@@ -577,7 +569,8 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
                         $rootScope.successMsg = "Фізичну особу створено успішно!";
                     }, errorHandler);
                 } else {
-                    peopleData.update({ id: $scope.person.Id }, person, function () {
+                    peopleDataService.resource.update({ id: $scope.person.Id
+                    }, person, function () {
                         $scope.saving = false;
                         $rootScope.successMsg = "Зміни успішно збережено!";
                     }, errorHandler);
@@ -629,7 +622,8 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
             $scope.addPropertyMode = false;
             editInd = ind;
             $scope.isPrimitive = true;
-            additionalPropsData.getByKey({ personId: $scope.person.Id, propertyKeyId: propKeyId }, function (res) {
+            peopleDataService.additionalPropsResource.getByKey({
+                personId: $scope.person.Id, propertyKeyId: propKeyId }, function (res) {
                 prop = getPropertyPairs(res);
                 typeStr = prop.key.PropertyType.html;
                 if (typeStr.indexOf('ref') === 0) {
@@ -702,10 +696,14 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
             }            
             newProperty[propType.field] = newPropValue;
             if ($scope.addPropertyMode) {
-                additionalPropsData.save(newProperty, successHandler, errorHandler);
+                peopleDataService.additionalPropsResource.save(newProperty, successHandler, errorHandler);
             } else {
-                additionalPropsData.update({ personId: newProperty.PersonId, propertyKeyId: newProperty.PropertyKeyId }, newProperty,
-                    successHandler, errorHandler);
+                peopleDataService.additionalPropsResource.update(
+                   { personId: newProperty.PersonId, propertyKeyId: newProperty.PropertyKeyId },
+                   newProperty,
+                   successHandler,
+                   errorHandler
+                );
             }
             
             function successHandler() {
@@ -726,11 +724,13 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
                 var ok = confirm("Увага! Характеристику фіз. особи буде видалено, продовжити?");
                 if (!ok) return;
             }
-            additionalPropsData.remove({ personId: $scope.person.Id, propertyKeyId: prop.key.Id }, function () {
-                $scope.person.additionalProperties.splice(ind, 1);
-            }, errorHandler);
+            peopleDataService.additionalPropsResource.remove(
+                { personId: $scope.person.Id, propertyKeyId: prop.key.Id},
+                function () {$scope.person.additionalProperties.splice(ind, 1)},
+                errorHandler
+            );
         };
 
-        $scope.getPeopleByName = dataForEditPersonPage.typeaheadPersonByNameFn();
+        $scope.getPeopleByName = peopleDataService.typeaheadPersonByNameFn();
         
     }]);

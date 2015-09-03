@@ -124,10 +124,9 @@ workAreaControllers.controller("listWorkAreasController", ['$location', '$rootSc
         };
     }]);
 
-workAreaControllers.controller("editWorkAreaController", ['$location', '$rootScope', '$scope', 'serviceUtil', 'config', 'precinctData', 'precinctAddressesData', 'resolvedData', 'workAreaResource', 'modelFactory', 'houseTypes', 'dataForEditPersonPage',
-    function ($location, $rootScope, $scope, serviceUtil, config, precinctData, precinctAddressesData, resolvedData, workAreaResource, modelFactory, houseTypes, dataForEditPersonPage) {
-        var odataFilterPattern = ":fieldName eq ':val'";
-
+workAreaControllers.controller("editWorkAreaController", ['$location', '$rootScope', '$scope', 'serviceUtil', 'config', 'precinctData', 'precinctAddressesData', 'resolvedData', 'workAreaResource', 'modelFactory', 'houseTypes', 'peopleDataService',
+    function ($location, $rootScope, $scope, serviceUtil, config, precinctData, precinctAddressesData, resolvedData, workAreaResource, modelFactory, houseTypes, peopleDataService) {
+        
         $rootScope.pageTitle = 'Робоча дільниця';
         $scope.loader = {};
 
@@ -147,7 +146,7 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
         if (!$scope.data.workAreaAddresses) $scope.data.workAreaAddresses = [];
 
         if ($scope.data.workArea) {
-            $scope.data.workArea.Top.label = dataForEditPersonPage.getPersonLabel($scope.data.workArea.Top);
+            $scope.data.workArea.Top.label = peopleDataService.getPersonLabel($scope.data.workArea.Top);
         }
         
         $scope.saveChanges = function () {
@@ -290,7 +289,7 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
             }
         };
 
-        $scope.getPeopleByName = dataForEditPersonPage.typeaheadPersonByNameFn();
+        $scope.getPeopleByName = peopleDataService.typeaheadPersonByNameFn();
 
         $scope.onSelectPrecinct = function(item) {
             $scope.loader.loadingPrecinctAddresses = true;
@@ -402,7 +401,7 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
         $scope.linkMajors = function () {
             $rootScope.errorMsg = '';
 
-            if (!$scope.data.workAreaAddresses) return;
+            if ($scope.data.workAreaAddresses.length === 0) return;
 
             if ($scope.data.selected.person && !$scope.data.selected.person.Id) {
                 $rootScope.errorMsg = "Фізособу '" + $scope.data.selected.person + "' не знайдено";
@@ -418,7 +417,7 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
             $scope.loader.savingPeople = true;
             savingPeople.forEach(function (person) {
                 person.MajorId = $scope.data.selected.person.Id;
-                dataForEditPersonPage.resource.update({ id: person.Id }, person, function () {
+                peopleDataService.resource.update({ id: person.Id }, person, function () {
                     count++;
                     var adr = $scope.data.workAreaAddresses.filter(function (a) {
                         return equalsAddresses(person,a);

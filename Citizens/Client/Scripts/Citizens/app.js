@@ -31,17 +31,21 @@ app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider',
             controller: 'listPeopleController',
             resolve: {
                 commonData: function (commonData) { return commonData.asyncLoad() },
-                genlPeopleData: function(genlPeopleData) { return genlPeopleData.asyncLoad() }
-            }
+                resolvedAdditionalProperties: function (peopleDataService) {
+                    return peopleDataService.asyncLoadAdditionalProperties();
+                }
+           }
         },
         routeEditPerson = {
             templateUrl: 'Views/EditPerson.html',
             controller: 'editPersonController',
             resolve: {
                 commonData: function (commonData) { return commonData.asyncLoad() },
-                genlPeopleData: function(genlPeopleData) { return genlPeopleData.asyncLoad() },
-                resolvedData: function($route, dataForEditPersonPage) {
-                    return dataForEditPersonPage.asyncLoad($route.current.params.id);
+                resolvedData: function($q, $route, peopleDataService) {
+                    return $q.all({
+                        additionalProps: peopleDataService.asyncLoadAdditionalProperties(),
+                        data: peopleDataService.asyncLoadData($route.current.params.id)
+                    });   
                 }
             }
         },

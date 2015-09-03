@@ -1,7 +1,7 @@
 ﻿'use strict';
 
 angular.module("peopleServices", ['ngResource', 'precinctServices']).
-    factory("peopleData", ['$resource', 'config', function ($resource, config) {
+    factory("peopleResource", ['$resource', 'config', function ($resource, config) {
         var urlOdata = config.baseUrl + '/odata/People',
             order = '&$orderby=LastName,FirstName,MidleName',
             expand = '?$expand=City($expand=CityType,RegionPart),Street($expand=StreetType)',
@@ -20,7 +20,7 @@ angular.module("peopleServices", ['ngResource', 'precinctServices']).
 		    'remove': { method: 'DELETE', params: { id: "@id" }, url: urlOdata + "(:id)"}
 		});
     }]).
-    factory("additionalPropsData", ['$resource', 'config',function ($resource, config) {
+    factory("additionalPropsResource", ['$resource', 'config', function ($resource, config) {
         var urlOdata = config.baseUrl + '/odata/PersonAdditionalProperties',
             urlOdataValues = config.baseUrl + '/odata/PropertyValues',
             urlOdataKeys = config.baseUrl + '/odata/PropertyKeys',
@@ -65,12 +65,13 @@ angular.module("peopleServices", ['ngResource', 'precinctServices']).
             }
         }
     }])
-    .factory('dataForEditPersonPage', ['$q', 'serviceUtil', 'peopleData', 'precinctData', function ($q, serviceUtil, peopleData, precinctData) {
-        //todo: merge "dataForEditPersonPage" and "genlPeopleData" to "peopleDataService"
+    .factory('peopleDataService', ['$q', 'serviceUtil', 'peopleResource', 'precinctData', 'additionalPropsResource', 'propertyTypes', function ($q, serviceUtil, peopleResource, precinctData, additionalPropsResource, propertyTypes) {
+        
         function getPersonPromise(routeParam) {
             var deferred = $q.defer();
             if (routeParam) {
-                peopleData.getById({ id: routeParam }, function (res) {
+                peopleResource.getById({ id: routeParam
+                }, function (res) {
                     deferred.resolve(res);
                 }, function (err) {
                     err.description = 'Фізичну особу не знайдено';
@@ -79,6 +80,17 @@ angular.module("peopleServices", ['ngResource', 'precinctServices']).
             } else {
                 deferred.resolve();
             }
+            return deferred.promise;
+        };
+
+        function getAdditionalPropertiesPromise(method) {
+            var deferred = $q.defer();
+            additionalPropsResource[method](function (res) {
+                    deferred.resolve(res.value);
+                }, function (err) {
+                    err.description = 'Додаткові характеристики не завантажено';
+                    deferred.reject(serviceUtil.getErrorMessage(err));
+            });
             return deferred.promise;
         };
 
@@ -94,7 +106,7 @@ angular.module("peopleServices", ['ngResource', 'precinctServices']).
         };
 
         return {
-            asyncLoad: function (routeParam) {
+            asyncLoadData: function (routeParam) {
                 var resolved = {}, deferred = $q.defer();
                 function errorHandler(err) {
                     deferred.reject(err);
@@ -104,6 +116,22 @@ angular.module("peopleServices", ['ngResource', 'precinctServices']).
                     return getPrecinctsPromise();
                 }, errorHandler).then(function (precincts) {
                     resolved.precincts = precincts;
+                    deferred.resolve(resolved);
+                }, errorHandler);
+
+                return deferred.promise;
+            },
+            asyncLoadAdditionalProperties: function () {
+                var resolved = { }, deferred = $q.defer();
+                function errorHandler(err) {
+                    deferred.reject(err);
+                };
+                getAdditionalPropertiesPromise('getKeys').then(function (propKeys) {
+                    propertyTypes.castToObject(propKeys);
+                    resolved.keys = propKeys;
+                    return getAdditionalPropertiesPromise('getValues');
+                    }, errorHandler).then(function (propValues) {
+                        resolved.values = propValues;
                     deferred.resolve(resolved);
                 }, errorHandler);
 
@@ -140,7 +168,7 @@ angular.module("peopleServices", ['ngResource', 'precinctServices']).
                             .replace(/:val/g, name[prop]);
                     });
 
-                    return peopleData.getPageItems({ skip: 0, filter: filterQuery }).$promise.then(function (res) {
+                    return peopleResource.getPageItems({ skip: 0, filter: filterQuery }).$promise.then(function (res) {
                         return res.value.map(function (person) {
                             person.label = getPersonLabel(person);
                             return person;
@@ -148,39 +176,8 @@ angular.module("peopleServices", ['ngResource', 'precinctServices']).
                     });
                 }
             },
-            resource: peopleData
+            resource: peopleResource,
+            additionalPropsResource: additionalPropsResource,
+            propertyTypes: propertyTypes
         };
-    }])
-    .factory('genlPeopleData', ['$q', 'additionalPropsData', 'propertyTypes', 'serviceUtil', function ($q, additionalPropsData, propertyTypes, serviceUtil) {
-        function getAdditionalPropertiesPromise(method) {
-            var deferred = $q.defer();
-            
-            additionalPropsData[method](function (res) {
-                deferred.resolve(res.value);
-            }, function (err) {
-                err.description = 'Додаткові характеристики не завантажено';
-                deferred.reject(serviceUtil.getErrorMessage(err));
-            });
-            
-            return deferred.promise;
-        };
-
-        return {
-            asyncLoad: function () {
-                var resolved = {}, deferred = $q.defer();
-                function errorHandler(err) {
-                    deferred.reject(err);
-                };
-                getAdditionalPropertiesPromise('getKeys').then(function (propKeys) {
-                    propertyTypes.castToObject(propKeys);
-                    resolved.propKeys = propKeys;
-                    return getAdditionalPropertiesPromise('getValues');
-                }, errorHandler).then(function (propValues) {
-                    resolved.propValues = propValues;
-                    deferred.resolve(resolved);
-                }, errorHandler);
-
-                return deferred.promise;
-            }
-        };
-    }])
+    }]);
