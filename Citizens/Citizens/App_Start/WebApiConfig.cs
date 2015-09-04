@@ -113,7 +113,8 @@ namespace Citizens
             builder.EntityType<WorkArea>()
                 .Collection
                 .Action("CaclComputedProperties")
-                .ReturnsCollectionFromEntitySet<WorkArea>("WorkAreas")
+                .ReturnsCollection<WorkAreaComputed>()
+                //.ReturnsCollectionFromEntitySet<WorkArea>("WorkAreas")
                 .CollectionParameter<int>("WorkAreaIds");
 
             //builder.EntitySet<IdentityUserRole>("UserRoles");

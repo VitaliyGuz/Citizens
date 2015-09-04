@@ -24,6 +24,7 @@ namespace Citizens.Models
         public ICollection<PrecinctAddress> PrecinctAddresses { get; set; }
 
         [NotMapped]
+        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public string AddressesStr { get; set; }
 
         [NotMapped]
@@ -33,6 +34,19 @@ namespace Citizens.Models
         public int CountElectors { get; set; }
 
         [NotMapped]
+        public int CountHouseholds { get; set; }
+    }
+
+    public class WorkAreaComputed
+    {
+        public int Id { get; set; }
+        
+        public string AddressesStr { get; set; }
+
+        public int CountMajors { get; set; }
+        
+        public int CountElectors { get; set; }
+        
         public int CountHouseholds { get; set; }
     }
 }

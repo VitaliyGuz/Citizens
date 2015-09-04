@@ -4,7 +4,7 @@ angular.module("workAreaServices", ['ngResource', 'precinctServices'])
     .factory("workAreaResource", [
         '$resource', 'config', function($resource, config) {
             var urlOdata = config.baseUrl + '/odata/WorkAreas',
-                expand = "?$expand=Precinct,Top",
+                expand = "?$expand=Precinct($expand=RegionPart),Top",
                 paginate = "&$count=true&$skip=:skip&$top=" + config.pageSize,
                 params = {};
                 params.id = { id: "@id" },
@@ -19,6 +19,7 @@ angular.module("workAreaServices", ['ngResource', 'precinctServices'])
                 'save': { method: "POST", url: urlOdata },
                 'getCountPeopleAtAddresses': { method: 'POST', url: urlOdata + "/CountPeopleAtAddresses" },
                 'getCountPeopleAtPrecincts': { method: 'POST', url: urlOdata + "/CountPeopleAtPrecincts" },
+                'caclComputedProperties': { method: 'POST', url: urlOdata + "/CaclComputedProperties" },
                 'getMajors': { method: 'POST', url: urlOdata + "/GetMajors" },
                 'getSupporters': { method: 'POST', url: urlOdata + "/GetSupporters" },
                 'remove': { method: 'DELETE', params: params.id, url: urlOdata + "(:id)" }

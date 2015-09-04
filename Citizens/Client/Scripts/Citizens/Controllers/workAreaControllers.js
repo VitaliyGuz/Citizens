@@ -6,7 +6,20 @@ workAreaControllers.controller("listWorkAreasController", ['$location', '$rootSc
     function ($location, $rootScope, $scope, config, serviceUtil, workAreaResource, filterSettings) {
         
         $rootScope.pageTitle = 'Робочі дільниці';
-        $scope.tableHead = ['№', 'Номер', 'Топ','К-сть фізосіб', 'Дії'];
+        $scope.tableHead = [
+            '№',
+            'Номер',
+            'Топ',
+            'Район',
+            'Адреси',
+            'К-сть виборців',
+            'Факт. к-сть відповідальних',
+            'К-сть відповідальних',
+            'Явка',
+            'К-сть необхідних голосів',
+            'К-сть домоволодінь',
+            'Дії'
+        ];
         $scope.loader = {};
 
         var workAreasQuery = filterSettings.get('workAreas');
@@ -33,25 +46,49 @@ workAreaControllers.controller("listWorkAreasController", ['$location', '$rootSc
         $scope.calcPeopleAtPrecincts = function () {
             if (!$scope.workAreas || $scope.workAreas.length === 0) return;
             $scope.loader.calcPeople = true;
-            var precincts = $scope.workAreas.map(function(wa) {
-                return {
-                    CityId: 0,
-                    StreetId: 0,
-                    House: '',
-                    PrecinctId: wa.PrecinctId
-                }
+            var total = $scope.workAreas.length, count = 0;
+
+            //----------------------------------- one request with many items ----------------------------------
+            //var workAreasIds = $scope.workAreas.map(function (wa) {
+            //    return wa.Id;
+            //});
+            //workAreaResource.caclComputedProperties({ "WorkAreaIds": workAreasIds }, function (resp) {
+            //    if (resp) {
+            //        $scope.workAreas.forEach(function (wa) {
+            //            var computedProps = resp.value.filter(function (c) {
+            //                return c.Id === wa.Id;
+            //            })[0];
+            //            if (computedProps) {
+            //                Object.keys(computedProps).forEach(function(prop){
+            //                    wa[prop] = computedProps[prop];
+            //                });
+            //                wa.countMajorsPlan = Math.round(wa.CountElectors * 0.033);
+            //                wa.voterTurnout = Math.round(wa.CountElectors * 0.55);
+            //                wa.requiredVotes = Math.round(wa.CountElectors * 0.33);
+            //            };
+            //        });
+            //        $scope.loader.calcPeople = false;
+            //    }
+            //}, errorHandler);
+
+            //----------------------------------- many requests with one item ----------------------------------
+            $scope.workAreas.forEach(function (wa) {
+                workAreaResource.caclComputedProperties({ "WorkAreaIds": [wa.Id] }, function (resp) {
+                    if (resp) {
+                        if (resp.value.length > 0) {
+                            var computedProps = resp.value[0];
+                            Object.keys(computedProps).forEach(function (prop) {
+                                wa[prop] = computedProps[prop];
+                            });
+                            wa.countMajorsPlan = Math.round(wa.CountElectors * 0.033);
+                            wa.voterTurnout = Math.round(wa.CountElectors * 0.55);
+                            wa.requiredVotes = Math.round(wa.CountElectors * 0.33);
+                        }
+                        count++;
+                        if(count === total)  $scope.loader.calcPeople = false;
+                    }
+                }, errorHandler);
             });
-            workAreaResource.getCountPeopleAtPrecincts({ "Precincts": precincts }, function (resp) {
-                if (resp) {
-                     $scope.workAreas.forEach(function (wa) {
-                         var finded = resp.value.filter(function (p) {
-                            return p.PrecinctId === wa.PrecinctId;
-                         })[0];
-                         if (finded) wa.countPeople = finded.CountPeople;
-                     });
-                    $scope.loader.calcPeople = false;
-                }
-            },errorHandler);
         };
 
         function getWorkAreasPage() {

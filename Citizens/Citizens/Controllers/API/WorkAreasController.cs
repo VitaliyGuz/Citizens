@@ -8,6 +8,7 @@ using System.Net;
 using System.Web.Http;
 using System.Web.OData;
 using Citizens.Models;
+using System.Threading.Tasks;
 
 namespace Citizens.Controllers.API
 {
@@ -319,7 +320,7 @@ namespace Citizens.Controllers.API
         }
 
         [HttpPost]
-        public IHttpActionResult CaclComputedProperties(ODataActionParameters parameters)
+        public async Task<IHttpActionResult> CaclComputedProperties(ODataActionParameters parameters)
         {
             if (!ModelState.IsValid)
             {
@@ -331,15 +332,15 @@ namespace Citizens.Controllers.API
             var workAreaIds = paramIds as List<int> ?? paramIds.ToList();
             if (workAreaIds.Count == 0) return Ok();
 
-            var myDataTable = new DataTable("Ids");
-            myDataTable.Columns.Add("Id", typeof(Int32));
-            myDataTable.Rows.Add(1);
+            var tableIds = new DataTable();
+            tableIds.Columns.Add("Id", typeof(Int32));
+            workAreaIds.ForEach(id => tableIds.Rows.Add(id));
 
             var parameter = new SqlParameter
             {
                 ParameterName = "@Ids",
                 SqlDbType = SqlDbType.Structured,
-                Value = myDataTable,
+                Value = tableIds,
                 TypeName = "Ids"
             };
 
@@ -356,21 +357,55 @@ SELECT DISTINCT WorkAreas.Id AS Участок, Streets.Name + ' (' + StreetType
 						 INNER JOIN
                          Streets ON Streets.Id = PrecinctAddresses.StreetId INNER JOIN
                          StreetTypes ON Streets.StreetTypeId = StreetTypes.Id
-							 inner join @Ids Ids
-							 on Ids.Id = WorkAreas.Id
+						 INNER JOIN @Ids Ids ON Ids.Id = WorkAreas.Id
 SELECT Участок , Улица,( select distinct [Номер дома] + ',' as 'data()' from #Temp t2 where t1.[Улица]=t2.[Улица] and t1.Участок=t2.Участок for xml path('') ) as [Номер дома],
 	Count(Distinct Person) as PeopleCount, Count(Distinct Apartment) as ApartmentCount, Sum(Старший) as Старший
 	into #Temp2
 	FROM            #Temp t1
-	group by Участок , Улица
+	group by Участок , Улица,[Номер дома]
 SELECT Участок as Id , ( select distinct Улица + [Номер дома] + ',' as 'data()' from #Temp2 t2 where t1.Участок=t2.Участок for xml path('') ) as AddressesStr,
-	Sum(ApartmentCount) as CountHouseholds, Sum(PeopleCount) as CountElectors, Cast(Sum(PeopleCount*0.033) as int) as CountMajorsPlan, Sum(Старший) as CountMajorsFact
+	Sum(ApartmentCount) as CountHouseholds, Sum(Старший) as CountMajors, Sum(PeopleCount) as CountElectors
 	FROM            #Temp2 t1
 	group by Участок
+    Drop table #Temp
+    Drop table #Temp2
 ";
 
-            var response = db.Database.ExecuteSqlCommand(sql, parameter);
-            //var response = db.Database.SqlQuery<WorkArea>(sql, parameter);
+            //var response = db.Database.ExecuteSqlCommand(sql, parameter);
+            //var response = new List<WorkArea>();
+            //await db.Database.SqlQuery<WorkArea>(sql, parameter).ForEachAsync(w => response.Add(new WorkArea {
+            //    Id = w.Id,
+            //    Number = w.Number,
+            //    PrecinctId = w.PrecinctId,
+            //    TopId = w.TopId,
+            //    AddressesStr = w.AddressesStr,
+            //    CountElectors = w.CountElectors,
+            //    CountHouseholds = w.CountHouseholds,
+            //    CountMajors = w.CountMajors
+            //}));
+
+            //var response = new List<WorkAreaComputed>();
+            //var tasks = new List<Task<WorkAreaComputed>>();
+            //workAreaIds.ForEach(id =>
+            //{
+            //    var tableIds = new DataTable();
+            //    tableIds.Columns.Add("Id", typeof(Int32));
+            //    tableIds.Rows.Add(id);
+            //    var parameter = new SqlParameter
+            //    {
+            //        ParameterName = "@Ids",
+            //        SqlDbType = SqlDbType.Structured,
+            //        Value = tableIds,
+            //        TypeName = "Ids"
+            //    };
+            //    var task = db.Database.SqlQuery<WorkAreaComputed>(sql, parameter).FirstAsync();
+            //    tasks.Add(task);
+            //    //response.Add(result);
+            //    //tableIds.Rows.Remove(dataRow);
+            //});
+            //var resp = await Task.WhenAll<WorkAreaComputed>(tasks);
+
+            var response = await db.Database.SqlQuery<WorkAreaComputed>(sql, parameter).ToListAsync();
 
             return Ok(response);
         }

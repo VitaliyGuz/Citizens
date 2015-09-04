@@ -1,6 +1,5 @@
 ﻿<!--<h3>Дільниці</h3>-->
 <h5 ng-show="loader.loadingWorkAreas">Завантаження... <i class="fa fa-refresh fa-spin"></i></h5>
-<h6 ng-show="loader.calcPeople">Виконується підрахунок кількості фізичних осіб... <i class="fa fa-refresh fa-spin"></i></h6>
 <hr>
 <div class="row form-inline">
     <div class="col-md-6">
@@ -10,6 +9,7 @@
             <label>по:</label>
             <select ng-model="queryBy" ng-change="query = {}" class="form-control">
                 <option value="Precinct/Number">Дільниця</option>
+                <option value="Precinct/RegionPart/Name">Район</option>
                 <option value="Top/LastName">Прізвище відповідального</option>
             </select>
             <button type="submit" class="btn btn-success" title="Виконати пошук">
@@ -24,7 +24,8 @@
     </div>
     <div class="col-md-3">
         <button ng-click="calcPeopleAtPrecincts()" class="btn btn-success">
-            <span class="glyphicon glyphicon-refresh"></span> Обчислити к-сть фізосіб
+            <span ng-hide ="loader.calcPeople" class="glyphicon glyphicon-refresh"></span>
+            <i ng-show="loader.calcPeople" class="fa fa-refresh fa-spin"></i> Обчислити
         </button>
     </div>
 </div>
@@ -40,7 +41,14 @@
             <td>{{ getIndex($index) }}</td>
             <td>{{ workArea.Precinct.Number }}.{{ workArea.Number }}</td>
             <td>{{ workArea.Top.LastName }} {{ workArea.Top.FirstName }} {{ workArea.Top.MidleName }}</td>
-            <td>{{ workArea.countPeople }}</td>
+            <td>{{ workArea.Precinct.RegionPart.Name }}</td>
+            <td>{{ workArea.AddressesStr }}</td>
+            <td>{{ workArea.CountElectors }}</td>
+            <td>{{ workArea.CountMajors }}</td>
+            <td>{{ workArea.countMajorsPlan }}</td>
+            <td>{{ workArea.voterTurnout }}</td>
+            <td>{{ workArea.requiredVotes }}</td>
+            <td>{{ workArea.CountHouseholds }}</td>
             <td>
                 <button class="btn btn-xs" ng-click="edit(workArea)" title="Редагувати">
                     <span class="glyphicon glyphicon-edit"></span>
