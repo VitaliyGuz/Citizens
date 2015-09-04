@@ -15,6 +15,7 @@ workAreaControllers.controller("listWorkAreasController", ['$location', '$rootSc
             'К-сть виборців',
             'Планова к-сть старших',
             'Факт. к-сть старших',
+            '% старших',
             'Явка',
             'К-сть необхідних голосів',
             'К-сть домогосподарств',
@@ -63,6 +64,7 @@ workAreaControllers.controller("listWorkAreasController", ['$location', '$rootSc
             //                    wa[prop] = computedProps[prop];
             //                });
             //                wa.countMajorsPlan = Math.round(wa.CountElectors * 0.033);
+            //                wa.percentageMajors = Math.round(wa.CountMajors * 100 / wa.countMajorsPlan);
             //                wa.voterTurnout = Math.round(wa.CountElectors * 0.55);
             //                wa.requiredVotes = Math.round(wa.CountElectors * 0.33);
             //            };
@@ -81,6 +83,7 @@ workAreaControllers.controller("listWorkAreasController", ['$location', '$rootSc
                                 wa[prop] = computedProps[prop];
                             });
                             wa.countMajorsPlan = Math.round(wa.CountElectors * 0.033);
+                            wa.percentageMajors = Math.round(wa.CountMajors * 100 / wa.countMajorsPlan);
                             wa.voterTurnout = Math.round(wa.CountElectors * 0.55);
                             wa.requiredVotes = Math.round(wa.CountElectors * 0.33);
                         }

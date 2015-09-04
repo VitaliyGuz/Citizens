@@ -348,7 +348,7 @@ namespace Citizens.Controllers.API
 Select top 1 @EmptyMajorId = id from people
 where FirstName = ''
 SELECT DISTINCT WorkAreas.Id AS Участок, Streets.Name + ' (' + StreetTypes.Name + ')' AS Улица, PrecinctAddresses.House AS [Номер дома],
-	People.Id as Person, People.ApartmentStr as Apartment, CASE WHEN People.[MajorId]<>@EmptyMajorId THEN 1 ELSE 0 END as Старший
+	People.Id as Person, People.ApartmentStr as Apartment, CASE WHEN People.[MajorId]<>@EmptyMajorId THEN People.[MajorId] ELSE NULL END as Старший
 	into #Temp
 	FROM            People INNER JOIN
                          PrecinctAddresses ON People.CityId = PrecinctAddresses.CityId AND People.StreetId = PrecinctAddresses.StreetId AND People.House = PrecinctAddresses.House INNER JOIN
@@ -358,13 +358,13 @@ SELECT DISTINCT WorkAreas.Id AS Участок, Streets.Name + ' (' + StreetType
                          Streets ON Streets.Id = PrecinctAddresses.StreetId INNER JOIN
                          StreetTypes ON Streets.StreetTypeId = StreetTypes.Id
 						 INNER JOIN @Ids Ids ON Ids.Id = WorkAreas.Id
-SELECT Участок , Улица,( select distinct [Номер дома] + ',' as 'data()' from #Temp t2 where t1.[Улица]=t2.[Улица] and t1.Участок=t2.Участок for xml path('') ) as [Номер дома],
-	Count(Distinct Person) as PeopleCount, Count(Distinct Apartment) as ApartmentCount, Sum(Старший) as Старший
+SELECT Участок , Улица,Старший,( select distinct [Номер дома] + ',' as 'data()' from #Temp t2 where t1.[Улица]=t2.[Улица] and t1.Участок=t2.Участок for xml path('') ) as [Номер дома],
+	Count(Distinct Person) as PeopleCount, Count(Distinct Apartment) as ApartmentCount
 	into #Temp2
 	FROM            #Temp t1
-	group by Участок , Улица,[Номер дома]
+	group by Участок , Улица,[Номер дома],Старший
 SELECT Участок as Id , ( select distinct Улица + [Номер дома] + ',' as 'data()' from #Temp2 t2 where t1.Участок=t2.Участок for xml path('') ) as AddressesStr,
-	Sum(ApartmentCount) as CountHouseholds, Sum(Старший) as CountMajors, Sum(PeopleCount) as CountElectors
+	Sum(ApartmentCount) as CountHouseholds, Count(Distinct Старший) as CountMajors, Sum(PeopleCount) as CountElectors
 	FROM            #Temp2 t1
 	group by Участок
     Drop table #Temp
