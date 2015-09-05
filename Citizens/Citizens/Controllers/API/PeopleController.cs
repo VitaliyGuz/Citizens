@@ -12,6 +12,7 @@ using System.Web.Http.ModelBinding;
 using System.Web.OData;
 using System.Web.OData.Query;
 using System.Web.OData.Routing;
+using System.Web.Security;
 using Citizens.Extensions;
 using Citizens.Models;
 using Microsoft.AspNet.Identity;
@@ -157,7 +158,7 @@ namespace Citizens.Controllers.API
         }
 
         // PUT: odata/People(5)
-        [Logger(Roles = "SuperAdministrators")]
+        [Logger(Roles = "Operators, SuperAdministrators")]
         public async Task<IHttpActionResult> Put([FromODataUri] int key, Delta<Person> patch)
         {
             var entity = patch.GetEntity();
@@ -167,6 +168,8 @@ namespace Citizens.Controllers.API
             {
                 return BadRequest(ModelState);
             }
+
+
 
             Person person = await db.People.FindAsync(key);
             if (person == null)
@@ -179,6 +182,26 @@ namespace Citizens.Controllers.API
                 if (emptyPerson == null) return BadRequest();
                 entity.MajorId = emptyPerson.Id;
             }
+
+    
+            if (
+                !User.IsInRole("Administrators") && 
+                !User.IsInRole("SuperAdministrators") &&
+                (
+                    entity.FirstName != person.FirstName ||
+                    entity.MidleName != person.MidleName ||
+                    entity.LastName != person.LastName ||
+                    entity.CityId != person.CityId ||
+                    entity.StreetId != person.StreetId ||
+                    entity.House != person.House ||
+                    entity.ApartmentStr != person.ApartmentStr
+                )
+               )
+            {
+
+                return StatusCode(HttpStatusCode.Forbidden);
+            }
+
             patch.Put(person);
 
             try

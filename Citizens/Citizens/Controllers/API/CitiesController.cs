@@ -28,8 +28,7 @@ namespace Citizens.Controllers.API
     builder.EntitySet<Person>("Persons"); 
     builder.EntitySet<Region>("Regions"); 
     config.Routes.MapODataRoute("odata", "odata", builder.GetEdmModel());
-    */
-    [Logger(Roles = "SuperAdministrators")]        
+    */      
     public class CitiesController : ODataController
     {
         private CitizenDbContext db = new CitizenDbContext();
