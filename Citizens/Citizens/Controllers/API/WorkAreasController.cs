@@ -9,6 +9,8 @@ using System.Web.Http;
 using System.Web.OData;
 using Citizens.Models;
 using System.Threading.Tasks;
+using System.Web.OData.Query;
+using System.Web.OData.Routing;
 
 namespace Citizens.Controllers.API
 {
@@ -211,111 +213,81 @@ namespace Citizens.Controllers.API
             return db.WorkAreas.Count(e => e.Id == key) > 0;
         }
 
-        [HttpPost]
-        public IHttpActionResult CountPeopleAtAddresses(ODataActionParameters parameters)
+        [HttpGet]
+        [ODataRoute("WorkAreas({id})/GetCountPeopleByPrecinct(PrecinctId={precinctId})")]
+        [EnableQuery(AllowedQueryOptions = AllowedQueryOptions.All)]
+        public IHttpActionResult GetCountPeopleByPrecinct([FromODataUri] int precinctId)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            var paramAddresses = parameters["Addresses"] as IEnumerable<AddressCountPeople>;
-            if (paramAddresses == null) return BadRequest("Not found property 'Addresses'");
+            if (precinctId == 0) return BadRequest("PrecinctId equal 0");
 
-            var addresses = paramAddresses as List<AddressCountPeople> ?? paramAddresses.ToList();
-            if (addresses.Count == 0) return Ok();
-
-            var response = addresses
-                .Join(db.People, 
-                    a => new {a.CityId, a.StreetId, a.House},
-                    person => new {person.CityId,person.StreetId, person.House }, (a, p) => p)
+            var response = db.People.Include("PrecinctAddress")
+                .Where(p => p.PrecinctAddress.PrecinctId == precinctId) 
                 .GroupBy(k => new {k.CityId, k.StreetId, k.House}, g => g.Id,
-                        (k, g) => new AddressCountPeople { CityId = k.CityId, StreetId = k.StreetId, House = k.House, PrecinctId = 0, CountPeople = g.Distinct().Count() })
-                .ToArray();
+                        (k, g) => new AddressCountPeople { CityId = k.CityId, StreetId = k.StreetId, House = k.House, PrecinctId = 0, CountPeople = g.Distinct().Count() });
 
             return Ok(response);
         }
 
-        [HttpPost]
-        public IHttpActionResult CountPeopleAtPrecincts(ODataActionParameters parameters)
+        [HttpGet]
+        [ODataRoute("WorkAreas({id})/GetMajors()")]
+        [EnableQuery(AllowedQueryOptions = AllowedQueryOptions.All)]
+        public IHttpActionResult GetMajors(int id)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            var paramPrecincts = parameters["Precincts"] as IEnumerable<AddressCountPeople>;
-            if (paramPrecincts == null) return BadRequest("Not found property 'Precincts'");
 
-            var precincts = paramPrecincts as List<AddressCountPeople> ?? paramPrecincts.ToList();
-            if (precincts.Count == 0) return Ok();
+            if (id == 0) return BadRequest("WorkAreaId equal 0");
 
-            var response = precincts
-                .Join(db.People.Include("PrecinctAddress"),
-                    a => a.PrecinctId,
-                    person => person.PrecinctAddress.PrecinctId, (a, p) => p)
-                .GroupBy(k => k.PrecinctAddress.PrecinctId, g => g.Id,
-                        (k, g) => new AddressCountPeople { CityId = 0, StreetId = 0, House = string.Empty, PrecinctId = k, CountPeople = g.Distinct().Count() })
-                .ToArray();
-
-            return Ok(response);
-        }
-
-        [HttpPost]
-        public IHttpActionResult GetMajors(ODataActionParameters parameters)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            var paramAddresses = parameters["Addresses"] as IEnumerable<AddressCountPeople>;
-            if (paramAddresses == null) return BadRequest("Not found property 'Addresses'");
-
-            var addresses = paramAddresses as List<AddressCountPeople> ?? paramAddresses.ToList();
-            if (addresses.Count == 0) return Ok();
-
-            var response = addresses
-                .Join(db.People.Include("Major"),
-                    a => new { a.CityId, a.StreetId, a.House },
-                    person => new { person.CityId, person.StreetId, person.House }, (a, p) => p)
-                .GroupBy(k => k.Major, g => g.Id, (k, g) => new Person
+            var response = db.People.Include("Major").Include("PrecinctAddress")
+                .Where(p => p.PrecinctAddress.WorkAreaId == id)
+                .GroupBy(k => k.Major, g => g.Id, (k, g) => new 
                 {
-                    Id = k.Id,
-                    FirstName = k.FirstName,
-                    LastName = k.LastName,
-                    MidleName = k.MidleName,
-                    CityId = k.CityId,
-                    StreetId = k.StreetId,
-                    House = k.House,
-                    Apartment = k.Apartment,
-                    ApartmentStr = k.ApartmentStr,
-                    DateOfBirth = k.DateOfBirth,
-                    Gender = k.Gender,
-                    MajorId = k.MajorId,
+                    Person = k,
                     CountSupporters = g.Distinct().Count()
+                })
+                .AsEnumerable()
+                .Select(x => new Person
+                {
+                    Id = x.Person.Id,
+                    FirstName = x.Person.FirstName,
+                    LastName = x.Person.LastName,
+                    MidleName = x.Person.MidleName,
+                    CityId = x.Person.CityId,
+                    StreetId = x.Person.StreetId,
+                    House = x.Person.House,
+                    Apartment = x.Person.Apartment,
+                    ApartmentStr = x.Person.ApartmentStr,
+                    DateOfBirth = x.Person.DateOfBirth,
+                    Gender = x.Person.Gender,
+                    MajorId = x.Person.MajorId,
+                    CountSupporters = x.CountSupporters
                 })
                 .Where(p => !p.LastName.Equals(string.Empty) && !p.MidleName.Equals(string.Empty) && !p.FirstName.Equals(string.Empty));
 
             return Ok(response);
         }
 
-        [HttpPost]
-        public IHttpActionResult GetSupporters(ODataActionParameters parameters)
+        [HttpGet]
+        [ODataRoute("WorkAreas({id})/GetSupporters()")]
+        [EnableQuery(AllowedQueryOptions = AllowedQueryOptions.All)]
+        public IHttpActionResult GetSupporters(int id)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            var paramAddresses = parameters["Addresses"] as IEnumerable<AddressCountPeople>;
-            if (paramAddresses == null) return BadRequest("Not found property 'Addresses'");
-
-            var addresses = paramAddresses as List<AddressCountPeople> ?? paramAddresses.ToList();
-            if (addresses.Count == 0) return Ok();
-
-            var response = addresses
-                .Join(db.People,
-                    a => new { a.CityId, a.StreetId, a.House },
-                    person => new { person.CityId, person.StreetId, person.House }, (a, p) => p)
-                .Except(db.People.Where(p => p.LastName.Equals(string.Empty) && p.MidleName.Equals(string.Empty) && p.FirstName.Equals(string.Empty)));
-
+            
+            if (id == 0) return BadRequest("WorkAreaId equal 0");
+            
+            var response = db.People.Include("PrecinctAddress")
+                .Where(p => p.PrecinctAddress.WorkAreaId == id && !p.LastName.Equals(string.Empty) && !p.MidleName.Equals(string.Empty) && !p.FirstName.Equals(string.Empty));    
+                
             return Ok(response);
         }
 

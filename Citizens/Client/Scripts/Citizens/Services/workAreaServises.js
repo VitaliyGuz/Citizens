@@ -17,11 +17,10 @@ angular.module("workAreaServices", ['ngResource', 'precinctServices'])
                 'getPageItems': { method: 'GET', params: params.paginate, url: urlOdata + expand + "&$orderby=PrecinctId,Number" + ":filter" + paginate },
                 'update': { method: 'PUT', params: params.id, url: urlOdata + "(:id)" },
                 'save': { method: "POST", url: urlOdata },
-                'getCountPeopleAtAddresses': { method: 'POST', url: urlOdata + "/CountPeopleAtAddresses" },
-                'getCountPeopleAtPrecincts': { method: 'POST', url: urlOdata + "/CountPeopleAtPrecincts" },
+                'getCountPeopleByPrecinct': { method: 'GET', params: { id: "@id", precinctId: "@precinctId" }, url: urlOdata + "(:id)/GetCountPeopleByPrecinct(PrecinctId=:precinctId)" },
                 'caclComputedProperties': { method: 'POST', url: urlOdata + "/CaclComputedProperties" },
-                'getMajors': { method: 'POST', url: urlOdata + "/GetMajors" },
-                'getSupporters': { method: 'POST', url: urlOdata + "/GetSupporters" },
+                'getMajors': { method: 'GET', params: params.id, url: urlOdata + "(:id)/GetMajors()" },
+                'getSupporters': { method: 'GET', params: params.id,url: urlOdata + "(:id)/GetSupporters()" },
                 'remove': { method: 'DELETE', params: params.id, url: urlOdata + "(:id)" }
             });
         }

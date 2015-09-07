@@ -350,18 +350,12 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
         };
 
         $scope.calcPeopleAtAddresses = function () {
-            if (!$scope.data.precinctAddresses || $scope.data.precinctAddresses.length === 0) return;
+            if (!$scope.data.workArea || !$scope.data.workArea.PrecinctId) return;
             $scope.loader.calcPeople = true;
             $scope.totalCount.workArea = 0;
             $scope.totalCount.precinct = 0;
-            var addresses = $scope.data.precinctAddresses.map(function (a) {
-                return {
-                    CityId: a.CityId,
-                    StreetId: a.StreetId,
-                    House: a.House
-                }
-            });
-            workAreaResource.getCountPeopleAtAddresses({ "Addresses": addresses }, function (resp) {
+
+            workAreaResource.getCountPeopleByPrecinct({ "id": $scope.data.workArea.Id, "precinctId": $scope.data.workArea.PrecinctId }, function (resp) {
                 if (resp) {
                     $scope.data.precinctAddresses.forEach(function (a) {
                          var finded = resp.value.filter(function (c) {
@@ -378,24 +372,12 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
             }, errorHandler);
         };
         
-        function getWorkAreaAddressesRaw() {
-            if (!$scope.data.precinctAddresses || $scope.data.precinctAddresses.length === 0) return undefined;
-            return $scope.data.precinctAddresses.filter(function (a) {
-                return a.WorkAreaId === $scope.data.workArea.Id;
-            })
-            .map(function (a) {
-                return { CityId: a.CityId, StreetId: a.StreetId, House: a.House }
-            });
-        };
-        
         $scope.getMajors = function () {
-            var addresses = getWorkAreaAddressesRaw();
-            if (!addresses) return;
-
+            if (!$scope.data.workArea || !$scope.data.workArea.Id) return;
             $scope.loader.loadingMajors = true;
             $scope.totalCount.supporters = 0;
             
-            workAreaResource.getMajors({ "Addresses": addresses }, function (resp) {
+            workAreaResource.getMajors({ "id": $scope.data.workArea.Id }, function (resp) {
                 if (resp) {
                     $scope.loader.loadingMajors = false;
                     $scope.data.majors = resp.value;
@@ -415,10 +397,9 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
         };
 
         $scope.getSupporters = function () {
-            var addresses = getWorkAreaAddressesRaw();
-            if (!addresses) return;
+            if (!$scope.data.workArea || !$scope.data.workArea.Id) return;
             $scope.loader.loadingSupporters = true;
-            workAreaResource.getSupporters({ "Addresses": addresses }, function (resp) {
+            workAreaResource.getSupporters({ "id": $scope.data.workArea.Id }, function (resp) {
                 if (resp) {
                     $scope.data.supporters = resp.value;
                     var workAreaAddresses = $scope.data.supporters.reduce(function (result, curr) {

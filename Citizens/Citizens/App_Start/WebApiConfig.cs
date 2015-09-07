@@ -85,30 +85,18 @@ namespace Citizens
                 .Collection
                 .Action("RemoveRange")
                 .CollectionParameter<UserPrecinct>("Array");
+            
+            var func = builder.EntityType<WorkArea>().Function("GetCountPeopleByPrecinct");
+            func.Parameter<int>("PrecinctId");
+            func.ReturnsCollection<AddressCountPeople>();
 
             builder.EntityType<WorkArea>()
-                .Collection
-                .Action("CountPeopleAtAddresses")
-                .ReturnsCollection<AddressCountPeople>()
-                .CollectionParameter<AddressCountPeople>("Addresses");
+                .Function("GetMajors")
+                .ReturnsCollectionFromEntitySet<Person>("People");
 
             builder.EntityType<WorkArea>()
-                .Collection
-                .Action("CountPeopleAtPrecincts")
-                .ReturnsCollection<AddressCountPeople>()
-                .CollectionParameter<AddressCountPeople>("Precincts");
-
-            builder.EntityType<WorkArea>()
-                .Collection
-                .Action("GetMajors")
-                .ReturnsCollectionFromEntitySet<Person>("People")
-                .CollectionParameter<AddressCountPeople>("Addresses");
-
-            builder.EntityType<WorkArea>()
-                .Collection
-                .Action("GetSupporters")
-                .ReturnsCollectionFromEntitySet<Person>("People")
-                .CollectionParameter<AddressCountPeople>("Addresses");
+                .Function("GetSupporters")
+                .ReturnsCollectionFromEntitySet<Person>("People");
 
             builder.EntityType<WorkArea>()
                 .Collection
