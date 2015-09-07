@@ -144,7 +144,7 @@ namespace Citizens.Controllers.API
             //IQueryable results = opts.ApplyTo(dbQuery.AsQueryable());
             ////IQueryable results = opts.ApplyTo(db.People.Where(person => person.House == "4-1").AsQueryable());
             //return results.AsQueryable() as IQueryable<Person>;
-            return db.People;
+            return db.People.Except(db.People.Where(p => p.LastName.Equals(string.Empty) && p.MidleName.Equals(string.Empty) && p.FirstName.Equals(string.Empty)));
 
         }
 
@@ -154,7 +154,7 @@ namespace Citizens.Controllers.API
         [Logger(Roles = "Operators, SuperAdministrators")] 
         public SingleResult<Person> GetPerson([FromODataUri] int key)
         {
-            return SingleResult.Create(db.People.Where(person => person.Id == key));
+            return SingleResult.Create(db.People.Where(p => p.Id == key && !p.LastName.Equals(string.Empty) && !p.MidleName.Equals(string.Empty) && !p.FirstName.Equals(string.Empty)));
         }
 
         // PUT: odata/People(5)
