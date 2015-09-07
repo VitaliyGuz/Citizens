@@ -408,7 +408,8 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
                             StreetId: curr.StreetId,
                             House: curr.House,
                             Apartment: curr.Apartment,
-                            ApartmentStr: curr.ApartmentStr
+                            ApartmentStr: curr.ApartmentStr,
+                            Major: curr.Major
                         };
                         var isContains = result.some(function (i) {  return equalsAddresses(address,i) });
                         if (!isContains) result.push(address);
@@ -441,15 +442,16 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
             if (total === 0) return;
             $scope.loader.savingPeople = true;
             savingPeople.forEach(function (person) {
-                person.MajorId = $scope.data.selected.person.Id;
-                peopleDataService.resource.update({ id: person.Id }, person, function () {
+                var personModel = modelFactory.createObject("person", person);
+                personModel.MajorId = $scope.data.selected.person.Id;
+                peopleDataService.resource.update({ id: person.Id }, personModel, function () {
                     count++;
                     var adr = $scope.data.workAreaAddresses.filter(function (a) {
                         return equalsAddresses(person,a);
                     })[0];
                     if (adr) {
                         adr.isSelected = false;
-                        adr.major = $scope.data.selected.person;
+                        adr.Major = $scope.data.selected.person;
                     }
                     if (count === total) $scope.loader.savingPeople = false;
                 }, errorHandler);
@@ -459,5 +461,13 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
         $scope.clearTop = function() {
             $scope.data.workArea.Top = undefined;
             $scope.data.workArea.TopId = 0;
+        };
+
+        $scope.selectAll = function(tabName) {
+            if (tabName === 'tabEditMajors') {
+                if ($scope.data.workAreaAddresses) {
+                    $scope.data.workAreaAddresses.forEach(function (a) { $scope.toggleSelection(a) });
+                }
+            }
         };
     }]);

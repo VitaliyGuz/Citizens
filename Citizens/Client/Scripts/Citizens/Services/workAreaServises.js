@@ -20,7 +20,7 @@ angular.module("workAreaServices", ['ngResource', 'precinctServices'])
                 'getCountPeopleByPrecinct': { method: 'GET', params: { id: "@id", precinctId: "@precinctId" }, url: urlOdata + "(:id)/GetCountPeopleByPrecinct(PrecinctId=:precinctId)" },
                 'caclComputedProperties': { method: 'POST', url: urlOdata + "/CaclComputedProperties" },
                 'getMajors': { method: 'GET', params: params.id, url: urlOdata + "(:id)/GetMajors()" },
-                'getSupporters': { method: 'GET', params: params.id,url: urlOdata + "(:id)/GetSupporters()" },
+                'getSupporters': { method: 'GET', params: params.id,url: urlOdata + "(:id)/GetSupporters()?$expand=Major" },
                 'remove': { method: 'DELETE', params: params.id, url: urlOdata + "(:id)" }
             });
         }

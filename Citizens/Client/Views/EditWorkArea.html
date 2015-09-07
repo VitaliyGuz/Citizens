@@ -182,7 +182,7 @@
             <thead>
                 <tr>
                     <th>№</th>
-                    <th></th>
+                    <th><input type="checkbox" class="checkbox-inline" ng-click="selectAll('tabEditMajors')" title="Відмітити всі"></th>
                     <th>Адреса</th>
                     <th>Старший</th>
                 </tr>
@@ -192,11 +192,11 @@
                     <td>{{ getIndex($index,'tabEditMajors') + 1 }}</td>
                     <td><input type="checkbox" class="checkbox-inline" ng-click="toggleSelection(address)" ng-checked="checked(address)"></td>
                     <td>{{ address.City.CityType.Name}}{{address.City.Name}}, {{ address.Street.StreetType.Name }} {{ address.Street.Name }} {{ address.House }}{{ address.Apartment | checkApartment}}</td>
-                    <td>{{ address.major.LastName }} {{ address.major.FirstName }} {{ address.major.MidleName }}</td>
+                    <td>{{ address.Major.LastName }} {{ address.Major.FirstName }} {{ address.Major.MidleName }}</td>
                 </tr>
             </tbody>
         </table>
-        <dir-pagination-controls boundary-links="true" on-page-change="onPageChange(newPageNumber, 'tabMajors')" pagination-id="workAreaEditMajorsPagination"></dir-pagination-controls>
+        <dir-pagination-controls boundary-links="true" on-page-change="onPageChange(newPageNumber, 'tabEditMajors')" pagination-id="workAreaEditMajorsPagination"></dir-pagination-controls>
     </tab>
 </tabset>
 
