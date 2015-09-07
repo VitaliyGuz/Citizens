@@ -20,10 +20,13 @@
                     <i class="glyphicon glyphicon-remove"></i> Фізособу не знайдено
                 </div>
                 <span class="input-group-btn">
-                    <button type="button" class="btn btn-default" ng-click="clearTop()">
+                    <button type="button" class="btn btn-default" ng-click="clearTop()" title="Очистити">
                         <span ng-hide="loadingPeople" class="glyphicon glyphicon-remove"></span>
                         <i ng-show="loadingPeople" class="fa fa-refresh fa-spin"></i>
                     </button>
+                    <a class="btn btn-default" ng-href="/person/{{data.workArea.Top.Id}}" ng-show="data.workArea.Top.Id" title="Редагувати">
+                        <span class="glyphicon glyphicon-edit"></span>
+                    </a>
                 </span>
             </div>
         </div>
