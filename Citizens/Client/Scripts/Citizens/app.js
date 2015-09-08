@@ -250,12 +250,6 @@ app.factory("serviceUtil", ["$filter", '$routeParams', '$rootScope', function ($
             return a.Name.localeCompare(b.Name);
         },
         copyProperties: function (source, destination) {
-            //for (var prop in destination) {
-            //    if (destination.hasOwnProperty(prop)) {
-            //        var val = source[prop];
-            //        if(val) destination[prop] = source[prop];
-            //    }
-            //}
             Object.keys(destination).forEach(function(prop) {
                 var val = source[prop];
                 if (val != undefined) destination[prop] = source[prop];
@@ -265,14 +259,6 @@ app.factory("serviceUtil", ["$filter", '$routeParams', '$rootScope', function ($
             return { cityId: address.CityId, streetId: address.StreetId, house: address.House };
         },
         formatDate: function (date, pattern) {
-            //if (angular.isString(date)) {
-            //    var parsedDate = this.dateParse(date);
-            //    if (parsedDate) {
-            //        return $filter("date")(parsedDate, pattern);
-            //    } else {
-            //        return undefined;
-            //    }
-            //}
             var d = this.dateParse(date);
             return d ? $filter("date") (d, pattern) : undefined;
         },
@@ -306,8 +292,11 @@ app.factory("serviceUtil", ["$filter", '$routeParams', '$rootScope', function ($
             return d ? d.toISOString() : undefined;
         },
         isEmptyDate: function (date) {
-            if(!date) return true;
-            return date.getTime() === new Date(1900, 0, 1).getTime();
+            if (!date) return true;
+            date.setHours(0, 0, 0, 0);
+            var minDate = new Date(1900, 0, 1);
+            minDate.setHours(0, 0, 0, 0);
+            return date.getTime() === minDate.getTime();
         },
         addressToString: function(address) {
             if (address.City && address.Street && address.House) {
