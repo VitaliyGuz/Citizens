@@ -149,7 +149,7 @@ namespace Citizens.Controllers.API
         }
 
         // GET: odata/People(5)
-        [EnableQuery]
+        [EnableQuery(MaxExpansionDepth = 3)]
         [PersonFilter]
         [Logger(Roles = "Operators, SuperAdministrators")] 
         public SingleResult<Person> GetPerson([FromODataUri] int key)

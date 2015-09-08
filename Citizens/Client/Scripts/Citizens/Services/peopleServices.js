@@ -5,13 +5,13 @@ angular.module("peopleServices", ['ngResource', 'precinctServices']).
         var urlOdata = config.baseUrl + '/odata/People',
             order = '&$orderby=LastName,FirstName,MidleName',
             expand = '?$expand=City($expand=CityType,RegionPart),Street($expand=StreetType)',
-            expandWithProps = expand + ",Major,PrecinctAddress($expand=Precinct),PersonAdditionalProperties($expand=PropertyKey,PropertyValue)",
+            expandSingle = expand + ",Major,PrecinctAddress($expand=Precinct),PrecinctAddress($expand=WorkArea($expand=Top)),PersonAdditionalProperties($expand=PropertyKey,PropertyValue)",
             //paginate = "&$count=true&$skip=:skip&$top=" + config.pageSize,
             paginate = "$count=true&$skip=:skip"; // page size on server-side
 
         return $resource('', {},
 		{
-		    'getById': { method: 'GET', params: { id: "@id" }, url: urlOdata + "(:id)" + expandWithProps },
+		    'getById': { method: 'GET', params: { id: "@id" }, url: urlOdata + "(:id)" + expandSingle },
 		    //'getPageItems': { method: 'GET', params: { skip: "@skip" }, url: urlOdata + "?" + paginate },
 		    //'getFilteredPageItems': { method: 'GET', params: { skip: "@skip", filter: '@filter' }, url: urlOdata + "?$filter=:filter" + paginate },
 		    'getPageItems': { method: 'GET', params: { skip: '@skip', filter: '@filter' }, url: urlOdata + "?" + paginate + ":filter" },

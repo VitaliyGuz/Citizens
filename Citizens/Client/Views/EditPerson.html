@@ -59,7 +59,7 @@
                    typeahead="p as p.Number for p in precincts | filter: {Number:$viewValue} | orderByStartsWith:{Number:$viewValue} | limitTo:10" class="form-control" required>
         </div>
     </div>
-    <div class="form-horizontal">
+    <div class="row">
         <div class="form-group col-lg-6">
             <label>Відповідальний (старший)</label>
             <div class="input-group">
@@ -69,10 +69,21 @@
                     <i class="glyphicon glyphicon-remove"></i> Фізособу не знайдено
                 </div>
                 <span class="input-group-btn">
-                    <button type="button" class="btn btn-default" ng-click="clearMajor()">
+                    <button type="button" class="btn btn-default form-control" ng-click="clearMajor()" title="Очистити">
                         <span ng-hide="loadingPeople" class="glyphicon glyphicon-remove"></span>
                         <i ng-show="loadingPeople" class="fa fa-refresh fa-spin"></i>
                     </button>
+                </span>
+            </div>
+        </div>
+        <div class="form-group col-lg-6">
+            <label>Робоча дільниця (топ)</label>
+            <div class="input-group">
+                <input type="text" value="{{person.address.Precinct.Number}}.{{person.address.WorkArea.Number}} {{person.address.WorkArea.Top.LastName + ' ' + person.address.WorkArea.Top.FirstName + ' ' + person.address.WorkArea.Top.MidleName}}" class="form-control">
+                <span class="input-group-btn">
+                    <a ng-href="/work-area/{{person.address.WorkArea.Id}}" class="btn btn-default form-control" title="Відкрити">
+                        <span class="glyphicon glyphicon-open"></span>
+                    </a>
                 </span>
             </div>
         </div>
