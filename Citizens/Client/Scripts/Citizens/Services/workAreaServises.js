@@ -17,7 +17,7 @@ angular.module("workAreaServices", ['ngResource', 'precinctServices'])
                 'getPageItems': { method: 'GET', params: params.paginate, url: urlOdata + expand + "&$orderby=PrecinctId,Number" + ":filter" + paginate },
                 'update': { method: 'PUT', params: params.id, url: urlOdata + "(:id)" },
                 'save': { method: "POST", url: urlOdata },
-                'getCountPeopleByPrecinct': { method: 'GET', params: { id: "@id", precinctId: "@precinctId" }, url: urlOdata + "(:id)/GetCountPeopleByPrecinct(PrecinctId=:precinctId)" },
+                'getCountPeopleByPrecinct': { method: 'GET', params: {precinctId: "@precinctId" }, url: urlOdata + "/GetCountPeopleByPrecinct(PrecinctId=:precinctId)" },
                 'caclComputedProperties': { method: 'POST', url: urlOdata + "/CaclComputedProperties" },
                 'getMajors': { method: 'GET', params: params.id, url: urlOdata + "(:id)/GetMajors()" },
                 'getSupporters': { method: 'GET', params: params.id,url: urlOdata + "(:id)/GetSupporters()?$expand=Major" },

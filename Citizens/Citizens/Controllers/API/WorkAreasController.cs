@@ -214,7 +214,7 @@ namespace Citizens.Controllers.API
         }
 
         [HttpGet]
-        [ODataRoute("WorkAreas({id})/GetCountPeopleByPrecinct(PrecinctId={precinctId})")]
+        [ODataRoute("WorkAreas/GetCountPeopleByPrecinct(PrecinctId={precinctId})")]
         [EnableQuery(AllowedQueryOptions = AllowedQueryOptions.All)]
         public IHttpActionResult GetCountPeopleByPrecinct([FromODataUri] int precinctId)
         {

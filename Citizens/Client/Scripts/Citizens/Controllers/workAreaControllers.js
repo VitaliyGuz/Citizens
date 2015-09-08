@@ -355,7 +355,7 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
             $scope.totalCount.workArea = 0;
             $scope.totalCount.precinct = 0;
 
-            workAreaResource.getCountPeopleByPrecinct({ "id": $scope.data.workArea.Id, "precinctId": $scope.data.workArea.PrecinctId }, function (resp) {
+            workAreaResource.getCountPeopleByPrecinct({ "precinctId": $scope.data.workArea.PrecinctId }, function (resp) {
                 if (resp) {
                     $scope.data.precinctAddresses.forEach(function (a) {
                          var finded = resp.value.filter(function (c) {

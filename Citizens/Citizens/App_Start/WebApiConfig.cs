@@ -86,7 +86,7 @@ namespace Citizens
                 .Action("RemoveRange")
                 .CollectionParameter<UserPrecinct>("Array");
             
-            var func = builder.EntityType<WorkArea>().Function("GetCountPeopleByPrecinct");
+            var func = builder.EntityType<WorkArea>().Collection.Function("GetCountPeopleByPrecinct");
             func.Parameter<int>("PrecinctId");
             func.ReturnsCollection<AddressCountPeople>();
 
