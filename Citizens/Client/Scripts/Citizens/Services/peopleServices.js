@@ -5,7 +5,7 @@ angular.module("peopleServices", ['ngResource', 'precinctServices']).
         var urlOdata = config.baseUrl + '/odata/People',
             order = '&$orderby=LastName,FirstName,MidleName',
             expand = '?$expand=City($expand=CityType,RegionPart),Street($expand=StreetType)',
-            expandSingle = expand + ",Major,PrecinctAddress($expand=Precinct),PrecinctAddress($expand=WorkArea($expand=Top)),PersonAdditionalProperties($expand=PropertyKey,PropertyValue)",
+            expandSingle = expand + ",Major,PrecinctAddress($expand=Precinct),PrecinctAddress($expand=WorkArea($expand=Top,Precinct)),PersonAdditionalProperties($expand=PropertyKey,PropertyValue)",
             //paginate = "&$count=true&$skip=:skip&$top=" + config.pageSize,
             paginate = "$count=true&$skip=:skip"; // page size on server-side
 

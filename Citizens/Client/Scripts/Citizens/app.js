@@ -126,7 +126,7 @@ app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider',
             resolve: {
                 commonData: function (commonData) { return commonData.asyncLoad() },
                 resolvedData: function ($route, workAreaDataService) {
-                    return workAreaDataService.asyncLoad($route.current.params.id);
+                    return workAreaDataService.asyncLoad($route.current.params);
                 }
             }
         };
@@ -212,7 +212,7 @@ app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider',
 }]);
 
 app.constant("config", Object.freeze({
-    baseUrl: 'https://localhost:44303',//'http://localhost:6600','http://poltava2015.azurewebsites.net', 'http://apicitizens.azurewebsites.net', #Deploy
+    baseUrl: 'https://poltava2015.azurewebsites.net',//'http://localhost:6600','http://poltava2015.azurewebsites.net', 'http://apicitizens.azurewebsites.net', #Deploy
     pageSize: 20, // by default 20
     pageSizeTabularSection: 10,
     checkDeleteItem: true,
@@ -377,7 +377,7 @@ app.factory("serviceUtil", ["$filter", '$routeParams', '$rootScope', function ($
     }
 }]);
 
-app.run(["$rootScope", "$timeout", '$location', 'Credentials', 'checkPermissions', function ($rootScope, $timeout, $location, Credentials, checkPermissions) {
+app.run(["$rootScope", "$timeout", '$location', 'Credentials', 'checkPermissions', 'serviceUtil', function ($rootScope, $timeout, $location, Credentials, checkPermissions, serviceUtil) {
     var authData = Credentials.get();
     if (authData) $rootScope.UserInfo = authData.userInfo;
 
@@ -441,7 +441,7 @@ app.run(["$rootScope", "$timeout", '$location', 'Credentials', 'checkPermissions
 
     $rootScope.$on('$routeChangeError', function (event, current, previous, rejection) {
         // todo: get rejection as error object but not as string
-        $rootScope.errorMsg = rejection;
+        $rootScope.errorMsg = angular.isString(rejection) ? rejection : serviceUtil.getErrorMessage(rejection);
         $rootScope.loading = false;
     });
 }]);

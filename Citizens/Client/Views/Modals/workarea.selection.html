@@ -1,0 +1,15 @@
+﻿<div class="modal-header">
+    <h4 class="modal-title">Вибір робочої дільниці</h4>
+</div>
+<div class="modal-body">
+    <div class="radio">
+        <label ng-repeat="item in items" class="radio">
+            <input type="radio" ng-click="selected.item = item" name="workAreaGroup">{{ item.Precinct.Number }}.{{ item.Number }} {{ item.Top.LastName }} {{ item.Top.FirstName }} {{ item.Top.MidleName }}
+        </label>
+    </div>    
+    <h6 ng-hide="selected.item" class="help-block">Не вибрано жодної робочої дільниці</h6>
+</div>
+<div class="modal-footer">
+    <button class="btn btn-primary" type="button" ng-click="ok()" ng-disabled="!selected.item">Призначити</button>
+    <button class="btn btn-warning" type="button" ng-click="cancel()">Відмінити</button>
+</div>

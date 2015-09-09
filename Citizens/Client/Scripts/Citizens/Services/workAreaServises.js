@@ -1,6 +1,6 @@
 ﻿'use strict';
 
-angular.module("workAreaServices", ['ngResource', 'precinctServices'])
+angular.module("workAreaServices", ['ngResource', 'precinctServices', 'peopleServices'])
     .factory("workAreaResource", [
         '$resource', 'config', function($resource, config) {
             var urlOdata = config.baseUrl + '/odata/WorkAreas',
@@ -25,72 +25,37 @@ angular.module("workAreaServices", ['ngResource', 'precinctServices'])
             });
         }
     ])
-    .factory('workAreaDataService', ['$q', 'serviceUtil', 'precinctAddressesData','precinctData','workAreaResource',
-        function ($q, serviceUtil, precinctAddressesData, precinctData, workAreaResource) {
-
-            function getWorkAreaPromise(routeParam) {
-                var deferred = $q.defer();
-                if (routeParam) {
-                    workAreaResource.getById({ id: routeParam }, function (res) {
-                        deferred.resolve(res);
-                    }, function(err) {
-                        err.description = 'Робочу дільницю не знайдено';
-                        deferred.reject(serviceUtil.getErrorMessage(err));
-                    });
-                } else {
-                    deferred.resolve();
-                }
-                return deferred.promise;
-            };
-            
-            function getPrecinctAddressesPromise(param) {
-                var deferred = $q.defer();
-                if (param.route) {
-                    precinctAddressesData.getAllByPrecinctId({ precinctId: param.id }, function (res) {
-                        serviceUtil.sortAddresses(res.value);
-                        deferred.resolve(res.value);
-                    }, function (err) {
-                        err.description = 'Адреси не завантажено';
-                        deferred.reject(serviceUtil.getErrorMessage(err));
-                    });
-                } else {
-                    deferred.resolve();
-                }
-                return deferred.promise;
-            };
-
-            function getPrecinctsPromise() {
-                var deferred = $q.defer();
-                precinctData.getAllNotExpand(function(res) {
-                    deferred.resolve(res.value);
-                }, function(err) {
-                    err.description = 'Дільниці не завантажено',
-                    deferred.reject(serviceUtil.getErrorMessage(err));
-                });
-                return deferred.promise;
-            };
-
+    .factory('workAreaDataService', ['$q', 'serviceUtil', 'precinctAddressesData', 'precinctData', 'workAreaResource', 'peopleResource',
+        function ($q, serviceUtil, precinctAddressesData, precinctData, workAreaResource, peopleResource) {
             return {
-                asyncLoad: function(routeParam) {
+                asyncLoad: function(routeParams) {
                     var resolved = {}, deferred = $q.defer();
+
                     function errorHandler(err) {
                         deferred.reject(err);
                     };
-                    getWorkAreaPromise(routeParam).then(function (workArea) {
-                        resolved.workArea = workArea;
-                        return getPrecinctAddressesPromise({
-                            route:routeParam,
-                            id:  workArea ? workArea.PrecinctId : undefined 
-                        });
-                    }, errorHandler).then(function (precinctAddresses) {
-                        resolved.precinctAddresses = precinctAddresses;
-                        return getPrecinctsPromise();
-                    }, errorHandler).then(function (precincts) {
-                        resolved.precincts = precincts;
-                        deferred.resolve(resolved);
-                    }, errorHandler);
 
-                    return deferred.promise;
+                    if (routeParams.id) {
+                        resolved.workArea = workAreaResource.getById({ id: routeParams.id }).$promise;
+                        if (routeParams.precinctId) {
+                            resolved.precinctAddresses = deferred.promise;
+                            precinctAddressesData.getAllByPrecinctId({ precinctId: routeParams.precinctId }, function(resp) {
+                                serviceUtil.sortAddresses(resp.value);
+                                deferred.resolve(resp.value);
+                            }, errorHandler);
+                        }
+                        if (routeParams.majorId) {
+                            resolved.appointedMajor = peopleResource.getById({ id: routeParams.majorId }).$promise;
+                        }
+                        if (routeParams.topId) {
+                            resolved.appointedTop = peopleResource.getById({ id: routeParams.topId }).$promise;
+                        }
+                    } else {
+                        resolved.precincts = deferred.promise;
+                        precinctData.getAllNotExpand(function (resp) { deferred.resolve(resp.value) }, errorHandler);
+                    }
+
+                    return $q.all(resolved);
                 }
             };
         }

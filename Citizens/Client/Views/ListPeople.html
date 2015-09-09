@@ -81,19 +81,19 @@
             <div class="form-group">
                 <label>Прізвище:</label>
                 <!--ng-model="query.string.LastName"-->
-                <input typeahead="lastName for lastName in lastNames($viewValue)"
+                <input typeahead="lastName for lastName in getDistinctNames($viewValue,'lastNames')"
                        ng-model="query.name.LastName" type="text" class="form-control">
             </div>
             <div class="form-group">
                 <label>Ім'я:</label>
                 <!--ng-model="query.string.FirstName"-->
-                <input typeahead="firstName for firstName in firstNames($viewValue)"
+                <input typeahead="firstName for firstName in getDistinctNames($viewValue,'firstNames')"
                        ng-model="query.name.FirstName" type="text" class="form-control">
             </div>
             <div class="form-group">
                 <label>По-батькові:</label>
                 <!--ng-model="query.string.MidleName"-->
-                <input typeahead="midleName for midleName in midleNames($viewValue)"
+                <input typeahead="midleName for midleName in getDistinctNames($viewValue,'midleNames')"
                        ng-model="query.name.MidleName" type="text" class="form-control">
             </div>
             <hr/>

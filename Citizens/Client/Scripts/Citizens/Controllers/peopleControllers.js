@@ -1,6 +1,6 @@
 ﻿'use strict';
 
-var peopleControllers = angular.module('peopleControllers', ['peopleServices', 'streetServices', 'cityServices', 'precinctServices']);
+var peopleControllers = angular.module('peopleControllers', ['peopleServices']);
 
 peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$location', 'peopleResource', 'config', 'serviceUtil', 'resolvedAdditionalProperties', 'filterSettings', 'houseTypes',
     function ($rootScope, $scope, $location, peopleResource, config, serviceUtil, resolvedAdditionalProperties, filterSettings, houseTypes) {
@@ -418,36 +418,16 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
             });
         };
 
-        $scope.firstNames = function (val) {
-            return peopleResource.firstNames({ "startsWith": val }).$promise.then(function (res) {
-                return res.value.map(function (name) {
-                    return name;
-                });
+        $scope.getDistinctNames = function (val, method) {
+            return peopleResource[method]({ "startsWith": val }).$promise.then(function (res) {
+                return res.value;
             });
         };
-
-        $scope.lastNames = function (val) {
-            return peopleResource.lastNames({ "startsWith": val }).$promise.then(function (res) {
-                return res.value.map(function (name) {
-                    return name;
-                });
-            });
-        };
-
-        $scope.midleNames = function (val) {
-            return peopleResource.midleNames({ "startsWith": val }).$promise.then(function (res) {
-                return res.value.map(function (name) {
-                    return name;
-                });
-            });
-        };
-
-        
 
     }]);
 
-peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$location', 'serviceUtil', 'precinctData', 'precinctAddressesData', 'config', 'resolvedData', 'houseTypes', 'modelFactory', 'peopleDataService',
-    function ($rootScope, $scope, $location, serviceUtil, precinctData, precinctAddressesData, config, resolvedData, houseTypes, modelFactory, peopleDataService) {
+peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$location', '$modal', 'serviceUtil', 'precinctData', 'precinctAddressesData', 'config', 'resolvedData', 'houseTypes', 'modelFactory', 'peopleDataService', 'workAreaResource',
+    function ($rootScope, $scope, $location, $modal, serviceUtil, precinctData, precinctAddressesData, config, resolvedData, houseTypes, modelFactory, peopleDataService, workAreaResource) {
         var addMode = true, editInd, propValues = [], DATE_FORMAT = 'yyyy-MM-ddT00:00:00+02:00';
         $rootScope.pageTitle = 'Фізична особа';
         $scope.tableHead = ['№', 'Назва', 'Значення'];
@@ -764,4 +744,42 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
             $scope.person.Major = undefined;
             $scope.person.MajorId = 0;
         };
+
+        $scope.openModal = function(searchParam) {
+            var modalInstance = $modal.open({
+                animation: false,
+                templateUrl: 'Views/Modals/workarea.selection.html',
+                controller: 'modalWorkAreaSelectionCtrl',
+                backdrop: 'static',
+                resolve: {
+                    data: function () {
+                        var promise = workAreaResource.getAll({ filter: "&$filter=PrecinctId eq " + $scope.person.address.Precinct.Id }).$promise;
+                        promise.catch(function(err) {
+                            $rootScope.errorMsg = serviceUtil.getErrorMessage(err);
+                        });
+                        return promise;
+                    }
+                }
+            });
+
+            modalInstance.result.then(function (selectedWorkArea) {
+                $location.path('/work-area/' + selectedWorkArea.Id).search(searchParam, $scope.person.Id).search("precinctId", $scope.person.address.Precinct.Id);
+            });
+        };
     }]);
+
+peopleControllers.controller('modalWorkAreaSelectionCtrl', ['$scope', '$modalInstance', 'data', function ($scope, $modalInstance, data) {
+
+    $scope.items = data.value;
+    $scope.selected = {
+        item: undefined
+    };
+
+    $scope.ok = function () {
+        $modalInstance.close($scope.selected.item);
+    };
+
+    $scope.cancel = function () {
+        $modalInstance.dismiss();
+    };
+}]);

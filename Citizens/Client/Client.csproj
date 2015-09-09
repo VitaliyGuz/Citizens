@@ -160,6 +160,7 @@
     <None Include="Properties\PublishProfiles\poltava2015Client - FTP.pubxml" />
     <None Include="Properties\PublishProfiles\poltava2015Client - Web Deploy.pubxml" />
     <None Include="Scripts\jQuery\jquery-2.1.4.intellisense.js" />
+    <Content Include="Scripts\AngularUtils\directives\ui-bootstrap-typeahead-tabs-modal-tpls-0.13.4.min.js" />
     <Content Include="Scripts\Citizens\Controllers\districtControllers.js" />
     <Content Include="Scripts\Citizens\Controllers\neighborhoodControllers.js" />
     <Content Include="Scripts\Citizens\Controllers\workAreaControllers.js" />
@@ -177,8 +178,6 @@
     <Content Include="Scripts\AngularUtils\directives\moment-with-locales.min.js" />
     <Content Include="Scripts\AngularUtils\directives\ng-bs3-datepicker.js" />
     <Content Include="Scripts\AngularUtils\directives\ng-bs3-datepicker.min.js" />
-    <Content Include="Scripts\AngularUtils\directives\ui-bootstrap-typeahead-tabs-tpls-0.13.0.min.js" />
-    <Content Include="Scripts\AngularUtils\directives\ui-bootstrap-typeahead-tpls-0.12.1.min.js" />
     <Content Include="Scripts\Bootstrap\bootstrap.js" />
     <Content Include="Scripts\Bootstrap\bootstrap.min.js" />
     <Content Include="Scripts\Citizens\app.js" />
@@ -229,12 +228,13 @@
     <Content Include="Views\ListWorkAreas.html" />
     <Content Include="Views\ListPrecincts.html" />
     <Content Include="Views\Login.html" />
+    <Content Include="Views\Modals\workarea.selection.html" />
     <Content Include="Views\Neighborhoods.html" />
     <Content Include="Views\RegionParts.html" />
     <Content Include="Views\Register.html" />
     <Content Include="Views\Streets.html" />
     <Content Include="Views\Admin\UploadXls.html" />
-    <Content Include="Web.config" />
+    <Content Include="Web.config"/>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />

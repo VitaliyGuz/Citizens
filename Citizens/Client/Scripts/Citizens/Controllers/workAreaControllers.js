@@ -123,7 +123,7 @@ workAreaControllers.controller("listWorkAreasController", ['$location', '$rootSc
 
         $scope.edit = function (workArea) {
             $rootScope.errorMsg = '';
-            $location.path('/work-area/' + workArea.Id + '/' + $scope.pagination.currentPage);
+            $location.url('/work-area/' + workArea.Id + '/' + $scope.pagination.currentPage).search("precinctId", workArea.PrecinctId);
         };
 
         $scope.delete = function (workArea) {
@@ -142,7 +142,7 @@ workAreaControllers.controller("listWorkAreasController", ['$location', '$rootSc
 
         $scope.addWorkArea = function () {
             $rootScope.errorMsg = '';
-            $location.path('/work-area/new/' + $scope.pagination.currentPage);
+            $location.url('/work-area/new/' + $scope.pagination.currentPage);
         };
 
         function errorHandler(e) {
@@ -151,7 +151,7 @@ workAreaControllers.controller("listWorkAreasController", ['$location', '$rootSc
         };
 
         $scope.onPageChange = function (newPageNumber) {
-            $location.path("/work-areas/" + newPageNumber);
+            $location.url("/work-areas/" + newPageNumber);
         };
 
         $scope.applyFilter = function () {
@@ -169,16 +169,20 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
         
         $rootScope.pageTitle = 'Робоча дільниця';
         $scope.loader = {};
-
+        var tabs = ["tabMajors", "tabAddresses", "tabEditMajors"];
         $scope.pagination = {
-            currentPage: { tabMajors: 1, tabAddresses: 1 , tabEditMajors: 1 },
+            currentPage: { },
             pageSize: config.pageSizeTabularSection
         };
-        
+        $scope.tabActive = {};
+        tabs.forEach(function(tab) {
+            $scope.pagination.currentPage[tab] = 1;
+            $scope.tabActive[tab] = false;
+        });
+
         $scope.query = {};
         $scope.totalCount = {workArea: 0, precinct: 0, supporters: 0};
         
-
         $scope.data = resolvedData;
         $scope.data.houseTypes = houseTypes;
         if (!$scope.data.precinctAddresses) $scope.data.precinctAddresses = [];
@@ -186,9 +190,21 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
         if (!$scope.data.workAreaAddresses) $scope.data.workAreaAddresses = [];
 
         if ($scope.data.workArea) {
+            if (resolvedData.appointedTop) {
+                $scope.tabActive.tabAddresses = true;
+                $scope.data.workArea.Top = resolvedData.appointedTop;
+            } else if (resolvedData.appointedMajor) {
+                $scope.tabActive.tabEditMajors = true;
+                $scope.data.selected = { person: resolvedData.appointedMajor };
+                $scope.data.selected.person.label = peopleDataService.getPersonLabel(resolvedData.appointedMajor);
+            } else {
+                $scope.tabActive.tabAddresses = true;
+            }
             $scope.data.workArea.Top.label = peopleDataService.getPersonLabel($scope.data.workArea.Top);
+        } else {
+            $scope.tabActive.tabAddresses = true;
         }
-        
+
         $scope.saveChanges = function () {
 
             if (!$scope.data.workArea.Number) {
@@ -267,7 +283,7 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
         $scope.backToList = function () {
             $rootScope.errorMsg = '';
             var currPage = serviceUtil.getRouteParam("currPage") || 1;
-            $location.path('/work-areas/' + currPage);
+            $location.url('/work-areas/' + currPage);
         };
 
         $scope.getIndex = function (ind,tab) {

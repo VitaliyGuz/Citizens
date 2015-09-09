@@ -69,7 +69,7 @@
                     <i class="glyphicon glyphicon-remove"></i> Фізособу не знайдено
                 </div>
                 <span class="input-group-btn">
-                    <button type="button" class="btn btn-default form-control" ng-click="clearMajor()" title="Очистити">
+                    <button type="button" class="btn btn-default form-control" ng-click="clearMajor()" ng-disabled="!person.Major.Id" title="Очистити">
                         <span ng-hide="loadingPeople" class="glyphicon glyphicon-remove"></span>
                         <i ng-show="loadingPeople" class="fa fa-refresh fa-spin"></i>
                     </button>
@@ -79,9 +79,9 @@
         <div class="form-group col-lg-6">
             <label>Робоча дільниця (топ)</label>
             <div class="input-group">
-                <input type="text" value="{{person.address.Precinct.Number}}.{{person.address.WorkArea.Number}} {{person.address.WorkArea.Top.LastName + ' ' + person.address.WorkArea.Top.FirstName + ' ' + person.address.WorkArea.Top.MidleName}}" class="form-control">
+                <input type="text" value="{{person.address.WorkArea.Precinct.Number}}.{{person.address.WorkArea.Number}} {{person.address.WorkArea.Top.LastName}} {{person.address.WorkArea.Top.FirstName}} {{person.address.WorkArea.Top.MidleName}}" class="form-control">
                 <span class="input-group-btn">
-                    <a ng-href="/work-area/{{person.address.WorkArea.Id}}" class="btn btn-default form-control" title="Відкрити">
+                    <a ng-href="/work-area/{{person.address.WorkArea.Id}}" class="btn btn-default form-control" ng-disabled="!person.address.WorkArea.Id" title="Відкрити">
                         <span class="glyphicon glyphicon-open"></span>
                     </a>
                 </span>
@@ -90,12 +90,18 @@
     </div>
     <div class="row">
         <div class="col-lg-12">
+            <button type="button" class="btn btn-sm btn-success" ng-click="backToList()" title="Повернутися до списку фізичних осіб">
+                <span class="glyphicon glyphicon-arrow-left"></span> Завершити
+            </button>
             <button type="submit" class="btn btn-sm btn-success" title="Зберегти зміни">
                 <span class="glyphicon glyphicon-save"></span> Зберегти
                 <i ng-show="saving" class="fa fa-refresh fa-spin"></i>
             </button>
-            <button type="button" class="btn btn-sm btn-success" ng-click="backToList()" title="Повернутися до списку фізичних осіб">
-                <span class="glyphicon glyphicon-arrow-left"></span> Завершити
+            <button type="button" class="btn btn-sm btn-success" ng-click="openModal('topId')" ng-disabled="!person.Id" title="Призначити топом">
+                <span class="glyphicon glyphicon-user"></span> Призначити топом
+            </button>
+            <button type="button" class="btn btn-sm btn-success" ng-click="openModal('majorId')" ng-disabled="!person.Id" title="Призначити відповідальним">
+                <span class="fa fa-users"></span> Призначити старшим
             </button>
         </div>
     </div>

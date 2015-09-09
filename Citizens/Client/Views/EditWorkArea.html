@@ -44,7 +44,7 @@
 </form>
 <br />
 <tabset>
-    <tab heading="Адреси">
+    <tab heading="Адреси" active="tabActive.tabAddresses">
         <br />
         <div>
             <button type="button" ng-click="calcPeopleAtAddresses()" class="btn btn-xs btn-default">
@@ -123,7 +123,7 @@
         </table>
         <dir-pagination-controls boundary-links="true" on-page-change="onPageChange(newPageNumber, 'tabAddresses')" pagination-id="workAreaAddressesPagination"></dir-pagination-controls>
     </tab>
-    <tab heading="Старші">
+    <tab heading="Старші" active="tabActive.tabMajors">
         <br />
         <div>
             <button type="button" ng-click="getMajors()" class="btn btn-xs btn-default">
@@ -150,7 +150,7 @@
         </table>
         <dir-pagination-controls boundary-links="true" on-page-change="onPageChange(newPageNumber, 'tabMajors')" pagination-id="workAreaMajorsPagination"></dir-pagination-controls>
     </tab>
-    <tab heading="Закріплення старших за адресами">
+    <tab heading="Закріплення старших за адресами" active="tabActive.tabEditMajors">
         <br />
         <div>
             <div class="row">
