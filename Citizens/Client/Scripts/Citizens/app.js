@@ -212,7 +212,7 @@ app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider',
 }]);
 
 app.constant("config", Object.freeze({
-    baseUrl: 'https://poltava2015.azurewebsites.net',//'http://localhost:6600','http://poltava2015.azurewebsites.net', 'http://apicitizens.azurewebsites.net', #Deploy
+    baseUrl: 'https://localhost:44303',//'http://localhost:6600','http://poltava2015.azurewebsites.net', 'http://apicitizens.azurewebsites.net', #Deploy
     pageSize: 20, // by default 20
     pageSizeTabularSection: 10,
     checkDeleteItem: true,

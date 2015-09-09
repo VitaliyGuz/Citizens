@@ -418,6 +418,32 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
             });
         };
 
+        $scope.firstNames = function (val) {
+            return peopleResource.firstNames({ "startsWith": val }).$promise.then(function (res) {
+                return res.value.map(function (name) {
+                    return name;
+                });
+            });
+        };
+
+        $scope.lastNames = function (val) {
+            return peopleResource.lastNames({ "startsWith": val }).$promise.then(function (res) {
+                return res.value.map(function (name) {
+                    return name;
+                });
+            });
+        };
+
+        $scope.midleNames = function (val) {
+            return peopleResource.midleNames({ "startsWith": val }).$promise.then(function (res) {
+                return res.value.map(function (name) {
+                    return name;
+                });
+            });
+        };
+
+        
+
     }]);
 
 peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$location', 'serviceUtil', 'precinctData', 'precinctAddressesData', 'config', 'resolvedData', 'houseTypes', 'modelFactory', 'peopleDataService',

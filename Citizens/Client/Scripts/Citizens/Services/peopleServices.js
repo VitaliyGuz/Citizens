@@ -17,7 +17,10 @@ angular.module("peopleServices", ['ngResource', 'precinctServices']).
 		    'getPageItems': { method: 'GET', params: { skip: '@skip', filter: '@filter' }, url: urlOdata + "?" + paginate + ":filter" },
 		    'update': { method: 'PUT', params: { id: "@id" }, url: urlOdata + "(:id)" },
 		    'save': { method: "POST", url: urlOdata },
-		    'remove': { method: 'DELETE', params: { id: "@id" }, url: urlOdata + "(:id)"}
+		    'remove': { method: 'DELETE', params: { id: "@id" }, url: urlOdata + "(:id)" },
+		    'firstNames': { method: 'GET', params: { startsWith: "@startsWith" }, url: urlOdata + "/FirstNames(StartsWith=':startsWith')" },
+		    'midleNames': { method: 'GET', params: { startsWith: "@startsWith" }, url: urlOdata + "/MidleNames(StartsWith=':startsWith')" },
+		    'lastNames': { method: 'GET', params: { startsWith: "@startsWith" }, url: urlOdata + "/LastNames(StartsWith=':startsWith')" }
 		});
     }]).
     factory("additionalPropsResource", ['$resource', 'config', function ($resource, config) {

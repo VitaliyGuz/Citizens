@@ -81,17 +81,20 @@
             <div class="form-group">
                 <label>Прізвище:</label>
                 <!--ng-model="query.string.LastName"-->
-                <input ng-model="query.name.LastName" type="text" class="form-control">
+                <input typeahead="lastName for lastName in lastNames($viewValue)"
+                       ng-model="query.name.LastName" type="text" class="form-control">
             </div>
             <div class="form-group">
                 <label>Ім'я:</label>
                 <!--ng-model="query.string.FirstName"-->
-                <input ng-model="query.name.FirstName" type="text" class="form-control">
+                <input typeahead="firstName for firstName in firstNames($viewValue)"
+                       ng-model="query.name.FirstName" type="text" class="form-control">
             </div>
             <div class="form-group">
                 <label>По-батькові:</label>
                 <!--ng-model="query.string.MidleName"-->
-                <input ng-model="query.name.MidleName" type="text" class="form-control">
+                <input typeahead="midleName for midleName in midleNames($viewValue)"
+                       ng-model="query.name.MidleName" type="text" class="form-control">
             </div>
             <hr/>
             <div class="form-group">

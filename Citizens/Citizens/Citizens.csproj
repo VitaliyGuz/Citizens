@@ -212,6 +212,7 @@
     <Compile Include="Controllers\API\NamesController.cs" />
     <Compile Include="Controllers\API\WorkAreasController.cs" />
     <Compile Include="Extensions\BaseActionFilter.cs" />
+    <Compile Include="App_Start\LoggerAttribute.cs" />
     <Compile Include="Extensions\PathAndSlashEscapeODataPathHandler.cs" />
     <Compile Include="Extensions\PersonFilterAttribute.cs" />
     <Compile Include="Extensions\PrecinctFilterAttribute.cs" />
@@ -364,7 +365,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Controllers\MVC\" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Migrations\201505251157359_InitialCreate.resx">

@@ -317,11 +317,39 @@ namespace Citizens.Controllers.API
             return SingleResult.Create(db.People.Where(m => m.Id == key).Select(m => m.Street));
         }
 
-        // GET: odata/People(5)/Street
-        [EnableQuery]
-        public SingleResult<Street> GetPrecinct([FromODataUri] int key)
+        // GET: odata/People(5)/Precinct
+        [EnableQuery]        
+        [HttpGet]
+        public SingleResult<Precinct> Precinct([FromODataUri] int key)
         {
-            return SingleResult.Create(db.People.Where(m => m.Id == key).Select(m => m.Street));
+            return SingleResult.Create(db.People.Include("PrecinctAddress").Include("Precinct").Where(person => person.Id == key).Select(person => person.PrecinctAddress.Precinct));
+        }
+
+        [EnableQuery]
+        [HttpGet]
+        [ODataRoute("People/FirstNames(StartsWith={startsWith})")]
+        public IHttpActionResult FirstNames([FromODataUri] string startsWith)
+        {
+            var names = db.Database.SqlQuery<string>("select distinct top 10 FirstName from People where FirstName like {0}", startsWith + "%").ToList();
+            return Ok(names);
+        }
+
+        [EnableQuery]
+        [HttpGet]
+        [ODataRoute("People/MidleNames(StartsWith={startsWith})")]
+        public IHttpActionResult MidleNames([FromODataUri] string startsWith)
+        {
+            var names = db.Database.SqlQuery<string>("select distinct top 10 MidleName from People where MidleName like {0}", startsWith + "%").ToList();
+            return Ok(names);
+        }
+
+        [EnableQuery]
+        [HttpGet]
+        [ODataRoute("People/LastNames(StartsWith={startsWith})")]
+        public IHttpActionResult LastNames([FromODataUri] string startsWith)
+        {
+            var names = db.Database.SqlQuery<string>("select distinct top 10 LastName from People where LastName like {0}", startsWith + "%").ToList();
+            return Ok(names);
         }
 
         protected override void Dispose(bool disposing)
