@@ -71,21 +71,21 @@ angular.module("peopleServices", ['ngResource', 'precinctServices']).
     }])
     .factory('peopleDataService', ['$q', 'serviceUtil', 'peopleResource', 'precinctData', 'additionalPropsResource', 'propertyTypes', function ($q, serviceUtil, peopleResource, precinctData, additionalPropsResource, propertyTypes) {
         
-        function getPersonPromise(routeParam) {
-            var deferred = $q.defer();
-            if (routeParam) {
-                peopleResource.getById({ id: routeParam
-                }, function (res) {
-                    deferred.resolve(res);
-                }, function (err) {
-                    err.description = 'Фізичну особу не знайдено';
-                    deferred.reject(serviceUtil.getErrorMessage(err));
-                });
-            } else {
-                deferred.resolve();
-            }
-            return deferred.promise;
-        };
+        //function getPersonPromise(routeParam) {
+        //    var deferred = $q.defer();
+        //    if (routeParam) {
+        //        peopleResource.getById({ id: routeParam
+        //        }, function (res) {
+        //            deferred.resolve(res);
+        //        }, function (err) {
+        //            err.description = 'Фізичну особу не знайдено';
+        //            deferred.reject(serviceUtil.getErrorMessage(err));
+        //        });
+        //    } else {
+        //        deferred.resolve();
+        //    }
+        //    return deferred.promise;
+        //};
 
         function getAdditionalPropertiesPromise(method) {
             var deferred = $q.defer();
@@ -98,32 +98,38 @@ angular.module("peopleServices", ['ngResource', 'precinctServices']).
             return deferred.promise;
         };
 
-        function getPrecinctsPromise() {
-            var deferred = $q.defer();
-            precinctData.getAllNotExpand(function (res) {
-                deferred.resolve(res.value);
-            }, function (err) {
-                err.description = 'Дільниці не завантажено';
-                deferred.reject(serviceUtil.getErrorMessage(err));
-            });
-            return deferred.promise;
-        };
+        //function getPrecinctsPromise() {
+        //    var deferred = $q.defer();
+        //    precinctData.getAllNotExpand(function (res) {
+        //        deferred.resolve(res.value);
+        //    }, function (err) {
+        //        err.description = 'Дільниці не завантажено';
+        //        deferred.reject(serviceUtil.getErrorMessage(err));
+        //    });
+        //    return deferred.promise;
+        //};
 
         return {
             asyncLoadData: function (routeParam) {
-                var resolved = {}, deferred = $q.defer();
-                function errorHandler(err) {
-                    deferred.reject(err);
-                };
-                getPersonPromise(routeParam).then(function(person) {
-                    resolved.person = person;
-                    return getPrecinctsPromise();
-                }, errorHandler).then(function (precincts) {
-                    resolved.precincts = precincts;
-                    deferred.resolve(resolved);
-                }, errorHandler);
+                //var resolved = {}, deferred = $q.defer();
+                //function errorHandler(err) {
+                //    deferred.reject(err);
+                //};
+                //getPersonPromise(routeParam).then(function(person) {
+                //    resolved.person = person;
+                //    return getPrecinctsPromise();
+                //}, errorHandler).then(function (precincts) {
+                //    resolved.precincts = precincts;
+                //    deferred.resolve(resolved);
+                //}, errorHandler);
 
-                return deferred.promise;
+                //return deferred.promise;
+                var promise = peopleResource.getById({ id: routeParam }).$promise;
+                promise.catch(function (err) {
+                    err.description = 'Фізичну особу не знайдено';
+                    $rootScope.errorMsg = serviceUtil.getErrorMessage(err);
+                });
+                return $q.all({ person: promise });
             },
             asyncLoadAdditionalProperties: function () {
                 var resolved = { }, deferred = $q.defer();

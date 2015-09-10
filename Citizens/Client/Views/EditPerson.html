@@ -55,8 +55,16 @@
         </div>
         <div class="form-group col-lg-2">
             <label>Дільниця</label>
-            <input type="text" ng-model="person.address.Precinct"
-                   typeahead="p as p.Number for p in precincts | filter: {Number:$viewValue} | orderByStartsWith:{Number:$viewValue} | limitTo:10" class="form-control" required>
+            <!--<input type="text" ng-model="person.address.Precinct"
+                       typeahead="p as p.Number for p in precincts | filter: {Number:$viewValue} | orderByStartsWith:{Number:$viewValue} | limitTo:10" class="form-control" required>-->
+            <div class="input-group">
+                <input type="text" value="{{person.address.Precinct.Number}}" class="form-control">
+                <span class="input-group-btn">
+                    <a ng-href="/precinct/{{person.address.Precinct.Id}}" class="btn btn-default form-control" ng-disabled="!person.address.Precinct.Id" title="Відкрити">
+                        <span class="glyphicon glyphicon-open"></span>
+                    </a>
+                </span>
+            </div>
         </div>
     </div>
     <div class="row">
