@@ -15,6 +15,7 @@ angular.module("peopleServices", ['ngResource', 'precinctServices']).
 		    //'getPageItems': { method: 'GET', params: { skip: "@skip" }, url: urlOdata + "?" + paginate },
 		    //'getFilteredPageItems': { method: 'GET', params: { skip: "@skip", filter: '@filter' }, url: urlOdata + "?$filter=:filter" + paginate },
 		    'getPageItems': { method: 'GET', params: { skip: '@skip', filter: '@filter' }, url: urlOdata + "?" + paginate + ":filter" },
+		    'getFilteredItems': { method: 'GET', params: { filter: '@filter' }, url: urlOdata + "?$filter=:filter" },
 		    'update': { method: 'PUT', params: { id: "@id" }, url: urlOdata + "(:id)" },
 		    'save': { method: "POST", url: urlOdata },
 		    'remove': { method: 'DELETE', params: { id: "@id" }, url: urlOdata + "(:id)" },
@@ -152,7 +153,7 @@ angular.module("peopleServices", ['ngResource', 'precinctServices']).
                 var odataFilterPattern = ":propName eq ':val'";
                 var getPersonLabel = this.getPersonLabel;
                 return function (viewValue) {
-                    var names = viewValue.split(" "), filterQuery;
+                    var names = viewValue.split(" "), filterQuery = '';
                     if (names.length < 3) return [];
                     var name = {
                         LastName: names[0],
@@ -165,13 +166,13 @@ angular.module("peopleServices", ['ngResource', 'precinctServices']).
                         }
                     }
                     Object.keys(name).forEach(function (prop) {
-                        filterQuery = filterQuery ? filterQuery + " and " : "&$filter=";
+                        if (filterQuery) filterQuery = filterQuery + " and ";
                         filterQuery = filterQuery + odataFilterPattern
                             .replace(/:propName/g, prop)
                             .replace(/:val/g, name[prop]);
                     });
 
-                    return peopleResource.getPageItems({ skip: 0, filter: filterQuery }).$promise.then(function (res) {
+                    return peopleResource.getFilteredItems({filter: filterQuery }).$promise.then(function (res) {
                         return res.value.map(function (person) {
                             person.label = getPersonLabel(person);
                             return person;
