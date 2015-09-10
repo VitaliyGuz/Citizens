@@ -163,7 +163,7 @@
                 <form ng-submit="linkMajors()">
                     <div class="form-group col-sm-6">
                         <input typeahead="p as p.label for p in getPeopleByName($viewValue)" ng-model="data.selected.person" placeholder="Фізична особа (старший)"
-                               type="text" typeahead-loading="loadingPeople" typeahead-no-results="noResults" typeahead-min-length="10" class="form-control" required>
+                               type="text" typeahead-loading="loadingPeople" typeahead-no-results="noResults" typeahead-min-length="10" class="form-control" ng-required="!data.selected.setEmptyPerson">
                         <i ng-show="loadingPeople" class="fa fa-refresh fa-spin"></i>
                         <div ng-show="noResults">
                             <i class="glyphicon glyphicon-remove"></i> Фізособу не знайдено
@@ -174,6 +174,9 @@
                             <span ng-hide="loader.savingPeople" class="glyphicon glyphicon-save"></span>
                             <i ng-show="loader.savingPeople" class="fa fa-refresh fa-spin"></i> Зберегти
                         </button>
+                    </div>
+                    <div class="col-sm-2 checkbox">
+                        <input type="checkbox" class="checkbox-inline" ng-model="data.selected.setEmptyPerson" /> Очистити старшого
                     </div>
                 </form>
             </div>

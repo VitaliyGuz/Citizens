@@ -445,8 +445,8 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
             $rootScope.errorMsg = '';
 
             if ($scope.data.workAreaAddresses.length === 0) return;
-
-            if ($scope.data.selected.person && !$scope.data.selected.person.Id) {
+            
+            if ($scope.data.selected.person && !$scope.data.selected.person.Id && !$scope.data.selected.setEmptyPerson) {
                 $rootScope.errorMsg = "Фізособу '" + $scope.data.selected.person + "' не знайдено";
                 return;
             }
@@ -460,7 +460,11 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
             $scope.loader.savingPeople = true;
             savingPeople.forEach(function (person) {
                 var personModel = modelFactory.createObject("person", person);
-                personModel.MajorId = $scope.data.selected.person.Id;
+                if ($scope.data.selected.setEmptyPerson) {
+                    personModel.MajorId = 0;
+                } else {
+                    personModel.MajorId = $scope.data.selected.person.Id;
+                }
                 peopleDataService.resource.update({ id: person.Id }, personModel, function () {
                     count++;
                     var adr = $scope.data.workAreaAddresses.filter(function (a) {
@@ -468,7 +472,11 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
                     })[0];
                     if (adr) {
                         adr.isSelected = false;
-                        adr.Major = $scope.data.selected.person;
+                        if ($scope.data.selected.setEmptyPerson) {
+                            adr.Major = undefined;
+                        } else {
+                            adr.Major = $scope.data.selected.person;
+                        }
                     }
                     if (count === total) $scope.loader.savingPeople = false;
                 }, errorHandler);
