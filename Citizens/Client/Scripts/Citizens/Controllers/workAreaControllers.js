@@ -169,7 +169,8 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
         
         $rootScope.pageTitle = 'Робоча дільниця';
         $scope.loader = {};
-        var tabs = ["tabMajors", "tabAddresses", "tabEditMajors"];
+        var tabs = ["tabMajors", "tabAddresses", "tabEditMajors"],
+            checkedPages = {tabEditMajors: []};
         $scope.pagination = {
             currentPage: { },
             pageSize: config.pageSizeTabularSection
@@ -482,8 +483,26 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
         $scope.selectAll = function(tabName) {
             if (tabName === 'tabEditMajors') {
                 if ($scope.data.workAreaAddresses) {
-                    $scope.data.workAreaAddresses.forEach(function (a) { $scope.toggleSelection(a) });
+                    var startInd = $scope.getIndex(0, tabName),
+                        endInd = startInd + $scope.pagination.pageSize,
+                        currPage = $scope.pagination.currentPage[tabName],
+                        isChecked = false, foundInd = checkedPages[tabName].indexOf(currPage);
+                    if (foundInd >= 0) {
+                        isChecked = true;
+                        checkedPages[tabName].splice(foundInd,1);
+                    } else {
+                        checkedPages[tabName].push(currPage);
+                    }
+                    for (var i = startInd; i < endInd; i++) {
+                        $scope.data.workAreaAddresses[i].isSelected = !isChecked;
+                    }
                 }
+            }
+        };
+
+        $scope.checkedCurrentPage = function (tabName) {
+            if (tabName === 'tabEditMajors') {
+                return checkedPages[tabName].indexOf($scope.pagination.currentPage[tabName]) >= 0;
             }
         };
     }]);
