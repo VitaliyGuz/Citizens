@@ -69,7 +69,8 @@ angular.module("peopleServices", ['ngResource', 'precinctServices']).
             }
         }
     }])
-    .factory('peopleDataService', ['$q', 'serviceUtil', 'peopleResource', 'precinctData', 'additionalPropsResource', 'propertyTypes', function ($q, serviceUtil, peopleResource, precinctData, additionalPropsResource, propertyTypes) {
+    .factory('peopleDataService', ['$q', '$rootScope', 'serviceUtil', 'peopleResource', 'precinctData', 'additionalPropsResource', 'propertyTypes',
+        function ($q, $rootScope, serviceUtil, peopleResource, precinctData, additionalPropsResource, propertyTypes) {
         
         //function getPersonPromise(routeParam) {
         //    var deferred = $q.defer();
@@ -124,12 +125,17 @@ angular.module("peopleServices", ['ngResource', 'precinctServices']).
                 //}, errorHandler);
 
                 //return deferred.promise;
-                var promise = peopleResource.getById({ id: routeParam }).$promise;
-                promise.catch(function (err) {
-                    err.description = 'Фізичну особу не знайдено';
-                    $rootScope.errorMsg = serviceUtil.getErrorMessage(err);
-                });
-                return $q.all({ person: promise });
+                if (routeParam) {
+                    var promise = peopleResource.getById({ id: routeParam }).$promise;
+                    promise.catch(function (err) {
+                        err.description = 'Фізичну особу не знайдено';
+                        $rootScope.errorMsg = serviceUtil.getErrorMessage(err);
+                    });
+                    //return $q.all({ person: promise });
+                } else {
+                    //return $q.when();
+                }
+                return routeParam ? $q.all({ person: promise }) : $q.when();
             },
             asyncLoadAdditionalProperties: function () {
                 var resolved = { }, deferred = $q.defer();

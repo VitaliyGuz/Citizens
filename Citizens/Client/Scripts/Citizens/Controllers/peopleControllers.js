@@ -514,10 +514,10 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
         };
 
         $scope.save = function () {
-            if (!$scope.person.address.Precinct) {
-                $rootScope.errorMsg = 'Не вказано номер дільниці';
-                return;
-            };
+            //if (!$scope.person.address.Precinct) {
+            //    $rootScope.errorMsg = 'Не вказано номер дільниці';
+            //    return;
+            //};
 
             if ($scope.person.address.City && !$scope.person.address.City.Id) {
                 $rootScope.errorMsg = "Населений пункт '" + $scope.person.address.City + "' не знайдено";
@@ -549,7 +549,8 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
             if ($scope.person.address.Precinct.Id) {
                 savePrecinctAddress({ Id: $scope.person.address.Precinct.Id });
             } else {
-                precinctData.save({ "Number": $scope.person.address.Precinct }, savePrecinctAddress, errorHandler);
+                savePerson();
+                //precinctData.save({ "Number": $scope.person.address.Precinct }, savePrecinctAddress, errorHandler);
             }
 
             function savePrecinctAddress(precinct) {
