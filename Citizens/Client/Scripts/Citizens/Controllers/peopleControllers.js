@@ -187,7 +187,10 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
         function getODataFilterQuery() {
             var filterStr = '', filterInnerStr = '',
                 filterPatterns = {
-                    string: "startswith(:fieldName, ':val') eq true",
+                    string: {
+                        startswith: "startswith(:fieldName, ':val') eq true",
+                        eq: ":fieldName eq ':val'"
+                    },
                     num: ":fieldName eq :val",
                     ref: ":fieldNameId eq :val",
                     interval: ":fieldName ge :from and :fieldName le :to"
@@ -251,7 +254,7 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
                     Object.keys($scope.query.name).forEach(function(propName) {
                         var val = $scope.query.name[propName];
                         if (val) {
-                            filterStr = concatIfExist(filterStr, " and ") + filterPatterns.string
+                            filterStr = concatIfExist(filterStr, " and ") + filterPatterns.string.eq
                                 .replace(/:fieldName/g, propName)
                                 .replace(/:val/g, val);
                         }
@@ -281,7 +284,7 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
                 }
 
                 if ($scope.query.House) {
-                    filterStr = concatIfExist(filterStr, " and ") + filterPatterns.string
+                    filterStr = concatIfExist(filterStr, " and ") + filterPatterns.string.eq
                         .replace(/:fieldName/g, "House")
                         .replace(/:val/g, $scope.query.House);
                 }
@@ -544,7 +547,11 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
                 $rootScope.errorMsg = "Не вірно вказана дата народження";
                 return;
             }
-            if (!person.Apartment) person.Apartment = null;
+            if (person.ApartmentStr) {
+                person.Apartment = parseInt(person.ApartmentStr);
+                person.ApartmentStr = person.ApartmentStr.toLocaleUpperCase();
+            }
+            
             if (!$scope.person.Major) person.MajorId = 0;
             if ($scope.person.address.Precinct && $scope.person.address.Precinct.Id) {
                 savePrecinctAddress({ Id: $scope.person.address.Precinct.Id });
