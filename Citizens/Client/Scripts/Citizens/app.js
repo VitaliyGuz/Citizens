@@ -352,8 +352,11 @@ app.factory("serviceUtil", ["$filter", '$routeParams', '$rootScope', function ($
 
             function compareAddresses(a1, a2) {
                 var compCity = compareByNameFn(a1.City, a2.City);
-                var compStreet = compareByNameFn(a1.Street, a2.Street);
-                var compTypeStreet = compareByNameFn(a1.Street.StreetType, a2.Street.StreetType);
+                var compStreet = 1, compTypeStreet = 1;
+                if (a1.Street && a2.Street) {
+                    compStreet = compareByNameFn(a1.Street, a2.Street);
+                    compTypeStreet = compareByNameFn(a1.Street.StreetType, a2.Street.StreetType);
+                }
                 var compHouse = compareHouses(parseHouseNumber(a1.House), parseHouseNumber(a2.House));
                 var compApartment = 0;
                 if (a1.Apartment && a2.Apartment) compApartment = a1.Apartment - a2.Apartment;
