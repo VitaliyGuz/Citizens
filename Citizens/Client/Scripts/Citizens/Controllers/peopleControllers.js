@@ -546,7 +546,7 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
             }
             if (!person.Apartment) person.Apartment = null;
             if (!$scope.person.Major) person.MajorId = 0;
-            if ($scope.person.address.Precinct.Id) {
+            if ($scope.person.address.Precinct && $scope.person.address.Precinct.Id) {
                 savePrecinctAddress({ Id: $scope.person.address.Precinct.Id });
             } else {
                 savePerson();
