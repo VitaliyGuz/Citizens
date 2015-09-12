@@ -1,0 +1,14 @@
+﻿<div class="modal-header">
+    <h4 class="modal-title">Перелік адрес</h4>
+    <!--<div class="alert {{alert.type}}" ng-show="alert.message">{{alert.message}}</div>-->
+</div>
+<div class="modal-body" style="overflow-y: scroll; height: 200px;">
+    <ol>
+        <li ng-repeat="address in addresses">
+            {{ address.City.CityType.Name}}{{address.City.Name}}, {{ address.Street.StreetType.Name }} {{ address.Street.Name }} {{ address.House }}{{ address.ApartmentStr | checkApartment}}
+        </li>
+    </ol>
+</div>
+<div class="modal-footer">
+    <button class="btn btn-primary" type="button" ng-click="cancel()">Закрити</button>
+</div>

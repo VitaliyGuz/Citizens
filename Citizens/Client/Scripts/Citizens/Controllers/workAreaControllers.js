@@ -164,8 +164,8 @@ workAreaControllers.controller("listWorkAreasController", ['$location', '$rootSc
         };
     }]);
 
-workAreaControllers.controller("editWorkAreaController", ['$location', '$rootScope', '$scope', 'serviceUtil', 'config', 'precinctData', 'precinctAddressesData', 'resolvedData', 'workAreaResource', 'modelFactory', 'houseTypes', 'peopleDataService',
-    function ($location, $rootScope, $scope, serviceUtil, config, precinctData, precinctAddressesData, resolvedData, workAreaResource, modelFactory, houseTypes, peopleDataService) {
+workAreaControllers.controller("editWorkAreaController", ['$location', '$rootScope', '$scope', '$modal', '$q', 'serviceUtil', 'config', 'precinctData', 'precinctAddressesData', 'resolvedData', 'workAreaResource', 'modelFactory', 'houseTypes', 'peopleDataService',
+    function ($location, $rootScope, $scope, $modal,$q, serviceUtil, config, precinctData, precinctAddressesData, resolvedData, workAreaResource, modelFactory, houseTypes, peopleDataService) {
         
         $rootScope.pageTitle = 'Робоча дільниця';
         $scope.loader = {};
@@ -413,29 +413,32 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
                     a.Apartment === b.Apartment && equalsApartmentStr;
         };
 
+        function reduceToAddresses(supporters) {
+            var addresses = supporters.reduce(function (result, curr) {
+                var address = {
+                    CityId: curr.CityId,
+                    StreetId: curr.StreetId,
+                    House: curr.House,
+                    Apartment: curr.Apartment,
+                    ApartmentStr: curr.ApartmentStr,
+                    Major: curr.Major
+                };
+                var isContains = result.some(function (i) { return equalsAddresses(address, i) });
+                if (!isContains) result.push(address);
+                return result;
+            }, []);
+            addresses.forEach(serviceUtil.expandAddress);
+            serviceUtil.sortAddresses(addresses);
+            return addresses;
+        };
+
         $scope.getSupporters = function () {
             if (!$scope.data.workArea || !$scope.data.workArea.Id) return;
             $scope.loader.loadingSupporters = true;
             workAreaResource.getSupporters({ "id": $scope.data.workArea.Id }, function (resp) {
                 if (resp) {
                     $scope.data.supporters = resp.value;
-                    var workAreaAddresses = $scope.data.supporters.reduce(function (result, curr) {
-                        var address = {
-                            CityId: curr.CityId,
-                            StreetId: curr.StreetId,
-                            House: curr.House,
-                            Apartment: curr.Apartment,
-                            ApartmentStr: curr.ApartmentStr,
-                            Major: curr.Major
-                        };
-                        var isContains = result.some(function (i) {  return equalsAddresses(address,i) });
-                        if (!isContains) result.push(address);
-                        return result;
-                    }, []);
-                    workAreaAddresses.forEach(serviceUtil.expandAddress);
-                    serviceUtil.sortAddresses(workAreaAddresses);
-                    $scope.data.workAreaAddresses = workAreaAddresses;
-
+                    $scope.data.workAreaAddresses = reduceToAddresses(resp.value);
                     $scope.loader.loadingSupporters = false;
                 }
             }, errorHandler);
@@ -512,5 +515,57 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
             if (tabName === 'tabEditMajors') {
                 return checkedPages[tabName].indexOf($scope.pagination.currentPage[tabName]) >= 0;
             }
+            return false;
         };
-    }]);
+
+        $scope.showApartments = function(address) {
+            openModalFullAddresses('getSupportersByAddress', {
+                id: $scope.data.workArea.Id,
+                cityId: address.CityId,
+                streetId: address.StreetId,
+                house: address.House
+            }, true);
+        };
+
+        $scope.showFullAddresses = function (major) {
+            openModalFullAddresses('getSupportersByMajor', {
+                id: $scope.data.workArea.Id,
+                majorId: major.Id
+            });
+        };
+
+        function openModalFullAddresses(method,params,onlyApartmens)  {
+            $modal.open({
+                animation: false,
+                templateUrl: 'Views/Modals/addresses.html',
+                controller: 'modalFullAddressesCtrl',
+                backdrop: 'static',
+                //scope: $scope, // parent scope
+                resolve: {
+                    addresses: function () {
+                        var def = $q.defer();
+                        workAreaResource[method](params, function (resp) {
+                            var addresses = reduceToAddresses(resp.value);
+                            if (onlyApartmens) addresses = addresses.filter(function(a) {
+                                return a.ApartmentStr;
+                            });
+                            def.resolve(addresses);
+                        }, function(err) {
+                            $rootScope.errorMsg = serviceUtil.getErrorMessage(err);
+                            def.reject();
+                        });
+                        return def.promise;
+                    }
+                }
+            });
+        };
+}]);
+
+workAreaControllers.controller('modalFullAddressesCtrl', ['$scope', '$modalInstance', 'addresses', function ($scope, $modalInstance, addresses) {
+
+    $scope.addresses = addresses;
+    
+    $scope.cancel = function () {
+        $modalInstance.dismiss();
+    };
+}]);

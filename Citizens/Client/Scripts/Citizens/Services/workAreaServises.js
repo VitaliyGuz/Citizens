@@ -9,18 +9,20 @@ angular.module("workAreaServices", ['ngResource', 'precinctServices', 'peopleSer
                 params = {};
                 params.id = { id: "@id" },
                 params.filter = { filter: '@filter' },
-                params.paginate = { skip: "@skip", filter: '@filter' };
+                params.skip = { skip: "@skip"};
             return $resource('', {},
             {
                 'getAll': { method: 'GET', params: params.filter, url: urlOdata + expand + "&$orderby=PrecinctId,Number" + ":filter", cache: false },
                 'getById': { method: 'GET', params: params.id, url: urlOdata + "(:id)" + expand },
-                'getPageItems': { method: 'GET', params: params.paginate, url: urlOdata + expand + "&$orderby=PrecinctId,Number" + ":filter" + paginate },
+                'getPageItems': { method: 'GET', params: angular.extend({}, params.skip, params.filter), url: urlOdata + expand + "&$orderby=PrecinctId,Number" + ":filter" + paginate },
                 'update': { method: 'PUT', params: params.id, url: urlOdata + "(:id)" },
                 'save': { method: "POST", url: urlOdata },
                 'getCountPeopleByPrecinct': { method: 'GET', params: {precinctId: "@precinctId" }, url: urlOdata + "/GetCountPeopleByPrecinct(PrecinctId=:precinctId)" },
                 'caclComputedProperties': { method: 'POST', url: urlOdata + "/CaclComputedProperties" },
                 'getMajors': { method: 'GET', params: params.id, url: urlOdata + "(:id)/GetMajors()" },
                 'getSupporters': { method: 'GET', params: params.id,url: urlOdata + "(:id)/GetSupporters()?$expand=Major" },
+                'getSupportersByAddress': { method: 'GET', params: angular.extend({}, params.id, { cityId: "@cityId", streetId: "@streetId", house: "@house" }), url: urlOdata + "(:id)/GetSupporters()?$filter=CityId eq :cityId and StreetId eq :streetId and House eq ':house'" },
+                'getSupportersByMajor': { method: 'GET', params: angular.extend({}, params.id, { majorId: "@majorId" }), url: urlOdata + "(:id)/GetSupporters()?$filter=MajorId eq :majorId" },
                 'remove': { method: 'DELETE', params: params.id, url: urlOdata + "(:id)" }
             });
         }

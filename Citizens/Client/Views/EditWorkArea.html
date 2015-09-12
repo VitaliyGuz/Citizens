@@ -106,6 +106,7 @@
                     </th>
                     <th>К-сть квартир</th>
                     <th>К-сть фізосіб</th>
+                    <th>Дії</th>
                 </tr>
             </thead>
             <tbody>
@@ -118,6 +119,11 @@
                     <td class="{{markAddress(address)}}">{{address.HouseType}}</td>
                     <td class="{{markAddress(address)}}">{{address.Apartments}}</td>
                     <td class="{{markAddress(address)}}">{{address.countPeople}}</td>
+                    <td class="{{markAddress(address)}}">
+                        <button class="btn btn-xs" ng-click="showApartments(address)" title="Показати квартири">
+                            <span class="glyphicon glyphicon-expand"></span>
+                        </button>
+                    </td>
                 </tr>
             </tbody>
         </table>
@@ -138,6 +144,7 @@
                     <th>№</th>
                     <th>П.І.Б.</th>
                     <th>К-сть виборців</th>
+                    <th>Дії</th>
                 </tr>
             </thead>
             <tbody>
@@ -145,6 +152,11 @@
                     <td>{{ getIndex($index,'tabMajors') + 1 }}</td>
                     <td>{{ major.LastName }} {{ major.FirstName }} {{ major.MidleName }}</td>
                     <td>{{ major.CountSupporters }}</td>
+                    <td>
+                        <button class="btn btn-xs" ng-click="showFullAddresses(major)" title="Показати адреси">
+                            <span class="glyphicon glyphicon-expand"></span>
+                        </button>
+                    </td>
                 </tr>
             </tbody>
         </table>
@@ -194,7 +206,7 @@
                 <tr dir-paginate="address in data.workAreaAddresses | itemsPerPage: pagination.pageSize" current-page="pagination.currentPage.tabEditMajors" pagination-id="workAreaEditMajorsPagination">
                     <td>{{ getIndex($index,'tabEditMajors') + 1 }}</td>
                     <td><input type="checkbox" class="checkbox-inline" ng-click="toggleSelection(address)" ng-checked="checked(address)"></td>
-                    <td>{{ address.City.CityType.Name}}{{address.City.Name}}, {{ address.Street.StreetType.Name }} {{ address.Street.Name }} {{ address.House }}{{ address.Apartment | checkApartment}}</td>
+                    <td>{{ address.City.CityType.Name}}{{address.City.Name}}, {{ address.Street.StreetType.Name }} {{ address.Street.Name }} {{ address.House }}{{ address.ApartmentStr | checkApartment}}</td>
                     <td>{{ address.Major.LastName }} {{ address.Major.FirstName }} {{ address.Major.MidleName }}</td>
                 </tr>
             </tbody>
