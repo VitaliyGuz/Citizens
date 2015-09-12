@@ -82,10 +82,10 @@ workAreaControllers.controller("listWorkAreasController", ['$location', '$rootSc
                             Object.keys(computedProps).forEach(function (prop) {
                                 wa[prop] = computedProps[prop];
                             });
-                            wa.countMajorsPlan = Math.round(wa.CountElectors * 0.033);
+                            wa.countMajorsPlan = Math.round(wa.CountElectors * 0.55 * 0.27 / 10);
                             wa.percentageMajors = Math.round(wa.CountMajors * 100 / wa.countMajorsPlan);
                             wa.voterTurnout = Math.round(wa.CountElectors * 0.55);
-                            wa.requiredVotes = Math.round(wa.CountElectors * 0.33);
+                            wa.requiredVotes = Math.round(wa.CountElectors * 0.55 * 0.27);
                         }
                         count++;
                         if(count === total)  $scope.loader.calcPeople = false;

@@ -36,7 +36,7 @@ namespace Citizens.Controllers.API
         private CitizenDbContext db = new CitizenDbContext();
 
         // GET: odata/People
-        [EnableQuery(PageSize=20, MaxNodeCount = 200)]
+        [EnableQuery(PageSize = 20, MaxNodeCount = 200, MaxExpansionDepth = 3)]        
         [PersonFilter]
         [Logger(Roles = "Operators, SuperAdministrators")] 
 
@@ -193,8 +193,7 @@ namespace Citizens.Controllers.API
                     entity.LastName != person.LastName ||
                     entity.CityId != person.CityId ||
                     entity.StreetId != person.StreetId ||
-                    entity.House != person.House ||
-                    entity.ApartmentStr != person.ApartmentStr
+                    entity.House != person.House
                 )
                )
             {
