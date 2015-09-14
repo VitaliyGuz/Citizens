@@ -298,11 +298,12 @@ app.factory("serviceUtil", ["$filter", '$routeParams', '$rootScope', function ($
             minDate.setHours(0, 0, 0, 0);
             return date.getTime() === minDate.getTime();
         },
-        addressToString: function(address) {
+        addressToString: function(address, onlyHouse) {
             if (address.City && address.Street && address.House) {
+                var apartment = onlyHouse ? '' : $filter("checkApartment")(address.ApartmentStr);
                 return  address.City.CityType.Name + address.City.Name + ' ' +
                         address.Street.StreetType.Name + address.Street.Name + ' ' +
-                        address.House + $filter("checkApartment")(address.ApartmentStr);
+                        address.House + apartment;
             } else {
                 return undefined;
             }   

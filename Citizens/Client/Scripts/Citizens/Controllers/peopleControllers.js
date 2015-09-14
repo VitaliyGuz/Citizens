@@ -522,15 +522,10 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
             //    return;
             //};
 
-            //if ($scope.person.address.City && !$scope.person.address.City.Id) {
-            //    $rootScope.errorMsg = "Населений пункт '" + $scope.person.address.City + "' не знайдено";
-            //    return;
-            //};
-
-            //if ($scope.person.address.Street && !$scope.person.address.Street.Id) {
-            //    $rootScope.errorMsg = "Вулицю '" + $scope.person.address.Street + "' не знайдено";
-            //    return;
-            //};
+            if (!$scope.person.CityId || !$scope.person.StreetId || !$scope.person.House) {
+                $rootScope.errorMsg = "Не вказана адреса будинку";
+                return;
+            };
 
             if ($scope.person.Major && !$scope.person.Major.Id) {
                 $rootScope.errorMsg = "Відповідального '" + $scope.person.Major + "' не знайдено";
@@ -787,7 +782,8 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
             });
 
             modalInstance.result.then(function (selectedAddress) {
-                if (!$scope.person) $scope.person = {PrecinctAddress: {} };
+                if (!$scope.person) $scope.person = { PrecinctAddress: {} };
+                if ($scope.person && !$scope.person.PrecinctAddress) $scope.person.PrecinctAddress = {};
                 $scope.person.CityId = selectedAddress.City.Id;
                 $scope.person.StreetId = selectedAddress.Street.Id;
                 $scope.person.House = selectedAddress.House;
@@ -799,7 +795,7 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
         };
 
         $scope.addressToString = function() {
-            return serviceUtil.addressToString($scope.person);
+            return $scope.person ? serviceUtil.addressToString($scope.person,true) : '';
         };
     }]);
 
