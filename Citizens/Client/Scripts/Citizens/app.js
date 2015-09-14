@@ -212,7 +212,7 @@ app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider',
 }]);
 
 app.constant("config", Object.freeze({
-    baseUrl: 'https://poltava2015.azurewebsites.net',//'http://localhost:6600', 'http://apicitizens.azurewebsites.net', #Deploy
+    baseUrl: 'https://poltava2015.azurewebsites.net',//'http://localhost:6600','http://apicitizens.azurewebsites.net', #Deploy
     pageSize: 20, // by default 20
     pageSizeTabularSection: 10,
     checkDeleteItem: true,
@@ -302,7 +302,7 @@ app.factory("serviceUtil", ["$filter", '$routeParams', '$rootScope', function ($
             if (address.City && address.Street && address.House) {
                 return  address.City.CityType.Name + address.City.Name + ' ' +
                         address.Street.StreetType.Name + address.Street.Name + ' ' +
-                        address.House + $filter("checkApartment")(address.Apartment);
+                        address.House + $filter("checkApartment")(address.ApartmentStr);
             } else {
                 return undefined;
             }   

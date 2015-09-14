@@ -17,7 +17,7 @@
         </div>
         <div class="form-group col-lg-2">
             <label>Дата народження</label>
-            <input style="position: relative; z-index: 100000;" ng-model="dateOfBirth" type="text" class="form-control" datepicker placeholder="дд.мм.рррр" required>
+            <input style="position: relative; z-index: 10;" ng-model="dateOfBirth" type="text" class="form-control" datepicker placeholder="дд.мм.рррр" required>
         </div>
         <div class="form-group col-lg-1">
             <label>Стать</label>
@@ -29,38 +29,50 @@
         </div>
     </div>
     <div class="form-horizontal">
-        <div class="form-group col-lg-3">
+        <!--<div class="form-group col-lg-3">
             <label>Населений пункт</label>
-            <input type="text" typeahead-on-select="onSelectCity($item)" ng-model="person.address.City"
+            <input type="text" typeahead-on-select="onSelectCity($item)" ng-model="person.City"
                    typeahead="c as c.CityType.Name +' '+c.Name + ' (' + c.RegionPart.Name + ' р-н)' for c in cities | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control" required>
         </div>
         <div class="form-group col-lg-3">
             <label>Вулиця</label>
-            <input type="text" typeahead-on-select="onSelectStreet($item)" ng-model="person.address.Street"
+            <input type="text" typeahead-on-select="onSelectStreet($item)" ng-model="person.Street"
                    typeahead="s as s.StreetType.Name +' '+ s.Name for s in streets | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control" required>
         </div>
         <div class="form-group col-lg-2">
             <label>Будинок</label>
-            <input ng-model="person.address.House" type="text" class="form-control" required>
+            <input ng-model="person.House" type="text" class="form-control" required>
+        </div>-->
+        <div class="form-group col-lg-7">
+            <label>Адреса будинку</label>
+            <div class="input-group">
+                <input type="text" value="{{addressToString()}}" class="form-control">
+                <span class="input-group-btn">
+                    <button type="button" ng-click="changeAddress()" class="btn btn-default form-control" title="Змінити">
+                        <span class="glyphicon glyphicon-edit"></span>
+                    </button>
+                </span>
+            </div>
         </div>
-        <div class="form-group col-lg-1">
-            <label>Кв.</label>
+        <div class="form-group col-lg-2">
+            <label>Квартира</label>
             <input ng-model="person.ApartmentStr" type="text" class="form-control">
         </div>
         <div class="form-group col-lg-2">
             <label>Тип будинку</label>
-            <select class="form-control" ng-model="person.address.HouseType" ng-options="ht as ht for ht in houseTypes">
+            <!--<select class="form-control" ng-model="person.PrecinctAddress.HouseType" ng-options="ht as ht for ht in houseTypes">
                 <option value='' disabled>-Вибрати-</option>
-            </select>
+            </select>-->
+            <input type="text" value="{{person.PrecinctAddress.HouseType}}" class="form-control">
         </div>
         <div class="form-group col-lg-2">
             <label>Дільниця</label>
             <!--<input type="text" ng-model="person.address.Precinct"
                        typeahead="p as p.Number for p in precincts | filter: {Number:$viewValue} | orderByStartsWith:{Number:$viewValue} | limitTo:10" class="form-control" required>-->
             <div class="input-group">
-                <input type="text" value="{{person.address.Precinct.Number}}" class="form-control">
+                <input type="text" value="{{person.PrecinctAddress.Precinct.Number}}" class="form-control">
                 <span class="input-group-btn">
-                    <a ng-href="/precinct/{{person.address.Precinct.Id}}" class="btn btn-default form-control" ng-disabled="!person.address.Precinct.Id" title="Відкрити">
+                    <a ng-href="/precinct/{{person.PrecinctAddress.Precinct.Id}}" class="btn btn-default form-control" ng-disabled="!person.PrecinctAddress.Precinct.Id" title="Відкрити">
                         <span class="glyphicon glyphicon-open"></span>
                     </a>
                 </span>
@@ -87,9 +99,9 @@
         <div class="form-group col-lg-6">
             <label>Робоча дільниця (топ)</label>
             <div class="input-group">
-                <input type="text" value="{{person.address.WorkArea.Precinct.Number}}.{{person.address.WorkArea.Number}} {{person.address.WorkArea.Top.LastName}} {{person.address.WorkArea.Top.FirstName}} {{person.address.WorkArea.Top.MidleName}}" class="form-control">
+                <input type="text" value="{{person.PrecinctAddress.WorkArea.Precinct.Number}}.{{person.PrecinctAddress.WorkArea.Number}} {{person.PrecinctAddress.WorkArea.Top.LastName}} {{person.PrecinctAddress.WorkArea.Top.FirstName}} {{person.PrecinctAddress.WorkArea.Top.MidleName}}" class="form-control">
                 <span class="input-group-btn">
-                    <a ng-href="/work-area/{{person.address.WorkArea.Id}}?precinctId={{person.address.WorkArea.PrecinctId}}" class="btn btn-default form-control" ng-disabled="!person.address.WorkArea.Id" title="Відкрити">
+                    <a ng-href="/work-area/{{person.PrecinctAddress.WorkArea.Id}}?precinctId={{person.PrecinctAddress.WorkArea.PrecinctId}}" class="btn btn-default form-control" ng-disabled="!person.PrecinctAddress.WorkArea.Id" title="Відкрити">
                         <span class="glyphicon glyphicon-open"></span>
                     </a>
                 </span>
@@ -105,10 +117,10 @@
                 <span class="glyphicon glyphicon-save"></span> Зберегти
                 <i ng-show="saving" class="fa fa-refresh fa-spin"></i>
             </button>
-            <button type="button" class="btn btn-sm btn-success" ng-click="openModal('topId')" ng-disabled="!person.Id" title="Призначити топом">
+            <button type="button" class="btn btn-sm btn-success" ng-click="openWorkAreaSelection('topId')" ng-disabled="!person.Id" title="Призначити топом">
                 <span class="glyphicon glyphicon-user"></span> Призначити топом
             </button>
-            <button type="button" class="btn btn-sm btn-success" ng-click="openModal('majorId')" ng-disabled="!person.Id" title="Призначити відповідальним">
+            <button type="button" class="btn btn-sm btn-success" ng-click="openWorkAreaSelection('majorId')" ng-disabled="!person.Id" title="Призначити відповідальним">
                 <span class="fa fa-users"></span> Призначити старшим
             </button>
         </div>

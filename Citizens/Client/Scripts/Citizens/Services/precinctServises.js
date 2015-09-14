@@ -58,6 +58,7 @@ angular.module("precinctServices", ['ngResource'])
             return $resource('', {},
             {
                 'query': { method: 'GET', params: params, url: urlOdata + key + "?$expand=" + expand },
+                'getAll': { method: 'GET', params: {filter:"@filter"}, url: urlOdata + "?$expand=" + expand +",Precinct" + ":filter" },
                 'getAllByPrecinctId': { method: 'GET', params: { precinctId: '@precinctId' }, url: urlOdata + "?$expand=" + expand + "&$filter=PrecinctId eq :precinctId" },
                 'save': { method: "POST", url: urlOdata },
                 'update': { method: 'PUT', params: params, url: urlOdata + key },
