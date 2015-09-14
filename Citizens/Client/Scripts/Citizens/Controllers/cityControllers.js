@@ -64,13 +64,24 @@ cityControllers.controller("listCitiesController", ['$rootScope', '$location', '
         };
     }]);
 
-cityControllers.controller('editCityController', ['$rootScope', '$scope', '$location', 'cityData', 'serviceUtil', 'cityRegionPartsData', 'config', 'resolvedData', 'modelFactory',
-    function ($rootScope, $scope, $location, cityData, serviceUtil, cityRegionPartsData, config, resolvedData, modelFactory) {
+cityControllers.controller('editCityController', ['$rootScope', '$scope', '$location', 'cityData', 'serviceUtil', 'cityRegionPartsData', 'config', 'resolvedData', 'modelFactory', 'regionPartData',
+    function ($rootScope, $scope, $location, cityData, serviceUtil, cityRegionPartsData, config, resolvedData, modelFactory,regionPartData) {
         var editInd, editableCityDistrict, addMode;
         $rootScope.pageTitle = 'Населений пункт';
+        $scope.loader = {};
         $scope.saving = false;
         addMode = true;
-        $scope.tableHead = ['№', 'Район'];
+        $scope.tableHead = [
+           '№',
+           'Район',
+           'К-сть виборців',
+           'Планова к-сть старших',
+           'Факт. к-сть старших',
+           '% старших',
+           'Явка',
+           'К-сть необхідних голосів',
+           'К-сть домогосподарств'
+        ];
         $scope.selected = { cityDistrict: {} };
         $scope.cityDistricts = [];
         if (resolvedData) {
@@ -78,11 +89,39 @@ cityControllers.controller('editCityController', ['$rootScope', '$scope', '$loca
                 addMode = false;
                 $scope.city = resolvedData.city;
                 $scope.cityDistricts = resolvedData.city.CityRegionParts;
+                calcComputedProperties();
             }
             $scope.cityTypes = resolvedData.cityTypes;
             $scope.regionParts = resolvedData.regionParts;
             $scope.cityRegionParts = resolvedData.cityRegionParts;
         }
+
+        function calcComputedProperties() {
+            if ($scope.cityDistricts.length === 0) return;
+            $scope.loader.calculation = true;
+            regionPartData.getComputedProperties(function (resp) {
+                resp.value.forEach(function (computed) {
+                    var found = $scope.cityDistricts.filter(function (cd) {
+                        return cd.RegionPartId === computed.Id;
+                    });
+                    if (found.length > 0) {
+                        var cityDistrict = found[0];
+                        cityDistrict.countMajors = computed.CountMajors;
+                        cityDistrict.countElectors = computed.CountElectors;
+                        cityDistrict.countHouseholds = computed.CountHouseholds;
+                        cityDistrict.countMajorsPlan = Math.round(computed.CountElectors * 0.55 * 0.27 / 10);
+                        cityDistrict.percentageMajors = Math.round(computed.CountMajors * 100 / cityDistrict.countMajorsPlan);
+                        cityDistrict.voterTurnout = Math.round(computed.CountElectors * 0.55);
+                        cityDistrict.requiredVotes = Math.round(computed.CountElectors * 0.55 * 0.27);
+                    }
+                });
+                $scope.loader.calculation = false;
+            }, errorHandler);
+        };
+
+        $scope.refreshComputedProperties = function() {
+            calcComputedProperties();
+        };
 
         $scope.save = function () {
             $scope.saving = true;
@@ -182,7 +221,9 @@ cityControllers.controller('editCityController', ['$rootScope', '$scope', '$loca
                     $scope.cityDistricts[editInd] = res;
                 }
                 $scope.reset();
-                $scope.cityDistricts.sort(serviceUtil.compareByName);            
+                $scope.cityDistricts.sort(function(a, b) {
+                    return serviceUtil.compareByName(a.RegionPart, b.RegionPart);
+                });            
             };
         };
 
@@ -201,6 +242,7 @@ cityControllers.controller('editCityController', ['$rootScope', '$scope', '$loca
             $scope.saving = false;
             $scope.loading = false;
             $scope.savingCityDistrict = false;
+            $scope.loader = {};
             $scope.reset();
             $rootScope.errorMsg = serviceUtil.getErrorMessage(e);
         };

@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Web;
 
 namespace Citizens.Models
 {
@@ -30,5 +27,16 @@ namespace Citizens.Models
         public ICollection<Precinct> Precincts { get; set; }
 
         public ICollection<UserRegionPart> UserRegionParts { get; set; }
+    }
+
+    public class RegionPartComputed
+    {
+        public int Id { get; set; }
+
+        public int CountMajors { get; set; }
+
+        public int CountElectors { get; set; }
+
+        public int CountHouseholds { get; set; }
     }
 }

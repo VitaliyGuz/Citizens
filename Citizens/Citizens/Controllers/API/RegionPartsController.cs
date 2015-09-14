@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
+﻿using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
-using System.Web.Http.ModelBinding;
 using System.Web.OData;
 using System.Web.OData.Routing;
 using Citizens.Models;
@@ -173,6 +167,30 @@ namespace Citizens.Controllers.API
         private bool RegionPartExists(int key)
         {
             return db.RegionParts.Count(e => e.Id == key) > 0;
+        }
+
+        [HttpGet]
+        [ODataRoute("RegionParts/GetComputedProperties()")]
+        public async Task<IHttpActionResult> GetComputedProperties()
+        {
+
+            var sql = @"Declare  @EmptyMajorId int Select top 1 @EmptyMajorId = id from people
+                        WHERE FirstName = ''
+SELECT Id, Name,RegionId,RegionPartType, SUM(Домохозяйств) AS CountHouseholds, SUM(Избирателей) AS CountElectors, COUNT(DISTINCT Старший) AS CountMajors
+FROM (SELECT Id, Name,RegionId,RegionPartType, COUNT(Избирателей) AS Избирателей, COUNT(DISTINCT Домохозяйств) AS Домохозяйств, CityId, StreetId, House, Старший
+       FROM (SELECT RegionParts.Id AS Id, RegionParts.Name AS Name, RegionParts.RegionId AS RegionId,RegionParts.RegionId AS RegionPartType, 1 AS Избирателей, People.ApartmentStr AS Домохозяйств, People.CityId, People.StreetId, People.House, 
+              CASE WHEN People.[MajorId] <> @EmptyMajorId THEN People.[MajorId] ELSE NULL END AS Старший
+                 FROM PrecinctAddresses INNER JOIN People ON PrecinctAddresses.CityId = People.CityId
+				  AND PrecinctAddresses.StreetId = People.StreetId AND PrecinctAddresses.House = People.House
+				  INNER JOIN  Precincts ON PrecinctAddresses.PrecinctId = Precincts.Id 
+				  INNER JOIN  RegionParts ON Precincts.RegionPartId = RegionParts.Id) AS TEMP2
+GROUP BY Id,Name,RegionId,RegionPartType, CityId, StreetId, House, Старший) AS TEMP
+GROUP BY Id,Name,RegionId,RegionPartType OPTION (LOOP JOIN)";
+
+
+            var response = await db.Database.SqlQuery<RegionPartComputed>(sql).ToListAsync();
+
+            return Ok(response);
         }
     }
 }

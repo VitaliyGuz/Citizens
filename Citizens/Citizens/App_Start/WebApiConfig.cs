@@ -100,7 +100,11 @@ namespace Citizens
             func = builder.EntityType<Person>().Collection.Function("LastNames");
             func.Parameter<string>("StartsWith");
             func.ReturnsCollection<String>();
-            
+
+            builder.EntityType<RegionPart>().Collection
+                .Function("GetComputedProperties")
+                .ReturnsCollection<RegionPartComputed>();
+
             config.EnableCaseInsensitive(caseInsensitive: true);
             config.EnableUnqualifiedNameCall(unqualifiedNameCall: true);
             config.EnableEnumPrefixFree(enumPrefixFree: true);

@@ -9,6 +9,7 @@ angular.module("regionPartServices", ['ngResource'])
 		    'getAll': { method: 'GET', url: urlOdata + "?$expand=Region&$orderby=Name asc", cache: false },
 		    'getById': { method: 'GET', params: { id: "@id" }, url: urlOdata + "(:id)?$expand=Region" },
 		    'getAllByType': { method: 'GET', params: { type: "@type" }, url: urlOdata + "?$expand=Region&$orderby=Name asc" + "&" + filterByType, cache: true },
+		    'getComputedProperties': { method: 'GET',url: urlOdata + "/GetComputedProperties()" },
 		    'update': { method: 'PUT', params: { id: "@id" }, url: urlOdata + "(:id)" },
 		    'save': { method: "POST", url: urlOdata },
 		    'remove': { method: 'DELETE', params: { id: "@id" }, url: urlOdata + "(:id)" }
