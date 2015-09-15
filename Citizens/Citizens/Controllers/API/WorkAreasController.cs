@@ -11,6 +11,7 @@ using Citizens.Models;
 using System.Threading.Tasks;
 using System.Web.OData.Query;
 using System.Web.OData.Routing;
+using Citizens.Extensions;
 
 namespace Citizens.Controllers.API
 {
@@ -34,6 +35,7 @@ namespace Citizens.Controllers.API
         [Logger(Roles = "Operators, SuperAdministrators")] 
         // GET: odata/WorkAreas
         [EnableQuery]
+        [WorkAreaFilter]
         public IQueryable<WorkArea> GetWorkAreas()
         {
             return db.WorkAreas;
@@ -42,6 +44,7 @@ namespace Citizens.Controllers.API
         // GET: odata/WorkAreas(5)
         [Logger(Roles = "Operators, SuperAdministrators")] 
         [EnableQuery]
+        [WorkAreaFilter]
         public SingleResult<WorkArea> GetWorkArea([FromODataUri] int key)
         {
             return SingleResult.Create(db.WorkAreas.Where(workArea => workArea.Id == key));
