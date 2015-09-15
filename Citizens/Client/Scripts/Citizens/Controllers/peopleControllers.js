@@ -912,10 +912,10 @@ peopleControllers.controller('modalHouseSelectionCtrl', ['$scope', '$modalInstan
             return;
         };
 
-        if (!$scope.newAddress.PrecinctId) {
-            $scope.alert = {type: "alert-danger", message: "Не вибрано дільницю"}
-            return;
-        };
+        //if (!$scope.newAddress.PrecinctId) {
+        //    $scope.alert = {type: "alert-danger", message: "Не вибрано дільницю"}
+        //    return;
+        //};
 
         if (!$scope.newAddress.House) {
             $scope.alert = {type: "alert-danger", message: "Не вказано номер будинку"}
@@ -924,13 +924,25 @@ peopleControllers.controller('modalHouseSelectionCtrl', ['$scope', '$modalInstan
 
         $scope.loader.saving = true;
         $scope.alert = {};
-        var modelAddress = modelFactory.createObject('precinctAddress', $scope.newAddress);
-        precinctAddressesData.save(modelAddress, function() {
-            $scope.loader.saving = false;
-            $scope.precinctAddresses.push($scope.newAddress);
-            serviceUtil.sortAddresses($scope.precinctAddresses);
-            $scope.reset();
-        }, errorHandler);
+        
+        if ($scope.newAddress.Precinct && !$scope.newAddress.PrecinctId) {
+            precinctData.save({ "Number": $scope.newAddress.Precinct }, savePrecinctAddress, errorHandler);
+        } else {
+            savePrecinctAddress($scope.newAddress.Precinct);
+        }
+
+        function savePrecinctAddress(precinct) {
+            var modelAddress = modelFactory.createObject('precinctAddress', $scope.newAddress);
+            modelAddress.PrecinctId = precinct.Id;
+            $scope.newAddress.Precinct = precinct;
+            precinctAddressesData.save(modelAddress, function () {
+                $scope.loader.saving = false;
+                $scope.precinctAddresses.push($scope.newAddress);
+                serviceUtil.sortAddresses($scope.precinctAddresses);
+                $scope.reset();
+            }, errorHandler);
+        };
+        
     };
 
     $scope.onSelectAddress = function (address) {
