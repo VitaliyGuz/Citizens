@@ -429,8 +429,8 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
 
     }]);
 
-peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$location', '$modal', 'serviceUtil', 'precinctData', 'precinctAddressesData', 'config', 'resolvedData', 'houseTypes', 'modelFactory', 'peopleDataService', 'workAreaResource',
-    function ($rootScope, $scope, $location, $modal, serviceUtil, precinctData, precinctAddressesData, config, resolvedData, houseTypes, modelFactory, peopleDataService, workAreaResource) {
+peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$location', '$modal', 'serviceUtil', 'precinctData', 'precinctAddressesData', 'config', 'resolvedData', 'houseTypes', 'modelFactory', 'peopleDataService', 'workAreaResource', 'checkPermissions',
+    function ($rootScope, $scope, $location, $modal, serviceUtil, precinctData, precinctAddressesData, config, resolvedData, houseTypes, modelFactory, peopleDataService, workAreaResource, checkPermissions) {
         var addMode = true, editInd, propValues = [], DATE_FORMAT = 'yyyy-MM-ddT00:00:00+02:00';
         $rootScope.pageTitle = 'Фізична особа';
         $scope.tableHead = ['№', 'Назва', 'Значення'];
@@ -796,6 +796,10 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
 
         $scope.addressToString = function() {
             return $scope.person ? serviceUtil.addressToString($scope.person,true) : '';
+        };
+
+        $scope.permit = function(roles) {
+            return checkPermissions(roles);
         };
     }]);
 
