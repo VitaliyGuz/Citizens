@@ -5,7 +5,7 @@
 <script src="Scripts/Citizens/Services/precinctServises.js"></script>
 <script src="Scripts/AngularUtils/directives/ui-bootstrap-typeahead-tpls-0.12.1.min.js"></script>-->
 <!--<h3>Фізичні особи</h3>-->
-<h5 ng-show="loadingPeople" class="help-block">Завантаження... <i class="fa fa-refresh fa-spin"></i></h5>
+<h5 ng-show="loader.loading" class="help-block">Завантаження... <i class="fa fa-refresh fa-spin"></i></h5>
 <!--<hr>
 <div class="row">
     <form ng-submit="applyFilter()">
@@ -20,7 +20,7 @@
         </div>
         <button type="submit" class="btn btn-success" title="Застосувати фільтр">
             <span class="glyphicon glyphicon-filter"></span>
-            <i ng-show="filtering" class="fa fa-refresh fa-spin"></i>
+            <i ng-show="loader.filtering" class="fa fa-refresh fa-spin"></i>
         </button>
         <button ng-click="resetFilter()" class="btn btn-success" title="Скасувати фільтр">
             <span class="glyphicon glyphicon-remove-sign"></span>
@@ -70,7 +70,7 @@
             </div>
             <!--<button ng-click="applyFilter()" class="btn btn-sm btn-success">
                 <span class="glyphicon glyphicon-filter"></span> Застосувати
-                <i ng-show="filtering" class="fa fa-refresh fa-spin"></i>
+                <i ng-show="loader.filtering" class="fa fa-refresh fa-spin"></i>
             </button>
             <button ng-click="resetFilter()" class="btn btn-sm btn-success">
                 <span class="glyphicon glyphicon-remove-sign"></span> Скасувати
@@ -157,6 +157,15 @@
                     </div>
                 </div>
             </div>-->
+            <div class="form-group">
+                <label>Відповідальний (старший)</label>
+                <input typeahead="p as p.label for p in getPeopleByName($viewValue)" ng-model="query.ref.Major" 
+                       type="text" typeahead-loading="loadingPeople" typeahead-no-results="noResults" typeahead-min-length="10" class="form-control">
+                <i ng-show="loadingPeople" class="fa fa-refresh fa-spin"></i>
+                <div ng-show="noResults">
+                    <i class="glyphicon glyphicon-remove"></i> Фізособу не знайдено
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -169,7 +178,7 @@
     <div ng-show="showFilters" class="col-md-4">
         <button ng-click="applyFilter()" class="btn btn-sm btn-success">
             <span class="glyphicon glyphicon-filter"></span> Застосувати фільтр
-            <i ng-show="filtering" class="fa fa-refresh fa-spin"></i>
+            <i ng-show="loader.filtering" class="fa fa-refresh fa-spin"></i>
         </button>
         <button ng-click="resetFilter()" class="btn btn-sm btn-success">
             <span class="glyphicon glyphicon-remove-sign"></span> Скасувати фільтр

@@ -164,8 +164,8 @@ workAreaControllers.controller("listWorkAreasController", ['$location', '$rootSc
         };
     }]);
 
-workAreaControllers.controller("editWorkAreaController", ['$location', '$rootScope', '$scope', '$modal', '$q', 'serviceUtil', 'config', 'precinctData', 'precinctAddressesData', 'resolvedData', 'workAreaResource', 'modelFactory', 'houseTypes', 'peopleDataService',
-    function ($location, $rootScope, $scope, $modal,$q, serviceUtil, config, precinctData, precinctAddressesData, resolvedData, workAreaResource, modelFactory, houseTypes, peopleDataService) {
+workAreaControllers.controller("editWorkAreaController", ['$location', '$rootScope', '$scope', '$modal', '$q', 'serviceUtil', 'config', 'precinctData', 'precinctAddressesData', 'resolvedData', 'workAreaResource', 'modelFactory', 'houseTypes', 'peopleDataService', 'filterSettings',
+    function ($location, $rootScope, $scope, $modal,$q, serviceUtil, config, precinctData, precinctAddressesData, resolvedData, workAreaResource, modelFactory, houseTypes, peopleDataService,filterSettings) {
         
         $rootScope.pageTitle = 'Робоча дільниця';
         $scope.loader = {};
@@ -559,7 +559,34 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
                 }
             });
         };
-}]);
+
+        $scope.redirectToSupporters = function(major) {
+            var q = {
+                ref: {
+                    Major: {
+                        label: peopleDataService.getPersonLabel(major),
+                        Id: major.Id
+                    }
+                }
+            };
+            filterSettings.remove('people');
+            //var q = { ref: { Major: major } }, odataFilter = "&$filter=MajorId eq " + major.Id;
+            //q.ref.Major.label = peopleDataService.getPersonLabel(major);
+            //var peopleFilterSettings = filterSettings.get('people');
+            //if (peopleFilterSettings) {
+            //    peopleFilterSettings.props = q;
+            //    peopleFilterSettings.odataFilter = odataFilter;
+            //} else {
+            //    filterSettings.set('people', {
+            //        props: q,
+            //        odataFilter: odataFilter
+            //    });
+            //}
+            //$location.url("/people");
+            $location.url("/people").search("query",angular.toJson(q));
+            
+        };
+    }]);
 
 workAreaControllers.controller('modalFullAddressesCtrl', ['$scope', '$modalInstance', 'addresses', function ($scope, $modalInstance, addresses) {
 
