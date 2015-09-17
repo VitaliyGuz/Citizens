@@ -50,7 +50,7 @@ namespace Citizens.Models
         [Column(Order = 5)]
         [StringLength(10)]
         [Index]
-        [Required()]
+        [Required(AllowEmptyStrings = true)]
         public string House { get; set; }
 
         [Required]

@@ -237,7 +237,11 @@ app.factory("serviceUtil", ["$filter", '$routeParams', '$rootScope', function ($
             if (error && error.description) errMsg = error.description;
             if (error && error.data !== "") {
                 if (angular.isObject(error.data)) {
-                    errDetail = error.data.error.message;
+                    if (error.data.error && error.data.error.innererror) {
+                        errDetail = error.data.error.innererror.message;
+                    } else {
+                        errDetail = error.data.error.message;
+                    }
                 } else {
                     errDetail = error.data;
                 }
@@ -300,11 +304,12 @@ app.factory("serviceUtil", ["$filter", '$routeParams', '$rootScope', function ($
             return date.getTime() === minDate.getTime();
         },
         addressToString: function(address, onlyHouse) {
-            if (address.City && address.Street && address.House) {
+            if (address.City && address.Street) {
                 var apartment = onlyHouse ? '' : $filter("checkApartment")(address.ApartmentStr);
+                var house = address.House ? address.House : '';
                 return  address.City.CityType.Name + address.City.Name + ' ' +
                         address.Street.StreetType.Name + address.Street.Name + ' ' +
-                        address.House + apartment;
+                        house + apartment;
             } else {
                 return undefined;
             }   

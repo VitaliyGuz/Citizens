@@ -530,7 +530,7 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
             //    return;
             //};
 
-            if (!$scope.person.CityId || !$scope.person.StreetId || !$scope.person.House) {
+            if (!$scope.person.CityId) {
                 $rootScope.errorMsg = "Не вказана адреса будинку";
                 return;
             };
@@ -832,11 +832,11 @@ peopleControllers.controller('modalHouseSelectionCtrl', ['$scope', '$modalInstan
     if ($scope.person) {
         $scope.searchBy = {
             city: $scope.person.City,
-            street: $scope.person.Street,
+            street: $scope.person.Street.Name ? $scope.person.Street : undefined,
             house: $scope.person.House
         }
     }
-
+    
     $scope.loader = {};
     $scope.alert = {};
     $scope.precinctAddresses = [];
@@ -882,7 +882,8 @@ peopleControllers.controller('modalHouseSelectionCtrl', ['$scope', '$modalInstan
             return;
         };
 
-        var filterQuery = "CityId eq " + $scope.searchBy.city.Id + " and StreetId eq " + $scope.searchBy.street.Id;
+        var filterQuery = "CityId eq " + $scope.searchBy.city.Id;
+        if ($scope.searchBy.street) filterQuery = filterQuery + " and StreetId eq :streetId".replace(/:streetId/g, $scope.searchBy.street.Id);
         if ($scope.searchBy.house) filterQuery = filterQuery + " and House eq ':house'".replace(/:house/g, $scope.searchBy.house);
         $scope.loader.searching = true;
         $scope.alert = {};
@@ -899,15 +900,15 @@ peopleControllers.controller('modalHouseSelectionCtrl', ['$scope', '$modalInstan
     $scope.add = function() {
         $scope.addMode = true;
         $scope.newAddress = {};
-        if ($scope.searchBy.city) {
+        if ($scope.searchBy && $scope.searchBy.city) {
             $scope.newAddress.City = $scope.searchBy.city;
             $scope.newAddress.CityId = $scope.searchBy.city.Id;
         }
-        if ($scope.searchBy.street) {
+        if ($scope.searchBy && $scope.searchBy.street) {
             $scope.newAddress.Street = $scope.searchBy.street;
             $scope.newAddress.StreetId = $scope.searchBy.street.Id;
         }
-        if ($scope.searchBy.house) $scope.newAddress.House = $scope.searchBy.house;
+        if ($scope.searchBy && $scope.searchBy.house) $scope.newAddress.House = $scope.searchBy.house;
     };
 
     $scope.save = function () {
@@ -919,20 +920,20 @@ peopleControllers.controller('modalHouseSelectionCtrl', ['$scope', '$modalInstan
             return;
         };
 
-        if (!$scope.newAddress.StreetId) {
+        if ($scope.newAddress.Street && !$scope.newAddress.StreetId) {
             $scope.alert = {type: "alert-danger", message: "Не вибрано вулицю"}
             return;
         };
 
-        //if (!$scope.newAddress.PrecinctId) {
-        //    $scope.alert = {type: "alert-danger", message: "Не вибрано дільницю"}
-        //    return;
-        //};
-
-        if (!$scope.newAddress.House) {
-            $scope.alert = {type: "alert-danger", message: "Не вказано номер будинку"}
+        if (!$scope.newAddress.Precinct) {
+            $scope.alert = {type: "alert-danger", message: "Не вказано дільницю"}
             return;
         };
+
+        //if (!$scope.newAddress.House) {
+        //    $scope.alert = {type: "alert-danger", message: "Не вказано номер будинку"}
+        //    return;
+        //};
 
         $scope.loader.saving = true;
         $scope.alert = {};
@@ -947,8 +948,9 @@ peopleControllers.controller('modalHouseSelectionCtrl', ['$scope', '$modalInstan
             var modelAddress = modelFactory.createObject('precinctAddress', $scope.newAddress);
             modelAddress.PrecinctId = precinct.Id;
             $scope.newAddress.Precinct = precinct;
-            precinctAddressesData.save(modelAddress, function () {
+            precinctAddressesData.save(modelAddress, function (resp) {
                 $scope.loader.saving = false;
+                if (!$scope.newAddress.Street) $scope.newAddress.Street = { Id: resp.StreetId };
                 $scope.precinctAddresses.push($scope.newAddress);
                 serviceUtil.sortAddresses($scope.precinctAddresses);
                 $scope.reset();
