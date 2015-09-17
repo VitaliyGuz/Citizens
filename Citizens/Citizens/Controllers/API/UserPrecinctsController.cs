@@ -270,37 +270,14 @@ namespace Citizens.Controllers.API
                 .Select(e => e.Exist)
                 .ToArray();
 
-            //db.UserPrecincts.AddRange(savingUserPrecincts);
-            //await db.SaveChangesAsync();
-
             // adding region parts by user
-            //var listUserIds = savingUserPrecincts.Select(e => e.UserId).Distinct();
-            //var listPrecinctIds = savingUserPrecincts.Select(e => e.PrecinctId).Distinct();
-            //var dicUserRegionParts =
-            //    db.UserPrecincts.Include("Precinct")
-            //        .Where(up => listUserIds.Contains(up.UserId) && listPrecinctIds.Contains(up.PrecinctId))
-            //        .GroupBy(k => k.UserId, g => g.Precinct.RegionPartId,
-            //            (k, g) => new { UserId = k, RegionPartIds = g.Distinct() })
-            //        .ToDictionary(key => key.UserId, val => val.RegionPartIds);
-
-            //foreach (var userId in dicUserRegionParts.Keys)
-            //{
-            //    foreach (var id in dicUserRegionParts[userId])
-            //    {
-            //        if (id == null) continue;
-            //        var regionPartId = (int)id;
-            //        if (IsCountEqualTotal(regionPartId, userId))
-            //        {
-            //            db.UserRegionParts.Add(new UserRegionPart { UserId = userId, RegionPartId = regionPartId });
-            //        }
-            //    }
-            //}
-
             var savingUserRegionParts = savingUserPrecincts
-               .GroupJoin(db.Precincts, up => up.PrecinctId, p => p.Id, (k, v) => new { k.UserId, Precincts = v })
-               .SelectMany(x => x.Precincts.DefaultIfEmpty(), (x, y) => y.RegionPartId != null ? new UserRegionPart { UserId = x.UserId, RegionPartId = (int)y.RegionPartId } : new UserRegionPart { UserId = string.Empty, RegionPartId = 0 })
-               .Distinct(new UserRegionPartComparer())
-               .Where(r => IsCountEqualTotal(r.RegionPartId, r.UserId, savingUserPrecincts.Length));
+                .Join(db.Precincts, up => up.PrecinctId, p => p.Id,
+                    (k, v) => new {k.UserId, v.RegionPartId, k.PrecinctId})
+                .GroupBy(x => new { x.UserId, x.RegionPartId }, g => g.PrecinctId, 
+                    (k, g) => new { k.UserId, k.RegionPartId, CountPrecincts = g.Distinct().Count() })
+                .Where(x => IsCountEqualTotal(x.RegionPartId, x.UserId, x.CountPrecincts))
+                .Select(x => new UserRegionPart{UserId = x.UserId, RegionPartId = (int) x.RegionPartId});
 
             db.UserPrecincts.AddRange(savingUserPrecincts);
             db.UserRegionParts.AddRange(savingUserRegionParts);
@@ -340,18 +317,18 @@ namespace Citizens.Controllers.API
             return StatusCode(HttpStatusCode.NoContent);
         }
 
-        private bool IsCountEqualTotal(int regionPartId, string userId, int countSave)
+        private bool IsCountEqualTotal(int? regionPartId, string userId, int countSave)
         {
-            if (regionPartId == 0 || userId.Equals(string.Empty)) return false; 
+            if (regionPartId == 0 || regionPartId == null || userId.Equals(string.Empty)) return false; 
             return countSave + GetCountUserPrecinctsByRegionPartId(regionPartId, userId) == GetTotalPrecinctsByRegionPartId(regionPartId);
         }
 
-        private int GetCountUserPrecinctsByRegionPartId(int regionPartId, string userId)
+        private int GetCountUserPrecinctsByRegionPartId(int? regionPartId, string userId)
         {
             return db.UserPrecincts.Count(up => up.Precinct.RegionPartId == regionPartId && up.UserId == userId);
         }
 
-        private int GetTotalPrecinctsByRegionPartId(int regionPartId)
+        private int GetTotalPrecinctsByRegionPartId(int? regionPartId)
         {
             return db.Precincts.Count(p => p.RegionPartId == regionPartId);
         }
