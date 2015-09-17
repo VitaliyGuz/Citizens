@@ -1,6 +1,6 @@
 ﻿'use strict';
 
-var workAreaControllers = angular.module('workAreaControllers', ['workAreaServices']);
+var workAreaControllers = angular.module('workAreaControllers', ['workAreaServices', 'printService']);
 
 workAreaControllers.controller("listWorkAreasController", ['$location', '$rootScope', '$scope', 'config', 'serviceUtil', 'workAreaResource', 'filterSettings',
     function ($location, $rootScope, $scope, config, serviceUtil, workAreaResource, filterSettings) {
@@ -63,10 +63,10 @@ workAreaControllers.controller("listWorkAreasController", ['$location', '$rootSc
             //                Object.keys(computedProps).forEach(function(prop){
             //                    wa[prop] = computedProps[prop];
             //                });
-            //                wa.countMajorsPlan = Math.round(wa.CountElectors * 0.033);
+            //                wa.countMajorsPlan = serviceUtil.computational.countMajorsPlan(wa.CountElectors);
             //                wa.percentageMajors = Math.round(wa.CountMajors * 100 / wa.countMajorsPlan);
-            //                wa.voterTurnout = Math.round(wa.CountElectors * 0.55);
-            //                wa.requiredVotes = Math.round(wa.CountElectors * 0.33);
+            //                wa.voterTurnout = serviceUtil.computational.voterTurnout(wa.CountElectors);
+            //                wa.requiredVotes = serviceUtil.computational.requiredVotes(wa.CountElectors);
             //            };
             //        });
             //        $scope.loader.calcPeople = false;
@@ -82,10 +82,10 @@ workAreaControllers.controller("listWorkAreasController", ['$location', '$rootSc
                             Object.keys(computedProps).forEach(function (prop) {
                                 wa[prop] = computedProps[prop];
                             });
-                            wa.countMajorsPlan = Math.round(wa.CountElectors * 0.55 * 0.27 / 10);
+                            wa.countMajorsPlan = serviceUtil.computational.countMajorsPlan(wa.CountElectors);
                             wa.percentageMajors = Math.round(wa.CountMajors * 100 / wa.countMajorsPlan);
-                            wa.voterTurnout = Math.round(wa.CountElectors * 0.55);
-                            wa.requiredVotes = Math.round(wa.CountElectors * 0.55 * 0.27);
+                            wa.voterTurnout = serviceUtil.computational.voterTurnout(wa.CountElectors);
+                            wa.requiredVotes = serviceUtil.computational.requiredVotes(wa.CountElectors);
                         }
                         count++;
                         if(count === total)  $scope.loader.calcPeople = false;
@@ -164,8 +164,8 @@ workAreaControllers.controller("listWorkAreasController", ['$location', '$rootSc
         };
     }]);
 
-workAreaControllers.controller("editWorkAreaController", ['$location', '$rootScope', '$scope', '$modal', '$q', 'serviceUtil', 'config', 'precinctData', 'precinctAddressesData', 'resolvedData', 'workAreaResource', 'modelFactory', 'houseTypes', 'peopleDataService', 'filterSettings',
-    function ($location, $rootScope, $scope, $modal,$q, serviceUtil, config, precinctData, precinctAddressesData, resolvedData, workAreaResource, modelFactory, houseTypes, peopleDataService,filterSettings) {
+workAreaControllers.controller("editWorkAreaController", ['$location', '$rootScope', '$scope', '$modal', '$q', 'serviceUtil', 'config', 'precinctData', 'precinctAddressesData', 'resolvedData', 'workAreaResource', 'modelFactory', 'houseTypes', 'peopleDataService', 'filterSettings', 'printer',
+    function ($location, $rootScope, $scope, $modal,$q, serviceUtil, config, precinctData, precinctAddressesData, resolvedData, workAreaResource, modelFactory, houseTypes, peopleDataService,filterSettings,printer) {
         
         $rootScope.pageTitle = 'Робоча дільниця';
         $scope.loader = {};
@@ -389,21 +389,32 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
             }, errorHandler);
         };
         
-        $scope.getMajors = function () {
+        $scope.refreshMajors = function () {
             if (!$scope.data.workArea || !$scope.data.workArea.Id) return;
             $scope.loader.loadingMajors = true;
             $scope.totalCount.supporters = 0;
-            
-            workAreaResource.getMajors({ "id": $scope.data.workArea.Id }, function (resp) {
-                if (resp) {
-                    $scope.loader.loadingMajors = false;
-                    $scope.data.majors = resp.value;
-                    $scope.totalCount.supporters = $scope.data.majors.reduce(function (sum, curr) {
-                        return sum + curr.CountSupporters;
-                    },0);
+            loadMajors(function(resp) {
+                if (resp.success) {
+                    if (resp.data) {
+                        $scope.loader.loadingMajors = false;
+                        $scope.data.majors = resp.data.value;
+                        $scope.totalCount.supporters = $scope.data.majors.reduce(function (sum, curr) {
+                            return sum + curr.CountSupporters;
+                        }, 0);
+                    }
+                } else {
+                    errorHandler(resp.error);
                 }
-            }, errorHandler);
+            });
         };
+
+        function loadMajors(callback) {
+            workAreaResource.getMajors({ "id": $scope.data.workArea.Id }, function (resp) {
+                callback({ success: true, data: resp });
+            }, function(err) {
+                callback({ error: err });
+            });
+        };        
 
         function equalsAddresses(a, b) {
             var equalsApartmentStr = a.ApartmentStr && b.ApartmentStr ? a.ApartmentStr.toLocaleLowerCase() === b.ApartmentStr.toLocaleLowerCase() : a.ApartmentStr === b.ApartmentStr;
@@ -585,6 +596,33 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
             //$location.url("/people");
             $location.url("/people").search("query",angular.toJson(q));
             
+        };
+
+        $scope.print = function () {
+            $scope.loader.preparingPrint = true;
+            var printData = {};
+            printData.workArea = $scope.data.workArea;
+            workAreaResource.caclComputedProperties({ "WorkAreaIds": [$scope.data.workArea.Id] }, function (resp) {
+                if (resp) {
+                    if (resp.value.length > 0) {
+                        var computedProps = resp.value[0];
+                        printData.countElectors = computedProps.CountElectors;
+                        printData.addresses = computedProps.AddressesStr;
+                        printData.countMajorsPlan = serviceUtil.computational.countMajorsPlan(printData.countElectors);
+                        printData.voterTurnout = serviceUtil.computational.voterTurnout(printData.countElectors);
+                        printData.requiredVotes = serviceUtil.computational.requiredVotes(printData.countElectors);
+                    }
+                    loadMajors(function (response) {
+                        if (response.success) {
+                            $scope.loader.preparingPrint = false;
+                            printData.majors = response.data.value;
+                            printer.print(config.pathPrintTemplates + "/workarea.print.html", printData);
+                        } else {
+                            errorHandler(response.error);
+                        }
+                    });   
+                }
+            }, errorHandler);
         };
     }]);
 

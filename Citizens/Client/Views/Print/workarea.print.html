@@ -1,0 +1,12 @@
+﻿<h5>Дільниця № {{workArea.Precinct.Number}}.{{workArea.Number}}</h5>
+<h5>Кількість виборців: {{countElectors}}</h5>
+<h5>Орієнтовна явка: {{voterTurnout}}</h5>
+<h5>План від явки: {{requiredVotes}}</h5>
+<h5>Планова кількість старших: <strong>{{countMajorsPlan}}</strong></h5>
+<h5>Cтарші:</h5>
+<ol>
+    <li ng-repeat="major in majors">
+        {{ major.LastName }} {{ major.FirstName }} {{ major.MidleName }} - тел.
+    </li>
+</ol>
+<h5>Межі дільниці: {{addresses}}</h5>

@@ -220,7 +220,8 @@ app.constant("config", Object.freeze({
         var redirectUri = location.protocol + '//' + location.host + '/Views/AuthComplete.html';
         return this.baseUrl + "/api/Account/ExternalLogin?provider=" + provider + "&response_type=token&client_id=Citizens" + "&redirect_uri=" + redirectUri;
     },
-    LOCALE_DATE_FORMAT: 'dd.MM.yyyy'
+    LOCALE_DATE_FORMAT: 'dd.MM.yyyy',
+    pathPrintTemplates:'/Views/Print'
 }));
 
 app.filter('checkApartment', function () {
@@ -377,6 +378,17 @@ app.factory("serviceUtil", ["$filter", '$routeParams', '$rootScope', function ($
             };
 
             if (addresses) addresses.sort(compareAddresses);
+        },
+        computational: {
+            countMajorsPlan: function (countElectors) {
+                return Math.round(countElectors * 0.55 * 0.27 / 10);
+            },
+            voterTurnout: function (countElectors) {
+                return Math.round(countElectors * 0.55);
+            },
+            requiredVotes: function (countElectors) {
+                return Math.round(countElectors * 0.55 * 0.27);
+            }
         }
     }
 }]);

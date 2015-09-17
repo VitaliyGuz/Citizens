@@ -109,10 +109,10 @@ cityControllers.controller('editCityController', ['$rootScope', '$scope', '$loca
                         cityDistrict.countMajors = computed.CountMajors;
                         cityDistrict.countElectors = computed.CountElectors;
                         cityDistrict.countHouseholds = computed.CountHouseholds;
-                        cityDistrict.countMajorsPlan = Math.round(computed.CountElectors * 0.55 * 0.27 / 10);
+                        cityDistrict.countMajorsPlan = serviceUtil.computational.countMajorsPlan(computed.CountElectors);
                         cityDistrict.percentageMajors = Math.round(computed.CountMajors * 100 / cityDistrict.countMajorsPlan);
-                        cityDistrict.voterTurnout = Math.round(computed.CountElectors * 0.55);
-                        cityDistrict.requiredVotes = Math.round(computed.CountElectors * 0.55 * 0.27);
+                        cityDistrict.voterTurnout = serviceUtil.computational.voterTurnout(computed.CountElectors);
+                        cityDistrict.requiredVotes = serviceUtil.computational.requiredVotes(computed.CountElectors);
                     }
                 });
                 $scope.loader.calculation = false;
