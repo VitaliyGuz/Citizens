@@ -105,6 +105,12 @@ namespace Citizens
                 .Function("GetComputedProperties")
                 .ReturnsCollection<RegionPartComputed>();
 
+            builder.EntityType<PersonAdditionalProperty>()
+                .Collection
+                .Action("GetRange")
+                .ReturnsCollectionFromEntitySet<PersonAdditionalProperty>("PersonAdditionalProperties")
+                .CollectionParameter<PersonAdditionalProperty>("AdditionalProperties");
+
             config.EnableCaseInsensitive(caseInsensitive: true);
             config.EnableUnqualifiedNameCall(unqualifiedNameCall: true);
             config.EnableEnumPrefixFree(enumPrefixFree: true);

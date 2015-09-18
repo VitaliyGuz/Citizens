@@ -11,6 +11,7 @@ using System.Web.Http;
 using System.Web.Http.ModelBinding;
 
 using System.Web.OData;
+using System.Web.OData.Query;
 using System.Web.OData.Routing;
 using Citizens.Models;
 
@@ -224,6 +225,28 @@ namespace Citizens.Controllers.API
         private bool PersonAdditionalPropertyExists(int personId, int propertyKeyId)
         {
             return db.PersonAdditionalProperties.Count(e => e.PersonId == personId && e.PropertyKeyId == propertyKeyId) > 0;
+        }
+
+        [HttpPost]
+        [EnableQuery(AllowedQueryOptions = AllowedQueryOptions.All)]
+        public IHttpActionResult GetRange(ODataActionParameters parameters)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var param = parameters["AdditionalProperties"] as IEnumerable<PersonAdditionalProperty>;
+            if (param == null) return BadRequest("Not found property 'AdditionalProperties'");
+            
+            var additionalProperties = param as PersonAdditionalProperty[] ?? param.ToArray();
+            
+            var resp = additionalProperties
+                .Join(db.PersonAdditionalProperties.Include("PropertyValue"),
+                    a => new { a.PersonId, a.PropertyKeyId },
+                    p => new { p.PersonId, p.PropertyKeyId }, (k, v) => v);
+
+            return Ok(resp);
         }
     }
 }

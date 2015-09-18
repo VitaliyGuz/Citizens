@@ -393,28 +393,24 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
             if (!$scope.data.workArea || !$scope.data.workArea.Id) return;
             $scope.loader.loadingMajors = true;
             $scope.totalCount.supporters = 0;
-            loadMajors(function(resp) {
-                if (resp.success) {
-                    if (resp.data) {
-                        $scope.loader.loadingMajors = false;
-                        $scope.data.majors = resp.data.value;
-                        $scope.totalCount.supporters = $scope.data.majors.reduce(function (sum, curr) {
-                            return sum + curr.CountSupporters;
-                        }, 0);
-                    }
-                } else {
-                    errorHandler(resp.error);
+            workAreaResource.getMajors({ "id": $scope.data.workArea.Id }, function (resp) {
+                if (resp) {
+                    $scope.loader.loadingMajors = false;
+                    $scope.data.majors = resp.value;
+                    $scope.totalCount.supporters = $scope.data.majors.reduce(function (sum, curr) {
+                        return sum + curr.CountSupporters;
+                    }, 0);
                 }
-            });
+            }, errorHandler);
         };
 
-        function loadMajors(callback) {
-            workAreaResource.getMajors({ "id": $scope.data.workArea.Id }, function (resp) {
-                callback({ success: true, data: resp });
-            }, function(err) {
-                callback({ error: err });
-            });
-        };        
+        //function loadMajors(callback) {
+        //    workAreaResource.getMajors({ "id": $scope.data.workArea.Id }, function (resp) {
+        //        callback({ success: true, data: resp });
+        //    }, function(err) {
+        //        callback({ error: err });
+        //    });
+        //};        
 
         function equalsAddresses(a, b) {
             var equalsApartmentStr = a.ApartmentStr && b.ApartmentStr ? a.ApartmentStr.toLocaleLowerCase() === b.ApartmentStr.toLocaleLowerCase() : a.ApartmentStr === b.ApartmentStr;
@@ -602,27 +598,56 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
             $scope.loader.preparingPrint = true;
             var printData = {};
             printData.workArea = $scope.data.workArea;
-            workAreaResource.caclComputedProperties({ "WorkAreaIds": [$scope.data.workArea.Id] }, function (resp) {
-                if (resp) {
-                    if (resp.value.length > 0) {
-                        var computedProps = resp.value[0];
-                        printData.countElectors = computedProps.CountElectors;
-                        printData.addresses = computedProps.AddressesStr;
-                        printData.countMajorsPlan = serviceUtil.computational.countMajorsPlan(printData.countElectors);
-                        printData.voterTurnout = serviceUtil.computational.voterTurnout(printData.countElectors);
-                        printData.requiredVotes = serviceUtil.computational.requiredVotes(printData.countElectors);
-                    }
-                    loadMajors(function (response) {
-                        if (response.success) {
-                            $scope.loader.preparingPrint = false;
-                            printData.majors = response.data.value;
-                            printer.print(config.pathPrintTemplates + "/workarea.print.html", printData);
-                        } else {
-                            errorHandler(response.error);
-                        }
-                    });   
+
+            $q.all({
+                computedProps: getComputedProperties(),
+                majors: workAreaResource.getMajors({ "id": $scope.data.workArea.Id }).$promise,
+                phonePropertyKey: peopleDataService.additionalPropsResource.getKeys({ "filter": "&$filter=Name eq 'тел. моб.'" }).$promise
+            }).then(function (resp) {
+                Object.keys(resp.computedProps).forEach(function(prop) {
+                    printData[prop] = resp.computedProps[prop];
+                });
+                printData.majors = resp.majors.value;
+                if (resp.phonePropertyKey && resp.phonePropertyKey.value.length > 0) {
+                    var phonePropertyKeyId = resp.phonePropertyKey.value[0].Id;
+                    peopleDataService.additionalPropsResource.getRange({ "AdditionalProperties": getAdditionalProps(phonePropertyKeyId) }, function(aps) {
+                        printData.majors.forEach(function(major) {
+                            var prop = aps.value.filter(function (p) { return p.PersonId === major.Id })[0];
+                            if (prop) major.phoneNumber = prop.StringValue;
+                        });
+                        $scope.loader.preparingPrint = false;
+                        printer.print(config.pathPrintTemplates + "/workarea.print.html", printData);
+                    },errorHandler);
+                } else {
+                    $scope.loader.preparingPrint = false;
+                    printer.print(config.pathPrintTemplates + "/workarea.print.html", printData);
                 }
             }, errorHandler);
+
+            function getAdditionalProps(propertyKeyId) {
+                return printData.majors.map(function (m) {
+                    return {PersonId: m.Id, PropertyKeyId: propertyKeyId};
+                });
+            };
+
+            function getComputedProperties() {
+                var def = $q.defer();
+                workAreaResource.caclComputedProperties({ "WorkAreaIds": [$scope.data.workArea.Id] }, function (resp) {
+                    var data = {};
+                    if (resp) {
+                        if (resp.value.length > 0) {
+                            var computedProps = resp.value[0];
+                            data.countElectors = computedProps.CountElectors;
+                            data.addresses = computedProps.AddressesStr;
+                            data.countMajorsPlan = serviceUtil.computational.countMajorsPlan(computedProps.CountElectors);
+                            data.voterTurnout = serviceUtil.computational.voterTurnout(computedProps.CountElectors);
+                            data.requiredVotes = serviceUtil.computational.requiredVotes(computedProps.CountElectors);
+                        }                       
+                    }
+                    def.resolve(data);
+                }, function(e) {def.reject(e)});
+                return def.promise;
+            };
         };
     }]);
 
