@@ -316,6 +316,14 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
                         .replace(/:fieldName/g, "PrecinctAddress/HouseType")
                         .replace(/:val/g, $scope.query.HouseType);
                 }
+
+                if ($scope.query.RegionPart) {
+                    if ($scope.query.RegionPart.Id) {
+                        filterStr = concatIfExist(filterStr, " and ") + filterPatterns.num
+                            .replace(/:fieldName/g, "PrecinctAddress/Precinct/RegionPart/Id")
+                            .replace(/:val/g, $scope.query.RegionPart.Id);
+                    }
+                }
             }
 
             //---------------------------- filter by additional properties ----------------------------

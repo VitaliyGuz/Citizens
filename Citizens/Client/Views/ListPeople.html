@@ -142,6 +142,11 @@
         </div>
         <div class="col-lg-3">
             <div class="form-group">
+                <label>Район</label>
+                <input type="text" ng-model="query.RegionPart"
+                       typeahead="r as r.Name +' ('+ r.RegionPartType +')' for r in regionParts | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control">
+            </div>
+            <div class="form-group">
                 <label>Дільниця</label>
                 <!--ng-model="query.num.PrecinctId"-->
                 <input ng-model="query.PrecinctNum" type="text" class="form-control">
