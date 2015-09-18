@@ -300,18 +300,18 @@ namespace Citizens.Controllers.API
             var userPrecincts = paramArray as UserPrecinct[] ?? paramArray.ToArray();
             if (userPrecincts.Length == 0) return StatusCode(HttpStatusCode.NoContent);
 
-            var listUserIds = userPrecincts.Select(e => e.UserId).Distinct();
-            var listPrecinctIds = userPrecincts.Select(e => e.PrecinctId).Distinct();
+            var removingUserPrecincts = userPrecincts
+                .Join(db.UserPrecincts.Include("Precinct"),
+                    param => new { param.PrecinctId, param.UserId },
+                    up => new { up.PrecinctId, up.UserId }, (k, v) => v).ToArray();
 
-            var removingUserPrecincts = db.UserPrecincts.Include("Precinct")
-                .Where(up => listUserIds.Contains(up.UserId) && listPrecinctIds.Contains(up.PrecinctId));
-                
             var removingUserRegionParts = removingUserPrecincts
-                .Join(db.UserRegionParts, p => new { p.Precinct.RegionPartId, p.UserId }, r => new { RegionPartId = (int?)r.RegionPartId, r.UserId }, (p, r) => r);
+                .Join(db.UserRegionParts, p => new { p.Precinct.RegionPartId, p.UserId }, 
+                    r => new { RegionPartId = (int?)r.RegionPartId, r.UserId }, (p, r) => r).ToArray();
 
             db.UserPrecincts.RemoveRange(removingUserPrecincts);
             db.UserRegionParts.RemoveRange(removingUserRegionParts);
-
+                    
             await db.SaveChangesAsync();
 
             return StatusCode(HttpStatusCode.NoContent);
