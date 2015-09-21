@@ -1,17 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.Entity;
+﻿using System.Collections.Generic;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
-using System.Web.Http.ModelBinding;
 
 using System.Web.OData;
-using System.Web.OData.Query;
 using System.Web.OData.Routing;
 using Citizens.Models;
 
@@ -228,7 +222,7 @@ namespace Citizens.Controllers.API
         }
 
         [HttpPost]
-        [EnableQuery(AllowedQueryOptions = AllowedQueryOptions.All)]
+        [EnableQuery]
         public IHttpActionResult GetRange(ODataActionParameters parameters)
         {
             if (!ModelState.IsValid)

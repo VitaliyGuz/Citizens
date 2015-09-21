@@ -9,7 +9,6 @@ using System.Web.Http;
 using System.Web.OData;
 using Citizens.Models;
 using System.Threading.Tasks;
-using System.Web.OData.Query;
 using System.Web.OData.Routing;
 using Citizens.Extensions;
 
@@ -218,7 +217,7 @@ namespace Citizens.Controllers.API
 
         [HttpGet]
         [ODataRoute("WorkAreas/GetCountPeopleByPrecinct(PrecinctId={precinctId})")]
-        [EnableQuery(AllowedQueryOptions = AllowedQueryOptions.All)]
+        [EnableQuery]
         public IHttpActionResult GetCountPeopleByPrecinct([FromODataUri] int precinctId)
         {
             if (!ModelState.IsValid)
@@ -237,7 +236,7 @@ namespace Citizens.Controllers.API
 
         [HttpGet]
         [ODataRoute("WorkAreas({id})/GetMajors()")]
-        [EnableQuery(AllowedQueryOptions = AllowedQueryOptions.All)]
+        [EnableQuery]
         public IHttpActionResult GetMajors(int id)
         {
             if (!ModelState.IsValid)
@@ -278,7 +277,7 @@ namespace Citizens.Controllers.API
 
         [HttpGet]
         [ODataRoute("WorkAreas({id})/GetSupporters()")]
-        [EnableQuery(AllowedQueryOptions = AllowedQueryOptions.All)]
+        [EnableQuery]
         public IHttpActionResult GetSupporters(int id)
         {
             if (!ModelState.IsValid)
