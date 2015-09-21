@@ -21,7 +21,8 @@ angular.module("peopleServices", ['ngResource', 'precinctServices']).
 		    'remove': { method: 'DELETE', params: { id: "@id" }, url: urlOdata + "(:id)" },
 		    'firstNames': { method: 'GET', params: { startsWith: "@startsWith" }, url: urlOdata + "/FirstNames(StartsWith=':startsWith')" },
 		    'midleNames': { method: 'GET', params: { startsWith: "@startsWith" }, url: urlOdata + "/MidleNames(StartsWith=':startsWith')" },
-		    'lastNames': { method: 'GET', params: { startsWith: "@startsWith" }, url: urlOdata + "/LastNames(StartsWith=':startsWith')" }
+		    'lastNames': { method: 'GET', params: { startsWith: "@startsWith" }, url: urlOdata + "/LastNames(StartsWith=':startsWith')" },
+		    'clearMajor': { method: 'POST', params: { id: "@id" }, url: urlOdata + "(:id)/ClearMajor" }
 		});
     }]).
     factory("additionalPropsResource", ['$resource', 'config', function ($resource, config) {

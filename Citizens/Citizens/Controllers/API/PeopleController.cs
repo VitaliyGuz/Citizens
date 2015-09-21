@@ -369,5 +369,20 @@ namespace Citizens.Controllers.API
         {
             return db.People.FirstOrDefault(p => p.LastName.Equals(string.Empty) && p.MidleName.Equals(string.Empty) && p.FirstName.Equals(string.Empty));
         }
+
+        [HttpPost]
+        public async Task<IHttpActionResult> ClearMajor([FromODataUri] int key)
+        {
+            if (key == 0) return BadRequest("MajorId equal 0");
+            var emptyPerson = GetEmptyPerson();
+            
+            await db.People
+                .Where(p => p.MajorId == key)
+                .ForEachAsync(p => p.MajorId = emptyPerson.Id);
+            
+            await db.SaveChangesAsync();
+            
+            return StatusCode(HttpStatusCode.NoContent);
+        }
     }
 }

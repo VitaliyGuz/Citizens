@@ -111,6 +111,8 @@ namespace Citizens
                 .ReturnsCollectionFromEntitySet<PersonAdditionalProperty>("PersonAdditionalProperties")
                 .CollectionParameter<PersonAdditionalProperty>("AdditionalProperties");
 
+            builder.EntityType<Person>().Action("ClearMajor");
+            
             config.EnableCaseInsensitive(caseInsensitive: true);
             config.EnableUnqualifiedNameCall(unqualifiedNameCall: true);
             config.EnableEnumPrefixFree(enumPrefixFree: true);

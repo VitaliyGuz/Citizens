@@ -392,16 +392,19 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
         $scope.refreshMajors = function () {
             if (!$scope.data.workArea || !$scope.data.workArea.Id) return;
             $scope.loader.loadingMajors = true;
-            $scope.totalCount.supporters = 0;
             workAreaResource.getMajors({ "id": $scope.data.workArea.Id }, function (resp) {
                 if (resp) {
                     $scope.loader.loadingMajors = false;
                     $scope.data.majors = resp.value;
-                    $scope.totalCount.supporters = $scope.data.majors.reduce(function (sum, curr) {
-                        return sum + curr.CountSupporters;
-                    }, 0);
+                    calcTotalSupporters();
                 }
             }, errorHandler);
+        };
+
+        function calcTotalSupporters() {
+            $scope.totalCount.supporters = $scope.data.majors.reduce(function (sum, curr) {
+                return sum + curr.CountSupporters;
+            }, 0);
         };
 
         //function loadMajors(callback) {
@@ -648,6 +651,19 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
                 }, function(e) {def.reject(e)});
                 return def.promise;
             };
+        };
+
+        $scope.clearMajor = function (major) {
+            if (config.checkDeleteItem) {
+                var ok = confirm("Увага! Старшого буде видалено зі списку, продовжити?");
+                if (!ok) return;
+            }
+            $scope.loader.loadingMajors = true;
+            peopleDataService.resource.clearMajor({ id: major.Id }, function() {
+                $scope.loader.loadingMajors = false;
+                $scope.data.majors.splice($scope.data.majors.indexOf(major), 1);
+                calcTotalSupporters();
+            },errorHandler);
         };
     }]);
 
