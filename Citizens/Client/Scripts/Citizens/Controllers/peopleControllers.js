@@ -17,6 +17,7 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
         
         $scope.people = [];
         $scope.houseTypes = [];
+        $scope.enumGender = [];
         $scope.query = {};
         $scope.loader = {};
         $scope.loader.loading = true;
@@ -29,6 +30,10 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
         houseTypes.forEach(function (type) {
             $scope.houseTypes.push({ val: "Citizens.Models.HouseType':type'".replace(/:type/g, type), desc: type });
         });
+
+        $scope.enumGender.push({ val: undefined, desc: '- Будь-яка -' });
+        $scope.enumGender.push({ val: "Citizens.Models.Gender'ч'", desc: 'Чоловіча' });
+        $scope.enumGender.push({ val: "Citizens.Models.Gender'ж'", desc: 'Жіноча' });
         
         var search = $location.search();
         var peopleQuerySettings = filterSettings.get('people');
@@ -323,6 +328,12 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
                             .replace(/:fieldName/g, "PrecinctAddress/Precinct/RegionPart/Id")
                             .replace(/:val/g, $scope.query.RegionPart.Id);
                     }
+                }
+
+                if ($scope.query.Gender) {
+                    filterStr = concatIfExist(filterStr, " and ") + filterPatterns.num
+                        .replace(/:fieldName/g, "Gender")
+                        .replace(/:val/g, $scope.query.Gender);
                 }
             }
 
