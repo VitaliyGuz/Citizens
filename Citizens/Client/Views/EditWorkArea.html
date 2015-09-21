@@ -153,7 +153,11 @@
             <tbody>
                 <tr dir-paginate="major in data.majors | itemsPerPage: pagination.pageSize" current-page="pagination.currentPage.tabMajors" pagination-id="workAreaMajorsPagination">
                     <td>{{ getIndex($index,'tabMajors') + 1 }}</td>
-                    <td>{{ major.LastName }} {{ major.FirstName }} {{ major.MidleName }}</td>
+                    <td>
+                        <a ng-href="/person/{{major.Id}}" title="Перейти на сторінку фізособи">
+                            {{ major.LastName }} {{ major.FirstName }} {{ major.MidleName }}    
+                        </a>
+                    </td>
                     <td>{{ major.CountSupporters }}</td>
                     <td>
                         <button class="btn btn-xs" ng-click="showFullAddresses(major)" title="Показати адреси">
@@ -161,7 +165,7 @@
                         </button>
                         <button class="btn btn-xs" ng-click="redirectToSupporters(major)" title="Показати выборців">
                             <span class="glyphicon glyphicon-filter"></span>
-                        </button>
+                        </button>                        
                         <button class="btn btn-xs" ng-click="clearMajor(major)" title="Видалити">
                             <span class="glyphicon glyphicon-remove"></span>
                         </button>
