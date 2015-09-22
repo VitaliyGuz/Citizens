@@ -161,14 +161,17 @@ authServices.factory('authInterceptor', ['$q', '$location', '$rootScope', '$inje
             configReq.headers = configReq.headers || {};
             var authData = Credentials.get(),
                 diff = 0; // difference between dates in sec                
-            if (authData && authData.accessToken) {
-                if (authData.expireDate) {
-                    var currDate = new Date(),
-                        expireDate = new Date(authData.expireDate);
-                    //diff = Math.round((expireDate.getTime() - currDate.getTime()) / 1000);
-                    diff = (expireDate.getTime() - currDate.getTime()) / 1000;
+            if (authData) {
+                $rootScope.UserInfo = authData.userInfo;
+                if (authData.accessToken) {
+                    if (authData.expireDate) {
+                        var currDate = new Date(),
+                            expireDate = new Date(authData.expireDate);
+                        //diff = Math.round((expireDate.getTime() - currDate.getTime()) / 1000);
+                        diff = (expireDate.getTime() - currDate.getTime()) / 1000;
+                    }
+                    configReq.headers.Authorization = authData.accessToken;
                 }
-                configReq.headers.Authorization = authData.accessToken;
             }
             if (diff <= 30 && !refreshingToken && authData) {
                 refreshingToken = true;
