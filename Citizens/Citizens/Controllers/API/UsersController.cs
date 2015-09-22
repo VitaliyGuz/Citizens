@@ -36,7 +36,7 @@ namespace Citizens.Controllers.API
 
         // GET: odata/Users
         [EnableQuery]
-        [Logger(Roles = "Operators, SuperAdministrators")] 
+        [Logger(Roles = "Operators, Administrators, SuperAdministrators")] 
         public IQueryable<ApplicationUser> GetUsers()
         {
             return db.Users.Include(u => u.Roles);
@@ -44,7 +44,7 @@ namespace Citizens.Controllers.API
 
         // GET: odata/Users(5)
         [EnableQuery]
-        [Logger(Roles = "Operators, SuperAdministrators")] 
+        [Logger(Roles = "Operators, Administrators, SuperAdministrators")] 
         [ODataRoute("Users(Id={key})")]
         public SingleResult<ApplicationUser> GetUser([FromODataUri] string key)
         {
