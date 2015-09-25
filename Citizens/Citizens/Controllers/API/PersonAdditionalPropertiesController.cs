@@ -242,5 +242,64 @@ namespace Citizens.Controllers.API
 
             return Ok(resp);
         }
+
+        [HttpPost]
+        public async Task<IHttpActionResult> AddRange(ODataActionParameters parameters)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var paramProperties = parameters["Properties"] as IEnumerable<PersonAdditionalProperty>;
+            if (paramProperties == null) return BadRequest("Properties can't be null");
+
+            var properties = paramProperties as PersonAdditionalProperty[] ?? paramProperties.ToArray();
+            if (properties.Length == 0) return StatusCode(HttpStatusCode.Created);
+
+            var replaceExisting = (bool)parameters["ReplaceExisting"];
+
+            var uniqueProperties = properties.Distinct(new PersonAdditionalPropertyComparer()).ToArray();
+
+            db.PersonAdditionalProperties.AddRange(uniqueProperties
+                .Where(p => db.PersonAdditionalProperties
+                    .Count(a => a.PersonId == p.PersonId && a.PropertyKeyId == p.PropertyKeyId) == 0));
+
+            if (replaceExisting)
+            {
+                uniqueProperties
+                    .Join(db.PersonAdditionalProperties,
+                        u => new { u.PersonId, u.PropertyKeyId },
+                        p => new { p.PersonId, p.PropertyKeyId }, (src, des) => new { src, des })
+                    .ToList()
+                    .ForEach(it =>
+                        {
+                            it.des.GetType().GetProperties().ToList().ForEach(propInfo =>
+                            {
+                                if (propInfo.CanRead && propInfo.CanWrite)
+                                {
+                                    propInfo.SetValue(it.des, propInfo.GetValue(it.src));
+                                }
+                            });
+                        });
+            }
+
+            await db.SaveChangesAsync();
+            
+            return StatusCode(HttpStatusCode.Created);
+        }
     }
+    class PersonAdditionalPropertyComparer : IEqualityComparer<PersonAdditionalProperty>
+    {
+        public bool Equals(PersonAdditionalProperty x, PersonAdditionalProperty y)
+        {
+            return x.PersonId == y.PersonId && x.PropertyKeyId == y.PropertyKeyId;
+        }
+
+        public int GetHashCode(PersonAdditionalProperty obj)
+        {
+            return obj.PersonId.GetHashCode() ^ obj.PropertyKeyId.GetHashCode();
+        }
+    }
+
 }

@@ -2,8 +2,8 @@
 
 var peopleControllers = angular.module('peopleControllers', ['peopleServices']);
 
-peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$location', 'peopleDataService', 'config', 'serviceUtil', 'resolvedAdditionalProperties', 'filterSettings', 'houseTypes',
-    function ($rootScope, $scope, $location, peopleDataService, config, serviceUtil, resolvedAdditionalProperties, filterSettings, houseTypes) {
+peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$location', '$modal', '$q', 'peopleDataService', 'config', 'serviceUtil', 'resolvedAdditionalProperties', 'filterSettings', 'houseTypes',
+    function ($rootScope, $scope, $location, $modal, $q, peopleDataService, config, serviceUtil, resolvedAdditionalProperties, filterSettings, houseTypes) {
         var propValues = [], odataFilter;
         
         $rootScope.pageTitle = 'Фізичні особи';
@@ -454,11 +454,66 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
         };
 
         $scope.getPeopleByName = peopleDataService.typeaheadPersonByNameFn();
+
+        $scope.openAdditionalPropertySelection = function () {
+
+            if (!odataFilter) {
+                alert('Спочатку застосуйте фільтр!');
+                return;
+            }
+
+            var modalInstance = $modal.open({
+                animation: false,
+                templateUrl: config.pathModalTemplates + '/additional.property.selection.html',
+                controller: 'modalAdditionalPropertyCtrl',
+                backdrop: 'static',
+                scope: $scope
+            });
+
+            modalInstance.result.then(function (result) {
+                $scope.loader.savingProps = true;
+                var prop = result.property, countPages = 0, promises = [];
+
+                var getPromise = function (skipItems) {
+                    var def = $q.defer();
+                    peopleDataService.resource.getPageItems({ skip: skipItems, filter: odataFilter }, function (resp) {
+                        var properties = resp.value.map(function (person) {
+                            var modelProp = {
+                                PersonId: person.Id,
+                                PropertyKeyId: prop.Key.Id,
+                            };
+                            modelProp[prop.Key.PropertyType.field] = prop.Key.PropertyType.isPrimitive ? prop.Value : prop.ValueId;
+                            return modelProp;
+                        });
+                        peopleDataService.additionalPropsResource.addRange({
+                            'ReplaceExisting': result.replaceExisting,
+                            'Properties': properties
+                        }, function() {
+                            def.resolve();
+                        },function (err) { def.reject(err) });
+                    }, function(err) { def.reject(err) });
+                    return def.promise;
+                };                
+                
+                if ($scope.pagination.totalItems > 0) {
+                    countPages = Math.round($scope.pagination.totalItems / $scope.pagination.pageSize);
+                }
+                for (var currPage = 0; currPage < countPages; currPage++) {
+                    var skip = currPage * $scope.pagination.pageSize;
+                    promises.push(getPromise(skip));
+                }
+                $q.all(promises).then(function() {
+                    $scope.loader.savingProps = false;
+                    $rootScope.successMsg = "Додаткові характеристики успішно збережені!";
+                }, errorHandler);
+            });
+        };
+
     }]);
 
 peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$location', '$modal', 'serviceUtil', 'precinctData', 'precinctAddressesData', 'config', 'resolvedData', 'houseTypes', 'modelFactory', 'peopleDataService', 'workAreaResource', 'checkPermissions',
     function ($rootScope, $scope, $location, $modal, serviceUtil, precinctData, precinctAddressesData, config, resolvedData, houseTypes, modelFactory, peopleDataService, workAreaResource, checkPermissions) {
-        var addMode = true, editInd, propValues = [], DATE_FORMAT = 'yyyy-MM-ddT00:00:00+02:00';
+        var addMode = true, editInd, propValues = [], DATE_FORMAT = config.LOCALE_ISO_DATE_FORMAT;
         $rootScope.pageTitle = 'Фізична особа';
         $scope.tableHead = ['№', 'Назва', 'Значення'];
         $scope.selected = { property: {} };
@@ -640,7 +695,7 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
         };
 
         $scope.onChangePropertyKey = function () {
-            $scope.selected.property.Key.PropertyType.html.indexOf('ref') === 0  ? $scope.isPrimitive = false : $scope.isPrimitive = true;
+            $scope.isPrimitive = $scope.selected.property.Key.PropertyType.html.indexOf('ref') === 0  ? false : true;
             $scope.selected.property.Value = '';
             $scope.selected.property.ValueId = 0;
             if ($scope.selected.property.Key.PropertyType.html === 'ref'){
@@ -994,4 +1049,76 @@ peopleControllers.controller('modalHouseSelectionCtrl', ['$scope', '$modalInstan
         $scope.newAddress.PrecinctId = $item.Id;
     };
 
+}]);
+
+peopleControllers.controller('modalAdditionalPropertyCtrl', ['$scope', '$modalInstance', 'serviceUtil','config', function ($scope, $modalInstance, serviceUtil, config) {
+
+    $scope.property = {
+        Key: {
+            PropertyType: {
+                isPrimitive: true,
+                html: 'text'
+            }
+        }
+    };
+
+    $scope.alert = {};
+   
+    $scope.onSelectProperty = function ($item) {
+        $scope.property.ValueId = $item.Id;
+        $scope.alert = {};
+    };
+
+    $scope.onChangePropertyKey = function () {
+        $scope.property.Value = undefined;
+        $scope.property.ValueId = 0;
+        $scope.alert = {};
+    };
+
+    $scope.ok = function () {
+        $scope.alert = {};
+        if (!$scope.property.Key.Id) {
+            $scope.alert = {
+                type: "alert-danger",
+                message: "Не вибрано тип характеристики"
+            };
+            return;
+        };
+
+        if (!$scope.property.Value) {
+            $scope.alert = {
+                type: "alert-danger",
+                message: "Не вибрано значення характеристики"
+            };
+            return;
+        };
+        
+        if (!$scope.property.Key.PropertyType.isPrimitive && !$scope.property.ValueId) {
+            $scope.alert = {
+                type: "alert-danger",
+                message: "Значення '" + $scope.property.Value + "' для характеристики '" + $scope.property.Key.Name + "' не знайдено"
+            };
+            return;
+        };
+
+        if ($scope.property.Key.PropertyType.html === 'date') {
+            $scope.property.Value = serviceUtil.formatDate($scope.property.Value, config.LOCALE_ISO_DATE_FORMAT)
+            if (!$scope.property.Value) {
+                $scope.alert = {
+                    type: "alert-danger",
+                    message: "Не вірно вказана дата"
+                };
+                return;
+            }
+        };
+
+        $modalInstance.close({
+            property: $scope.property,
+            replaceExisting: $scope.replaceExisting == undefined ? false : $scope.replaceExisting
+        });
+    };
+
+    $scope.cancel = function () {
+        $modalInstance.dismiss();
+    };
 }]);

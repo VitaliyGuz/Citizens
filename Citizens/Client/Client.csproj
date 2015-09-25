@@ -231,6 +231,7 @@
     <Content Include="Views\Login.html" />
     <Content Include="Views\Modals\addresses.html" />
     <Content Include="Views\Modals\house.selection.html" />
+    <Content Include="Views\Modals\additional.property.selection.html" />
     <Content Include="Views\Modals\workarea.selection.html" />
     <Content Include="Views\Neighborhoods.html" />
     <Content Include="Views\RegionParts.html" />

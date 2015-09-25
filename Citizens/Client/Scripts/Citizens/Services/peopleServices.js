@@ -43,6 +43,7 @@ angular.module("peopleServices", ['ngResource', 'precinctServices']).
 		    'getValuesByKeyId': { method: 'GET', params: { keyId: "@keyId" }, url: urlOdataValues + "?$filter=PropertyKeyId eq :keyId&$orderby=Value" },
 		    'getValues': { method: 'GET', url: urlOdataValues + "?$orderby=PropertyKeyId,Value", cache: true },
 		    'getRange': { method: 'POST', url: urlOdata + "/GetRange"},
+		    'addRange': { method: 'POST', url: urlOdata + "/AddRange"},
 		    'updateKey': { method: 'PUT', params: { id: "@id" }, url: urlOdataKeys + "(:id)" },
 		    'updateValue': { method: 'PUT', params: { id: "@id" }, url: urlOdataValues + "(:id)" },
 		    'saveKey': { method: "POST", url: urlOdataKeys },
@@ -53,12 +54,12 @@ angular.module("peopleServices", ['ngResource', 'precinctServices']).
     }]).
     factory("propertyTypes", [function () {
         var types = [
-                        { field: 'IntValue',        html: 'number',     label: 'Число' },
-                        { field: 'StringValue',     html: 'text',       label: 'Рядок' },
-                        { field: 'DateTimeValue',   html: 'date',       label: 'Дата' },
-                        { field: 'PropertyValueId', html: 'ref',        label: 'Довідник' },
-                        { field: 'IntValue',        html: 'refCity',    label: 'Місто' },
-                        { field: 'IntValue',        html: 'refStreet',  label: 'Вулиця' }
+                        { field: 'IntValue',        html: 'number',     label: 'Число', isPrimitive: true },
+                        { field: 'StringValue',     html: 'text',       label: 'Рядок', isPrimitive: true },
+                        { field: 'DateTimeValue',   html: 'date',       label: 'Дата',  isPrimitive: true },
+                        { field: 'PropertyValueId', html: 'ref',        label: 'Довідник', isPrimitive: false },
+                        { field: 'IntValue',        html: 'refCity',    label: 'Місто', isPrimitive: false },
+                        { field: 'IntValue',        html: 'refStreet',  label: 'Вулиця', isPrimitive: false }
         ];
         return {
             getAll: function () { return types; },
