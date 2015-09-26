@@ -51,7 +51,7 @@
                         <label>{{propKey.Name}}:</label>
                         <div class="checkbox">
                             <label ng-repeat="v in getPropertyValuesByKeyId(propKey.Id)" class="checkbox">
-                                <input type="checkbox" ng-click="toggleSelection(propKey,v)" ng-checked="checkedPropValue(propKey,v)"/>{{v.Value}}
+                                <input type="checkbox" ng-click="togglePropertySelection(propKey,v)" ng-checked="checkedPropValue(propKey,v)" />{{v.Value}}
                             </label>
                         </div>
                     </div>
@@ -180,12 +180,16 @@
     </div>
 </div>
 <div class="row">
-    <div class="col-md-2" access-permissions="Administrators,SuperAdministrators">
+    <div class="col-md-4" access-permissions="Administrators,SuperAdministrators">
         <button ng-click="addNew()" class="btn btn-sm btn-success">
             <span class="glyphicon glyphicon-plus"></span> Створити нову фіз. особу
         </button>
+        <button ng-click="openAdditionalPropertySelection()" class="btn btn-sm btn-success" ng-disabled="checkedPeople.value.length===0" title="Групове встановлення хара-ки">
+            <span class="glyphicon glyphicon-plus"></span> Додати хар-ку
+            <i ng-show="loader.savingProps" class="fa fa-refresh fa-spin"></i>
+        </button>
     </div>
-    <div ng-show="showFilters" class="col-md-6">
+    <div ng-show="showFilters" class="col-md-4">
         <button ng-click="applyFilter()" class="btn btn-sm btn-success">
             <span class="glyphicon glyphicon-filter"></span> Застосувати фільтр
             <i ng-show="loader.filtering" class="fa fa-refresh fa-spin"></i>
@@ -193,25 +197,29 @@
         <button ng-click="resetFilter()" class="btn btn-sm btn-success">
             <span class="glyphicon glyphicon-remove-sign"></span> Скасувати фільтр
         </button>
-        <button ng-click="openAdditionalPropertySelection()"  class="btn btn-sm btn-success">
-            <span class="glyphicon glyphicon-plus"></span> Додати хар-ку
-            <i ng-show="loader.savingProps" class="fa fa-refresh fa-spin"></i>
-        </button>
     </div>
-    <div class="col-md-2">
-        <input type="checkbox" ng-model="showFilters" /> Показати фільтри
+    <div class="col-md-4">
+        <label class="checkbox-inline">
+            <input type="checkbox" ng-model="showFilters"/> Показати фільтри
+        </label>
+        <label class="checkbox-inline">
+            <input type="checkbox" ng-model="checkedPeople.show" /> Режим вибору
+        </label>
     </div>
 </div>
 <hr>
 <table class="table table-striped table-condensed">
     <thead>
     <tr>
-        <th ng-repeat="thName in tableHead">{{thName}}</th>
+        <th>№</th>
+        <th ng-show="checkedPeople.show"><input type="checkbox" ng-click="checkAllPeopleOnPage()" ng-checked="checkedPeople.pages.indexOf(pagination.currentPage)>=0"></th>
+        <th ng-repeat="column in tableColumns">{{column}}</th>
     </tr>
     </thead>
     <tbody>
         <tr dir-paginate="person in people | itemsPerPage: pagination.pageSize" current-page="pagination.currentPage" total-items="pagination.totalItems" pagination-id="peoplePagination">
             <td>{{ getIndex($index) }}</td>
+            <td ng-show="checkedPeople.show"><input type="checkbox" ng-click="togglePersonSelection(person.Id)" ng-checked="checkedPeople.value.indexOf(person.Id) >= 0" /></td>
             <td>{{ person.LastName }} {{ person.FirstName }} {{ person.MidleName }}</td>
             <td>{{ person.DateOfBirth | date:'dd.MM.yyyy' }}</td>
             <td>{{ person.City.CityType.Name}}{{person.City.Name}}, {{ person.Street.StreetType.Name }} {{ person.Street.Name }} {{ person.House }}{{ person.ApartmentStr | checkApartment}}</td>

@@ -31,7 +31,9 @@
             Заміняти існуючі значення на нове
         </label>
     </div>
-    <h5>Кількість фізосіб, яким буде встановлено хар-ку: {{pagination.totalItems}} </h5>
+    <div class="form-horizontal">
+        <span>Кількість фізосіб, яким буде встановлено хар-ку: </span><strong>{{checkedPeople.value.length}}</strong>
+    </div>
 </div>
 <div class="modal-footer">
     <button class="btn btn-primary" type="button" ng-click="ok()">Вибрати</button>

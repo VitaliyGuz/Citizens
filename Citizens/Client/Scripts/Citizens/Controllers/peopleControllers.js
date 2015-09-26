@@ -2,13 +2,13 @@
 
 var peopleControllers = angular.module('peopleControllers', ['peopleServices']);
 
-peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$location', '$modal', '$q', 'peopleDataService', 'config', 'serviceUtil', 'resolvedAdditionalProperties', 'filterSettings', 'houseTypes',
-    function ($rootScope, $scope, $location, $modal, $q, peopleDataService, config, serviceUtil, resolvedAdditionalProperties, filterSettings, houseTypes) {
+peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$location', '$modal', 'peopleDataService', 'config', 'serviceUtil', 'resolvedAdditionalProperties', 'filterSettings', 'houseTypes',
+    function($rootScope, $scope, $location, $modal, peopleDataService, config, serviceUtil, resolvedAdditionalProperties, filterSettings, houseTypes) {
         var propValues = [], odataFilter;
-        
+
         $rootScope.pageTitle = 'Фізичні особи';
-        $scope.tableHead = ['№', 'П.І.Б.', 'Дата народження', 'Адреса', 'Дії'];
-        
+        $scope.tableColumns = ['П.І.Б.', 'Дата народження', 'Адреса', 'Дії'];
+
         $scope.pagination = {
             currentPage: serviceUtil.getRouteParam("currPage") || 1,
             pageSize: config.pageSize,
@@ -21,6 +21,8 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
         $scope.query = {};
         $scope.loader = {};
         $scope.loader.loading = true;
+
+        if (!$rootScope.checkedPeople) $rootScope.checkedPeople = { value: [], pages:[] };
 
         $scope.propKeys = resolvedAdditionalProperties.keys;
         propValues = resolvedAdditionalProperties.values;
@@ -73,7 +75,7 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
         } else {
             setPeopleOnPage();
         }
-
+        
         $scope.getPropertyValuesByKeyId = function (keyId) {
             return propValues.filter(function (item) {
                 return item.PropertyKeyId === keyId;
@@ -124,74 +126,13 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
             var people = data.value, keys = [];
             $rootScope.errorMsg = '';
             $scope.loader = {};
-            //var start = new Date().getTime();
+            
             // include city and street in person model
             $scope.people = people.map(function (p) {
                 serviceUtil.expandAddress(p);
                 return p;
             });
             $scope.pagination.totalItems = data['@odata.count'];
-
-            //console.debug(new Date().getTime() - start);
-            //function getFilterKeys() {
-            //    var filterBuilder = [];
-
-            //    keys.forEach(function (k) {
-            //        if (filterBuilder.length > 0) filterBuilder.push("or");
-            //        //filterBuilder.push("(CityId eq " + k.CityId + " and StreetId eq " + k.StreetId + " and House eq '" + p.House + "')");
-            //        filterBuilder.push("(CityId eq " + k.CityId + " and (StreetId eq " + k.StreetId + " or StreetId eq 1))");
-            //    });
-
-            //    if (filterBuilder.length === 0) return undefined;
-            //    console.debug(filterBuilder.join(''));
-            //    return "&$filter=" + filterBuilder.join('');
-            //};
-
-            //function contains(arr, val) {
-            //    for (var i = 0; i < arr.length; i++) {
-            //        if (arr[i].CityId === val.CityId && arr[i].StreetId === val.StreetId) {
-            //            return true;
-            //        }
-            //    }
-            //    return false;
-            //};
-
-            //keys = people.reduce(function (previousValue, currentValue) {
-            //    var key = {};
-            //    key.CityId = currentValue.CityId;
-            //    key.StreetId = currentValue.StreetId;
-            //    if (!contains(previousValue, key)) previousValue.push(key);
-            //    return previousValue;
-            //}, []);
-
-            //precinctAddressesData.getAllByKeys({ filter: getFilterKeys() }, function (addresses) {
-            //    $rootScope.errorMsg = '';
-            //    $scope.loader.loading = false;
-            //    $scope.loader.filtering = false;
-            //    var start = new Date().getTime();
-
-            //    $scope.people = people.map(function (p) {
-            //        var finded = addresses.value.filter(function(a) {
-            //            return a.CityId === p.CityId && 
-            //                a.StreetId === 1 ? true : a.StreetId === p.StreetId &&
-            //                a.House === '' ? true : a.House.toLocaleLowerCase() === p.House.toLocaleLowerCase();
-            //        });
-
-            //        if (finded && finded.length > 0) p.PrecinctNumber = finded[0].Precinct.Number;
-
-            //        p.City = $rootScope.cities.filter(function(c) {
-            //            return c.Id === p.CityId;
-            //        })[0];
-
-            //        p.Street = $rootScope.streets.filter(function (s) {
-            //            return s.Id === p.StreetId;
-            //        })[0];
-
-            //        return p;
-            //    });
-            //    console.debug(new Date().getTime() - start);
-            //    $scope.totalItems = data['@odata.count'];
-            //}, errorHandler);
         };
 
         function getODataFilterQuery() {
@@ -381,7 +322,11 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
                 $scope.query = {};
                 odataFilter = undefined;
                 filterSettings.remove('people');
-                setPeopleOnPage();
+                if (search.query) {
+                    $location.search('query',null);
+                } else {
+                    setPeopleOnPage();
+                }
             }
         };
 
@@ -409,7 +354,7 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
             }  
         };
 
-        $scope.toggleSelection = function (propKey,checkedValue) {
+        $scope.togglePropertySelection = function (propKey,checkedValue) {
             function indexOf(arr, val) {
                 for (var i = 0; i < arr.length; i++) {
                     if (arr[i].Id === val.Id) {
@@ -457,11 +402,6 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
 
         $scope.openAdditionalPropertySelection = function () {
 
-            if (!odataFilter) {
-                alert('Спочатку застосуйте фільтр!');
-                return;
-            }
-
             var modalInstance = $modal.open({
                 animation: false,
                 templateUrl: config.pathModalTemplates + '/additional.property.selection.html',
@@ -472,43 +412,56 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
 
             modalInstance.result.then(function (result) {
                 $scope.loader.savingProps = true;
-                var prop = result.property, countPages = 0, promises = [];
-
-                var getPromise = function (skipItems) {
-                    var def = $q.defer();
-                    peopleDataService.resource.getPageItems({ skip: skipItems, filter: odataFilter }, function (resp) {
-                        var properties = resp.value.map(function (person) {
-                            var modelProp = {
-                                PersonId: person.Id,
-                                PropertyKeyId: prop.Key.Id,
-                            };
-                            modelProp[prop.Key.PropertyType.field] = prop.Key.PropertyType.isPrimitive ? prop.Value : prop.ValueId;
-                            return modelProp;
-                        });
-                        peopleDataService.additionalPropsResource.addRange({
-                            'ReplaceExisting': result.replaceExisting,
-                            'Properties': properties
-                        }, function() {
-                            def.resolve();
-                        },function (err) { def.reject(err) });
-                    }, function(err) { def.reject(err) });
-                    return def.promise;
-                };                
+                var prop = result.property;
                 
-                if ($scope.pagination.totalItems > 0) {
-                    countPages = Math.round($scope.pagination.totalItems / $scope.pagination.pageSize);
-                }
-                for (var currPage = 0; currPage < countPages; currPage++) {
-                    var skip = currPage * $scope.pagination.pageSize;
-                    promises.push(getPromise(skip));
-                }
-                $q.all(promises).then(function() {
+                var properties = $rootScope.checkedPeople.value.map(function (personId) {
+                    var modelProp = {
+                        PersonId: personId,
+                        PropertyKeyId: prop.Key.Id,
+                    };
+                    modelProp[prop.Key.PropertyType.field] = prop.Key.PropertyType.isPrimitive ? prop.Value : prop.ValueId;
+                    return modelProp;
+                });
+
+                peopleDataService.additionalPropsResource.addRange({
+                    'ReplaceExisting': result.replaceExisting,
+                    'Properties': properties
+                }, function () {
                     $scope.loader.savingProps = false;
+                    $rootScope.checkedPeople.value = [];
+                    $rootScope.checkedPeople.pages = [];
                     $rootScope.successMsg = "Додаткові характеристики успішно збережені!";
                 }, errorHandler);
             });
         };
 
+        $scope.togglePersonSelection = function(personId) {
+            var ind = $rootScope.checkedPeople.value.indexOf(personId);
+            if (ind < 0) {
+                $rootScope.checkedPeople.value.push(personId);
+            } else {
+                $rootScope.checkedPeople.value.splice(ind, 1);
+            }
+        };
+
+        $scope.checkAllPeopleOnPage = function () {
+            var indPage = $rootScope.checkedPeople.pages.indexOf($scope.pagination.currentPage);
+            if (indPage >= 0) {
+                $rootScope.checkedPeople.pages.splice(indPage, 1);
+            } else {
+                $rootScope.checkedPeople.pages.push($scope.pagination.currentPage);
+            }
+            $scope.people.forEach(function (person) {
+                if (indPage < 0) {
+                    $rootScope.checkedPeople.value.push(person.Id);
+                } else {
+                    var ind = $rootScope.checkedPeople.value.indexOf(person.Id);
+                    if (ind >= 0) {
+                        $rootScope.checkedPeople.value.splice(ind,1);
+                    }
+                }
+            });
+        };
     }]);
 
 peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$location', '$modal', 'serviceUtil', 'precinctData', 'precinctAddressesData', 'config', 'resolvedData', 'houseTypes', 'modelFactory', 'peopleDataService', 'workAreaResource', 'checkPermissions',
