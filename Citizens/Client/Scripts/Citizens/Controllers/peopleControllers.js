@@ -355,21 +355,12 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
         };
 
         $scope.togglePropertySelection = function (propKey,checkedValue) {
-            function indexOf(arr, val) {
-                for (var i = 0; i < arr.length; i++) {
-                    if (arr[i].Id === val.Id) {
-                        return i;
-                    }
-                }
-                return -1;
-            };
-
             if (!propKey.input) {
                 propKey.input = [];
                 propKey.input.push(checkedValue);
                 return;
             }
-            var ind = indexOf(propKey.input, checkedValue);
+            var ind = serviceUtil.objectIndexOf(propKey.input, checkedValue);
             if (ind < 0) {
                 propKey.input.push(checkedValue);
             } else {

@@ -396,6 +396,15 @@ app.factory("serviceUtil", ["$filter", '$routeParams', '$rootScope', function ($
             requiredVotes: function (countElectors) {
                 return Math.round(countElectors * 0.55 * 0.27);
             }
+        },
+        objectIndexOf: function (arr, searchObj, property) {
+            var prop = property ? property : 'Id'; 
+            for (var i = 0; i < arr.length; i++) {
+                if (arr[i][prop] === searchObj[prop]) {
+                    return i;
+                }
+            }
+            return -1;
         }
     }
 }]);
