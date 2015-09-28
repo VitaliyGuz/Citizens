@@ -137,7 +137,26 @@ namespace Citizens.Controllers.API
             var count = GetCountUserPrecinctsByRegionPartId(regionPartId, modelUserPrecinct.UserId);
             if ((count + 1) == total)
             {
-                db.UserRegionParts.Add(new UserRegionPart { UserId = modelUserPrecinct.UserId, RegionPartId = regionPartId });
+                var entity = new UserRegionPart
+                {
+                    UserId = modelUserPrecinct.UserId,
+                    RegionPartId = regionPartId
+                };
+                db.UserRegionParts.Add(entity);
+                await AddUserRegionAsync(entity);
+            }
+        }
+
+        private async Task AddUserRegionAsync(UserRegionPart userRegionPart)
+        {
+            var regionPart = await db.RegionParts.FindAsync(userRegionPart.RegionPartId);
+            if (regionPart == null) return;
+            var regionId = regionPart.RegionId;
+            var total = GetTotalRegionPartsByRegionId(regionId);
+            var count = GetCountUserRegionPartsByRegionId(regionId, userRegionPart.UserId);
+            if ((count + 1) == total)
+            {
+                db.UserRegions.Add(new UserRegion { UserId = userRegionPart.UserId, RegionId = regionId });
             }
         }
 
@@ -146,9 +165,20 @@ namespace Citizens.Controllers.API
         {
             var precinct = await db.Precincts.FindAsync(precinctId);
             if (precinct == null || precinct.RegionPartId == null) return;
-            var userRegionPartKey = new object[] { userId, precinct.RegionPartId };
-            var userRegionPart = await db.UserRegionParts.FindAsync(userRegionPartKey);
-            if (userRegionPart != null) db.UserRegionParts.Remove(userRegionPart);
+            var userRegionPart = await db.UserRegionParts.FindAsync(new object[] { userId, precinct.RegionPartId });
+            if (userRegionPart != null)
+            {
+                db.UserRegionParts.Remove(userRegionPart);
+                await RemoveUserRegionAsync(userId, userRegionPart.RegionPartId);
+            }
+        }
+
+        private async Task RemoveUserRegionAsync(string userId, int regionPartId)
+        {
+            var regionPart = await db.RegionParts.FindAsync(regionPartId);
+            if (regionPart == null) return;
+            var userRegion = await db.UserRegions.FindAsync(new object[] { userId, regionPart.RegionId });
+            if (userRegion != null) db.UserRegions.Remove(userRegion);
         }
 
         // PATCH: odata/UserPrecincts(5)
@@ -270,18 +300,28 @@ namespace Citizens.Controllers.API
                 .Select(e => e.Exist)
                 .ToArray();
 
-            // adding region parts by user
             var savingUserRegionParts = savingUserPrecincts
                 .Join(db.Precincts, up => up.PrecinctId, p => p.Id,
                     (k, v) => new {k.UserId, v.RegionPartId, k.PrecinctId})
                 .GroupBy(x => new { x.UserId, x.RegionPartId }, g => g.PrecinctId, 
                     (k, g) => new { k.UserId, k.RegionPartId, CountPrecincts = g.Distinct().Count() })
-                .Where(x => IsCountEqualTotal(x.RegionPartId, x.UserId, x.CountPrecincts))
-                .Select(x => new UserRegionPart{UserId = x.UserId, RegionPartId = (int) x.RegionPartId});
+                .Where(x => IsCountUserPrecinctsEqualTotalPrecincts(x.RegionPartId, x.UserId, x.CountPrecincts))
+                .Select(x => new UserRegionPart{UserId = x.UserId, RegionPartId = (int) x.RegionPartId})
+                .ToArray();
+
+            var savingUserRegions = savingUserRegionParts
+               .Join(db.RegionParts, up => up.RegionPartId, p => p.Id,
+                   (k, v) => new { k.UserId, v.RegionId, k.RegionPartId })
+               .GroupBy(x => new { x.UserId, x.RegionId }, g => g.RegionPartId,
+                   (k, g) => new { k.UserId, k.RegionId, CountRegionParts = g.Distinct().Count() })
+               .Where(x => IsCountUserRegionPartsEqualTotalRegionParts(x.RegionId, x.UserId, x.CountRegionParts))
+               .Select(x => new UserRegion { UserId = x.UserId, RegionId = x.RegionId })
+               .ToArray();
 
             db.UserPrecincts.AddRange(savingUserPrecincts);
             db.UserRegionParts.AddRange(savingUserRegionParts);
-
+            db.UserRegions.AddRange(savingUserRegions);
+            
             await db.SaveChangesAsync();
             
             return StatusCode(HttpStatusCode.Created);
@@ -301,23 +341,34 @@ namespace Citizens.Controllers.API
             if (userPrecincts.Length == 0) return StatusCode(HttpStatusCode.NoContent);
 
             var removingUserPrecincts = userPrecincts
+                .Distinct(new UserPrecinctComparer())
                 .Join(db.UserPrecincts.Include("Precinct"),
                     param => new { param.PrecinctId, param.UserId },
                     up => new { up.PrecinctId, up.UserId }, (k, v) => v).ToArray();
 
             var removingUserRegionParts = removingUserPrecincts
-                .Join(db.UserRegionParts, p => new { p.Precinct.RegionPartId, p.UserId }, 
-                    r => new { RegionPartId = (int?)r.RegionPartId, r.UserId }, (p, r) => r).ToArray();
+                .Join(db.UserRegionParts.Include("RegionPart"), 
+                    p => new { p.Precinct.RegionPartId, p.UserId }, 
+                    r => new { RegionPartId = (int?)r.RegionPartId, r.UserId }, (p, r) => r)
+                .Distinct(new UserRegionPartComparer())
+                .ToArray();
+
+            var removingUserRegions = removingUserRegionParts
+                .Join(db.UserRegions, p => new { p.RegionPart.RegionId, p.UserId },
+                    r => new { r.RegionId, r.UserId }, (p, r) => r)
+                .Distinct(new UserRegionComparer())
+                .ToArray();
 
             db.UserPrecincts.RemoveRange(removingUserPrecincts);
             db.UserRegionParts.RemoveRange(removingUserRegionParts);
+            db.UserRegions.RemoveRange(removingUserRegions);
                     
             await db.SaveChangesAsync();
 
             return StatusCode(HttpStatusCode.NoContent);
         }
 
-        private bool IsCountEqualTotal(int? regionPartId, string userId, int countSave)
+        private bool IsCountUserPrecinctsEqualTotalPrecincts(int? regionPartId, string userId, int countSave)
         {
             if (regionPartId == 0 || regionPartId == null || userId.Equals(string.Empty)) return false; 
             return countSave + GetCountUserPrecinctsByRegionPartId(regionPartId, userId) == GetTotalPrecinctsByRegionPartId(regionPartId);
@@ -331,6 +382,22 @@ namespace Citizens.Controllers.API
         private int GetTotalPrecinctsByRegionPartId(int? regionPartId)
         {
             return db.Precincts.Count(p => p.RegionPartId == regionPartId);
+        }
+
+        private bool IsCountUserRegionPartsEqualTotalRegionParts(int regionId, string userId, int countSave)
+        {
+            if (regionId == 0 || userId.Equals(string.Empty)) return false;
+            return countSave + GetCountUserRegionPartsByRegionId(regionId, userId) == GetTotalRegionPartsByRegionId(regionId);
+        }
+
+        private int GetCountUserRegionPartsByRegionId(int regionId, string userId)
+        {
+            return db.UserRegionParts.Count(up => up.RegionPart.RegionId == regionId && up.UserId == userId);
+        }
+
+        private int GetTotalRegionPartsByRegionId(int regionId)
+        {
+            return db.RegionParts.Count(r => r.RegionId == regionId);
         }
     }
 
@@ -357,6 +424,19 @@ namespace Citizens.Controllers.API
         public int GetHashCode(UserRegionPart obj)
         {
             return obj.UserId.GetHashCode() ^ obj.RegionPartId.GetHashCode();
+        }
+    }
+
+    class UserRegionComparer : IEqualityComparer<UserRegion>
+    {
+        public bool Equals(UserRegion x, UserRegion y)
+        {
+            return x.UserId == y.UserId && x.RegionId == y.RegionId;
+        }
+
+        public int GetHashCode(UserRegion obj)
+        {
+            return obj.UserId.GetHashCode() ^ obj.RegionId.GetHashCode();
         }
     }
 }

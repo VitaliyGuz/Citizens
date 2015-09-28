@@ -2,49 +2,77 @@
 
 angular.module("userServices", ['ngResource'])
     .factory("userData", ['$resource', 'config', function ($resource, config) {
-        var urlOdata = config.baseUrl + '/odata/Users',
+        var /*urlOdata = config.baseUrl + '/odata/Users',
             urlOdataUserPrecincts = config.baseUrl + '/odata/UserPrecincts',
             urlOdataUserRegionParts = config.baseUrl + '/odata/UserRegionParts',
+            urlOdataUserRegions = config.baseUrl + '/odata/UserRegions',
             urlOdataRoles = config.baseUrl + '/odata/Roles',
-            urlApiAccount = config.baseUrl + '/api/Account',
+            urlApiAccount = config.baseUrl + '/api/Account',*/
+            urls = {
+                odata: {
+                    user: {
+                        users: config.baseUrl + '/odata/Users',
+                        precincts: config.baseUrl + '/odata/UserPrecincts',
+                        regionParts : config.baseUrl + '/odata/UserRegionParts',
+                        regions: config.baseUrl + '/odata/UserRegions'
+                    },
+                    roles: config.baseUrl + '/odata/Roles'
+                },
+                api: {
+                    account: config.baseUrl + '/api/Account'
+                }
+            },
             expand = "?$expand=UserPrecincts($expand=Precinct),UserRegionParts($expand=RegionPart),UserRegions($expand=Region) ",
             order = "?$orderby=FirstName asc",
             paginate = "&$count=true&$skip=:skip&$top=" + config.pageSize,
-            params = {}, keys = {};
+            params = {
+                id: { id: "@id" },
+                keyUserId: { userId: "@userId" }
+            },
+            keys = {
+                userPrecinct : "(UserId=':userId',PrecinctId=:precinctId)",
+                userRegionPart: "(UserId=':userId',RegionPartId=:regionPartId)",
+                userRegion: "(UserId=':userId',RegionId=:regionId)"
+            };
 
-        params.id = { id: "@id" };
-        params.keyUserPrecinct = { userId: "@userId", precinctId: "@precinctId" };
-        params.keyUserRegionPart = { userId: "@userId", regionPartId: "@regionPartId" };
-        params.keyUserId = { userId: "@userId" };
-        keys.userPrecinct = "(UserId=':userId',PrecinctId=:precinctId)";
-        keys.userRegionPart = "(UserId=':userId',RegionPartId=:regionPartId)";
+        params.keyUserPrecinct = angular.extend({}, params.keyUserId, { precinctId: "@precinctId" });
+        params.keyUserRegionPart = angular.extend({}, params.keyUserId,{regionPartId: "@regionPartId" });
+        params.keyUserRegion = angular.extend({}, params.keyUserId, { regionId: "@regionId" });
+
+        //params.keyUserRegionPart = { userId: "@userId", regionPartId: "@regionPartId" };
+        //params.keyUserId = { userId: "@userId" };
+        //keys.userPrecinct = "(UserId=':userId',PrecinctId=:precinctId)";
+        //keys.userRegionPart = "(UserId=':userId',RegionPartId=:regionPartId)";
 
         return $resource('', {},
 		{
-		    'getAll': { method: 'GET', params: { filter: "@filter" }, url: urlOdata + order + ":filter", cache: false },// DON'T CACHE! caching already implemented in usersHolder
-		    'getById': { method: 'GET', params: params.id, url: urlOdata + "(':id')" + expand },
-		    'getUserRoles': { method: 'GET', params: params.id, url: urlOdata + "(':id')/Roles" },
-		    'getRoles': { method: 'GET', url: urlOdataRoles, cache: true },
-		    'update': { method: 'PUT', params: params.id, url: urlOdata + "(':id')" },
-		    'remove': { method: 'DELETE', params: params.id, url: urlOdata + "(':id')" },
-		    'saveUserPrecinct': { method: 'POST', url: urlOdataUserPrecincts },
-		    'updateUserPrecinct': { method: 'PUT', params: params.keyUserPrecinct, url: urlOdataUserPrecincts + keys.userPrecinct },
-		    'removeUserPrecinct': { method: 'DELETE', params: params.keyUserPrecinct, url: urlOdataUserPrecincts + keys.userPrecinct },
-		    'saveRangeUserPrecincts': { method: 'POST', url: urlOdataUserPrecincts + "/AddRange" },
-		    'removeRangeUserPrecincts': { method: 'POST', url: urlOdataUserPrecincts + "/RemoveRange" },
-		    'getUserPrecinctsByUserId': { method: 'GET', params: params.keyUserId, url: urlOdataUserPrecincts + "?$expand=Precinct&$filter=UserId eq ':userId'" },
-		    'getUserPrecinctsByPrecinctId': { method: 'GET', params: { precinctId: "@precinctId" }, url: urlOdataUserPrecincts + '?$expand=User&$filter=PrecinctId eq :precinctId' },
-		    'getUserPrecinctsByRoleId': { method: 'GET', params: { roleId: "@roleId" }, url: urlOdataUserPrecincts + "?$expand=User,Precinct&$filter=User/Roles/any(ur:ur/RoleId eq ':roleId')" },
-		    'getUserPrecinct': { method: 'GET', params: params.keyUserPrecinct, url: urlOdataUserPrecincts + keys.userPrecinct + '?$expand=User' },
-		    'saveUserRole': { method: 'POST', url: urlApiAccount + "/AddToRole" },
-		    'removeUserRole': { method: 'POST', url: urlApiAccount + "/RemoveFromRole" },
-		    'saveUserRegionPart': { method: 'POST', url: urlOdataUserRegionParts },
-		    'removeUserRegionPart': { method: 'DELETE', params: params.keyUserRegionPart, url: urlOdataUserRegionParts + keys.userRegionPart },
-		    'getUserRegionPartsByUserId': { method: 'GET', params: params.keyUserId, url: urlOdataUserRegionParts + "?$expand=RegionPart&$filter=UserId eq ':userId'" }
+		    'getAll': { method: 'GET', params: { filter: "@filter" }, url: urls.odata.user.users +order + ":filter", cache: false },// DON'T CACHE! caching already implemented in usersHolder
+		    'getById': { method: 'GET', params: params.id, url: urls.odata.user.users + "(':id')" + expand },
+		    'getUserRoles': { method: 'GET', params: params.id, url: urls.odata.user.users + "(':id')/Roles" },
+		    'getRoles': { method: 'GET', url: urls.odata.roles, cache: true },
+		    'update': { method: 'PUT', params: params.id, url: urls.odata.user.users + "(':id')" },
+		    'remove': { method: 'DELETE', params: params.id, url: urls.odata.user.users + "(':id')" },
+		    'saveUserPrecinct': { method: 'POST', url: urls.odata.user.precincts },
+		    'updateUserPrecinct': { method: 'PUT', params: params.keyUserPrecinct, url: urls.odata.user.precincts + keys.userPrecinct },
+		    'removeUserPrecinct': { method: 'DELETE', params: params.keyUserPrecinct, url: urls.odata.user.precincts +keys.userPrecinct },
+		    'saveRangeUserPrecincts': { method: 'POST', url: urls.odata.user.precincts + "/AddRange" },
+		    'removeRangeUserPrecincts': { method: 'POST', url : urls.odata.user.precincts + "/RemoveRange" },
+		    'getUserPrecinctsByUserId': { method: 'GET', params: params.keyUserId, url: urls.odata.user.precincts + "?$expand=Precinct&$filter=UserId eq ':userId'" },
+		    'getUserPrecinctsByPrecinctId': { method: 'GET', params: { precinctId: "@precinctId" }, url: urls.odata.user.precincts + '?$expand=User&$filter=PrecinctId eq :precinctId' },
+		    'getUserPrecinctsByRoleId': { method: 'GET', params: { roleId: "@roleId" }, url: urls.odata.user.precincts + "?$expand=User,Precinct&$filter=User/Roles/any(ur:ur/RoleId eq ':roleId')" },
+		    'getUserPrecinct': { method: 'GET', params: params.keyUserPrecinct, url: urls.odata.user.precincts + keys.userPrecinct + '?$expand=User' },
+		    'saveUserRole': { method: 'POST', url: urls.api.account + "/AddToRole" },
+		    'removeUserRole': { method: 'POST', url: urls.api.account + "/RemoveFromRole" },
+		    'saveUserRegionPart': { method: 'POST', url: urls.odata.user.regionParts },
+		    'removeUserRegionPart': { method: 'DELETE', params: params.keyUserRegionPart, url: urls.odata.user.regionParts + keys.userRegionPart },
+		    'getUserRegionPartsByUserId': { method: 'GET', params: params.keyUserId, url: urls.odata.user.regionParts + "?$expand=RegionPart&$filter=UserId eq ':userId'" },
+            'saveUserRegion': { method: 'POST', url: urls.odata.user.regions },
+            'removeUserRegion': { method: 'DELETE', params: params.keyUserRegion, url: urls.odata.user.regions + keys.userRegion},
+		    'getUserRegionsByUserId': { method: 'GET', params: params.keyUserId, url: urls.odata.user.regions + "?$expand=Region&$filter=UserId eq ':userId'" }
 		});
     }]).
     factory('usersHolder', ['$q', 'userData', 'serviceUtil', function ($q, userData, serviceUtil) {
-        var users, index;
+        var users;
 
         function mappedUserRoles(userRoles, roles) {
             return userRoles.map(function (userRole) {
@@ -123,21 +151,20 @@ angular.module("userServices", ['ngResource'])
             set: function (data) {
                 if (data && angular.isArray(data)) users = data;
             },
-            setEditIndex: function (ind) {
-                index = undefined;
-                if (ind != undefined && ind >= 0) index = ind;
-            },
             update: function (elem) {
-                if (index >= 0 && elem) users[index] = elem;
+                var ind = this.indexOf(elem);
+                if (ind >= 0) users[ind] = elem;
             },
-            updateRoles: function (newRoles) {
-                if (index >= 0 && newRoles) users[index].Roles = newRoles;
+            updateRoles: function (user,newRoles) {
+                var ind = this.indexOf(user);
+                if (ind >= 0 && newRoles) users[ind].Roles = newRoles;
             },
             add: function (elem) {
                 if (users && elem) users.push(elem);
             },
             remove: function (elem) {
-                users.splice(this.indexOf(elem), 1);
+                var ind = this.indexOf(elem);
+                if (ind >= 0) users.splice(ind, 1);
             },
             removeAll: function () {
                 users = [];
@@ -146,7 +173,7 @@ angular.module("userServices", ['ngResource'])
                 return users ? users.length <= 0 : true;
             },
             indexOf: function (elem) {
-                return elem && users ? users.indexOf(elem) : undefined;
+                return elem && users ? serviceUtil.objectIndexOf(users, elem) : -1;
             },
             sort: function () {
                 if (users) {

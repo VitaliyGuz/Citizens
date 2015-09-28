@@ -63,13 +63,17 @@
     <tbody>
         <tr dir-paginate="user in users | itemsPerPage: pagination.pageSize" current-page="pagination.currentPage" pagination-id="usersPagination">
             <td>{{ getIndex($index) + 1 }}</td>
-            <td>{{ user.FirstName }}</td>
+            <td>
+                <a ng-href="/user/{{ user.Id}}/{{pagination.currentPage}}" title="Перейти на сторінку користувача">
+                    {{ user.FirstName }}
+                </a>
+            </td>
             <td>{{ user.Email }}</td>
             <td>{{ userRolesToString(user) }}</td>
             <td>
-                <button class="btn btn-xs" ng-click="edit(user)" title="Редагувати">
+                <!--<button class="btn btn-xs" ng-click="edit(user)" title="Редагувати">
                     <span class="glyphicon glyphicon-edit"></span>
-                </button>
+                </button>-->
                 <button class="btn btn-xs" ng-click="delete(user)" title="Видалити">
                     <span class="glyphicon glyphicon-trash"></span>
                 </button>
@@ -77,5 +81,4 @@
         </tr>
     </tbody>
 </table>
-<hr>
 <dir-pagination-controls boundary-links="true" on-page-change="onPageChange(newPageNumber)" pagination-id="usersPagination"></dir-pagination-controls>

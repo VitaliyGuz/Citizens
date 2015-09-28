@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.Entity;
+﻿using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
-using System.Web.Http.ModelBinding;
 using System.Web.OData;
 using System.Web.OData.Routing;
 using Citizens.Extensions;
@@ -94,31 +89,34 @@ namespace Citizens.Controllers.API
         [Logger(Roles = "SuperAdministrators")]
         public async Task<IHttpActionResult> Post(Precinct precinct)
         {
-            //if (precinct.DistrictId == 0)
-            //{
-            //    precinct.DistrictId = 144;
-            //}
+            
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-
-            db.Precincts.Add(precinct);
-            await db.SaveChangesAsync();
-
-            var savingUserPrecincts = new List<UserPrecinct>();
-
-            await db.UserRegionParts
+                       
+            var userIds = db.UserRegionParts
                 .Where(r => r.RegionPartId == precinct.RegionPartId)
                 .Select(s => s.UserId)
-                .Distinct()
-                .ForEachAsync(userId => savingUserPrecincts.Add(new UserPrecinct
-                    {
-                        UserId = userId, PrecinctId = precinct.Id
-                    }));
+                .Distinct();
 
-            db.UserPrecincts.AddRange(savingUserPrecincts);
-
+            if (!userIds.Any())
+            {
+                var regionPart = await db.RegionParts.FindAsync(precinct.RegionPartId);
+                if (regionPart != null)
+                {
+                    userIds = db.UserRegions
+                        .Where(r => r.RegionId == regionPart.RegionId)
+                        .Select(s => s.UserId)
+                        .Distinct();
+                }    
+            }
+            await userIds.ForEachAsync(userId => db.UserPrecincts.Add(new UserPrecinct
+                   {
+                       UserId = userId,
+                       PrecinctId = precinct.Id
+                   })); 
+            db.Precincts.Add(precinct);
             await db.SaveChangesAsync();
 
             return Created(precinct);

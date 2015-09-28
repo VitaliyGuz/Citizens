@@ -1,4 +1,4 @@
-﻿<h5 ng-show="load.loadingData">Завантаження... <i class="fa fa-refresh fa-spin"></i></h5>
+﻿<!--<h5 ng-show="load.loadingData">Завантаження... <i class="fa fa-refresh fa-spin"></i></h5>-->
 <hr />
 <form ng-submit="saveUser()" class="form-horizontal">
     <div class="row">
@@ -22,17 +22,17 @@
     <div class="panel panel-default">
         <div class="panel-heading">
             Дільниці
-            <button ng-hide="isEditingUserPrecincts" class="btn btn-xs btn-default" ng-click="onEditUserPrecincts()" title="Редагувати">
+            <button ng-hide="isEditing.precincts" class="btn btn-xs btn-default" ng-click="onEdit('precincts')" title="Редагувати">
                 <span class="glyphicon glyphicon-pencil"></span>
             </button>
             <i ng-show="load.editingUserPrecincts" class="fa fa-spinner fa-spin"></i>
-            <button ng-hide="!isEditingUserPrecincts" class="btn btn-xs btn-default" ng-click="completeEditingUserPrecincts()" title="Завершити редагування">
+            <button ng-hide="!isEditing.precincts" class="btn btn-xs btn-default" ng-click="completeEditing('precincts')" title="Завершити редагування">
                 <span class="glyphicon glyphicon-saved"></span>
             </button>
-            <i ng-show="load.loadingUserPrecincts" class="fa fa-spinner fa-spin"></i>
+            <i ng-show="load.loading.precincts" class="fa fa-spinner fa-spin"></i>
         </div>
         <div class="panel-body">
-            <div ng-if="isEditingUserPrecincts" class="row">
+            <div ng-if="isEditing.precincts" class="row">
                 <div class="col-xs-6">
                     <div class="input-group">
                         <input type="text" ng-change="selected.regionPartId=undefined" typeahead-on-select="onSelectRegionPart($item, $model, $label)" ng-model="selected.regionPart"
@@ -58,15 +58,15 @@
                     <input type="checkbox" ng-model="selected.onlyUserPrecincts" />Показати тільки дільниці користувача
                 </div>
             </div>
-            <div ng-if="isEditingUserPrecincts">
+            <div ng-if="isEditing.precincts">
                 <br/>
                 <ul class="list-group list-inline">
-                    <li ng-repeat="precinct in precincts | filter: getFilterExpression(): true" style="margin-bottom: 5px;">
+                    <li ng-repeat="precinct in data.precincts | filter: getFilterExpression(): true" style="margin-bottom: 5px;">
                         <span class="btn-sm {{ markButton('precincts',precinct) }}"><input type="checkbox" class="checkbox-inline" ng-click="toggleSelection('precincts',precinct)" ng-checked="checkedItem('precincts',precinct)" /> {{precinct.Number}}</span>
                     </li>
                 </ul>
             </div>
-            <div ng-if="!isEditingUserPrecincts">
+            <div ng-if="!isEditing.precincts">
                 <ul class="list-group list-inline">
                     <li ng-repeat="userPrecinct in user.precincts" style="margin-bottom: 5px;">
                         <span class="btn-sm btn-primary"> {{userPrecinct.Precinct.Number}}</span>
@@ -90,37 +90,83 @@
     </div>
 
     <div class="row">
+        <div class="col-lg-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    Райони
+                    <button ng-hide="isEditing.regionParts" class="btn btn-xs btn-default" ng-click="onEdit('regionParts')" title="Редагувати">
+                        <span class="glyphicon glyphicon-pencil"></span>
+                    </button>
+                    <i ng-show="load.editingUserRegionParts" class="fa fa-spinner fa-spin"></i>
+                    <button ng-hide="!isEditing.regionParts" class="btn btn-xs btn-default" ng-click="completeEditing('regionParts')" title="Завершити редагування">
+                        <span class="glyphicon glyphicon-saved"></span>
+                    </button>
+                    <i ng-show="load.loading.regionParts" class="fa fa-spinner fa-spin"></i>
+                </div>
+                <div class="panel-body">
+                    <div ng-if="isEditing.regionParts">
+                        <button class="btn btn-sm btn-success" ng-click="saveUserRegionPartsChanges()">
+                            Зберегти зміни
+                            <i ng-show="saving.userRegionParts" class="fa fa-refresh fa-spin"></i>
+                        </button>
+                        <button class="btn btn-sm btn-success" ng-click="checkAll('regionParts')" title="Відмітити всі ролі">
+                            <span class="glyphicon glyphicon-check"></span>
+                        </button>
+                        <button class="btn btn-sm btn-success" ng-click="uncheckAll('regionParts')" title="Зняти всі відмітки">
+                            <span class="glyphicon glyphicon-unchecked"></span>
+                        </button>
+                    </div>
+                    <div ng-if="isEditing.regionParts">
+                        <br/>
+                        <ul class="list-group list-inline">
+                            <li ng-repeat="regionPart in data.regionParts" style="margin-bottom: 5px;">
+                                <span class="btn-sm {{ markButton('regionParts',regionPart) }}"><input type="checkbox" class="checkbox-inline" ng-click="toggleSelection('regionParts',regionPart)" ng-checked="checkedItem('regionParts',regionPart)" /> {{regionPart.Name}}</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div ng-if="!isEditing.regionParts">
+                        <ul class="list-group list-inline">
+                            <li ng-repeat="userRegionPart in user.regionParts" style="margin-bottom: 5px;">
+                                <span class="btn-sm btn-primary"> {{userRegionPart.RegionPart.Name}}</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
         <div class="col-lg-6">
             <div class="panel panel-default">
                 <div class="panel-heading">
                     Ролі
-                    <button ng-hide="isEditingUserRoles" class="btn btn-xs btn-default" ng-click="onEditUserRoles()" title="Редагувати">
+                    <button ng-hide="isEditing.roles" class="btn btn-xs btn-default" ng-click="onEdit('roles')" title="Редагувати">
                         <span class="glyphicon glyphicon-pencil"></span>
                     </button>
                     <i ng-show="load.editingUserRoles" class="fa fa-spinner fa-spin"></i>
-                    <button ng-hide="!isEditingUserRoles" class="btn btn-xs btn-default" ng-click="completeEditingUserRoles()" title="Завершити редагування">
+                    <button ng-hide="!isEditing.roles" class="btn btn-xs btn-default" ng-click="completeEditing('roles')" title="Завершити редагування">
                         <span class="glyphicon glyphicon-saved"></span>
                     </button>
-                    <i ng-show="load.loadingUserRoles" class="fa fa-spinner fa-spin"></i>
+                    <i ng-show="load.loading.roles" class="fa fa-spinner fa-spin"></i>
                 </div>
-                <div ng-if="isEditingUserRoles" class="panel-body">
+                <div ng-if="isEditing.roles" class="panel-body">
                     <button class="btn btn-sm btn-success" ng-click="saveUserRolesChanges()">
                         Зберегти зміни
                         <i ng-show="saving.userRoles" class="fa fa-refresh fa-spin"></i>
                     </button>
-                    <button class="btn btn-sm btn-success" ng-click="checkAllRoles()" title="Відмітити всі ролі">
+                    <button class="btn btn-sm btn-success" ng-click="checkAll('roles')" title="Відмітити всі ролі">
                         <span class="glyphicon glyphicon-check"></span>
                     </button>
-                    <button class="btn btn-sm btn-success" ng-click="uncheckAllRoles()" title="Зняти всі відмітки">
+                    <button class="btn btn-sm btn-success" ng-click="uncheckAll('roles')" title="Зняти всі відмітки">
                         <span class="glyphicon glyphicon-unchecked"></span>
                     </button>
                 </div>
-                <ul ng-if="isEditingUserRoles" class="list-group">
-                    <li class="list-group-item {{ markList('roles',role) }}" ng-repeat="role in roles">
+                <ul ng-if="isEditing.roles" class="list-group">
+                    <li class="list-group-item {{ markList('roles',role) }}" ng-repeat="role in data.roles">
                         <h5 class="list-group-item-heading"> <input class="checkbox-inline" type="checkbox" ng-click="toggleSelection('roles',role)" ng-checked="checkedItem('roles',role)" /> {{role.Name}}</h5>
                     </li>
                 </ul>
-                <ul ng-if="!isEditingUserRoles" class="list-group">
+                <ul ng-if="!isEditing.roles" class="list-group">
                     <li class=" list-group-item" ng-repeat="userRole in user.roles">
                         <h5 class="list-group-item-heading"> {{userRole.Role.Name}}</h5>
                     </li>
@@ -130,45 +176,38 @@
         <div class="col-lg-6">
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    Райони
-                    <button ng-hide="isEditingUserRegionParts" class="btn btn-xs btn-default" ng-click="onEditUserRegionParts()" title="Редагувати">
+                    Області
+                    <button ng-hide="isEditing.regions" class="btn btn-xs btn-default" ng-click="onEdit('regions')" title="Редагувати">
                         <span class="glyphicon glyphicon-pencil"></span>
                     </button>
-                    <i ng-show="load.editingUserRegionParts" class="fa fa-spinner fa-spin"></i>
-                    <button ng-hide="!isEditingUserRegionParts" class="btn btn-xs btn-default" ng-click="completeEditingUserRegionParts()" title="Завершити редагування">
+                    <i ng-show="load.editingUserRegions" class="fa fa-spinner fa-spin"></i>
+                    <button ng-hide="!isEditing.regions" class="btn btn-xs btn-default" ng-click="completeEditing('regions')" title="Завершити редагування">
                         <span class="glyphicon glyphicon-saved"></span>
                     </button>
-                    <i ng-show="load.loadingUserRegionParts" class="fa fa-spinner fa-spin"></i>
+                    <i ng-show="load.loading.regions" class="fa fa-spinner fa-spin"></i>
                 </div>
-                <div class="panel-body">
-                    <div ng-if="isEditingUserRegionParts">
-                        <button class="btn btn-sm btn-success" ng-click="saveUserRegionPartsChanges()">
-                            Зберегти зміни
-                            <i ng-show="saving.userRegionParts" class="fa fa-refresh fa-spin"></i>
-                        </button>
-                        <button class="btn btn-sm btn-success" ng-click="checkAllUserRegionParts()" title="Відмітити всі ролі">
-                            <span class="glyphicon glyphicon-check"></span>
-                        </button>
-                        <button class="btn btn-sm btn-success" ng-click="uncheckAllUserRegionParts()" title="Зняти всі відмітки">
-                            <span class="glyphicon glyphicon-unchecked"></span>
-                        </button>
-                    </div>
-                    <div ng-if="isEditingUserRegionParts">
-                        <br />
-                        <ul class="list-group list-inline">
-                            <li ng-repeat="regionPart in regionPartsCopy" style="margin-bottom: 5px;">
-                                <span class="btn-sm {{ markButton('regionParts',regionPart) }}"><input type="checkbox" class="checkbox-inline" ng-click="toggleSelection('regionParts',regionPart)" ng-checked="checkedItem('regionParts',regionPart)" /> {{regionPart.Name}}</span>
-                            </li>
-                        </ul>
-                    </div>
-                    <div ng-if="!isEditingUserRegionParts">
-                        <ul class="list-group list-inline">
-                            <li ng-repeat="userRegionPart in user.regionParts" style="margin-bottom: 5px;">
-                                <span class="btn-sm btn-primary"> {{userRegionPart.RegionPart.Name}}</span>
-                            </li>
-                        </ul>
-                    </div>
+                <div ng-if="isEditing.regions" class="panel-body">
+                    <button class="btn btn-sm btn-success" ng-click="saveUserRegionsChanges()">
+                        Зберегти зміни
+                        <i ng-show="saving.userRegions" class="fa fa-refresh fa-spin"></i>
+                    </button>
+                    <button class="btn btn-sm btn-success" ng-click="checkAll('regions')" title="Відмітити всі ролі">
+                        <span class="glyphicon glyphicon-check"></span>
+                    </button>
+                    <button class="btn btn-sm btn-success" ng-click="uncheckAll('regions')" title="Зняти всі відмітки">
+                        <span class="glyphicon glyphicon-unchecked"></span>
+                    </button>
                 </div>
+                <ul ng-if="isEditing.regions" class="list-group">
+                    <li class="list-group-item {{ markList('regions',region)}}" ng-repeat="region in data.regions">
+                        <h5 class="list-group-item-heading"><input type="checkbox" class="checkbox-inline" ng-click="toggleSelection('regions',region)" ng-checked="checkedItem('regions',region)" /> {{region.Name}}</h5>
+                    </li>
+                </ul>
+                <ul ng-if="!isEditing.regions" class="list-group">
+                    <li class=" list-group-item" ng-repeat="userRegion in user.regions">
+                        <h5 class="list-group-item-heading"> {{userRegion.Region.Name}}</h5>
+                    </li>
+                </ul> 
             </div>
         </div>
     </div>

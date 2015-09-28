@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
+﻿using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.OData;
@@ -101,21 +97,33 @@ namespace Citizens.Controllers.API
                 return BadRequest(ModelState);
             }
 
-            db.UserRegionParts.Add(userRegionPart);
-            
             var userPrecincts = new List<UserPrecinct>();
-            //await db.Precincts.Where(precinct => precinct.RegionPartId == userRegionPart.RegionPartId)
-            //    .Where(p => db.UserPrecincts.Count(up => up.UserId == userRegionPart.UserId && up.PrecinctId == p.Id) == 0)
-            //    .ForEachAsync(p => userPrecincts.Add(new UserPrecinct {UserId = userRegionPart.UserId, PrecinctId = p.Id}));
-            await db.Database.SqlQuery<int>(
-                @"SELECT dbo.Precincts.Id as Id
-                      FROM dbo.Precincts
-                      LEFT JOIN dbo.UserPrecincts ON dbo.UserPrecincts.PrecinctId = dbo.Precincts.Id AND dbo.UserPrecincts.UserId = @userId
-                      WHERE dbo.Precincts.RegionPartId = @regionPartId AND dbo.UserPrecincts.UserId IS NULL",
-                new SqlParameter("regionPartId", userRegionPart.RegionPartId), new SqlParameter("userId", userRegionPart.UserId)
-                ).ForEachAsync(precinctId => userPrecincts.Add(new UserPrecinct { UserId = userRegionPart.UserId, PrecinctId = precinctId }));
+
+            await db.Precincts
+                .Where( precinct => precinct.RegionPartId == userRegionPart.RegionPartId &&
+                        db.UserPrecincts.Count(up => up.UserId == userRegionPart.UserId && up.PrecinctId == precinct.Id) == 0)
+                .ForEachAsync(p => userPrecincts.Add(new UserPrecinct { UserId = userRegionPart.UserId, PrecinctId = p.Id }));
+
+            var regionPart = await db.RegionParts.FindAsync(userRegionPart.RegionPartId);
+            if (regionPart != null)
+            {
+                var userRegion = await db.UserRegions.FindAsync(new object[] { userRegionPart.UserId, regionPart.RegionId });
+                if (userRegion == null)
+                {
+                    var countUserRegionPartsByRegion = await db.UserRegionParts
+                    .CountAsync(up => up.RegionPart.RegionId == regionPart.RegionId && up.UserId == userRegionPart.UserId);
+
+                    var totalRegionPartsByRegion = await db.RegionParts.CountAsync(rp => rp.RegionId == regionPart.RegionId);
+
+                    if (++countUserRegionPartsByRegion == totalRegionPartsByRegion)
+                        db.UserRegions.Add(new UserRegion { UserId = userRegionPart.UserId, RegionId = regionPart.RegionId });  
+                }
+                 
+            }
 
             db.UserPrecincts.AddRange(userPrecincts);
+            db.UserRegionParts.Add(userRegionPart);
+
             try
             {
                 db.SaveChanges();
@@ -194,6 +202,12 @@ namespace Citizens.Controllers.API
             db.UserRegionParts.Remove(userRegionPart);
             db.UserPrecincts.RemoveRange(db.UserPrecincts.Where(
                 userPrecinct => userPrecinct.Precinct.RegionPartId == regionPartId && userPrecinct.UserId == userId));
+            var regionPart = await db.RegionParts.FindAsync(regionPartId);
+            if (regionPart != null)
+            {
+                var userRegion = await db.UserRegions.FindAsync(new object[] { userId, regionPart.RegionId });
+                if (userRegion != null) db.UserRegions.Remove(userRegion);
+            }
             
             await db.SaveChangesAsync();
 
