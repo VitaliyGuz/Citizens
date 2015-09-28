@@ -389,7 +389,7 @@
         <script type="text/ng-template" id="editUser">
             <td>{{ $index + 1 }}</td>
             <td>
-                <select class="form-control" ng-options="u.Id as u.FirstName for u in users"
+                <select class="form-control" ng-options="user.Id as user.FirstName + ' (' + user.Email + ')' for user in users"
                         ng-model="selected.userPrecinct.UserId">
                     <option value='' disabled>-Вибрати-</option>
                 </select>

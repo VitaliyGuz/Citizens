@@ -133,8 +133,6 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
         //$scope.queryBy = 'City.Name';
 
         $scope.precinctAddresses = [];
-        $scope.userPrecincts = [];
-        $scope.districts = [];
         $scope.selected = { precinct: {}, address: {}, precinctDistrict: {}, userPrecinct: {} };
         $scope.autocomplete = {};
         
@@ -154,9 +152,10 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
                 });
             }
         }
-        $scope.districts = resolvedData.districts;
-        $scope.userPrecincts = resolvedData.userPrecincts;
+        $scope.districts = resolvedData.districts ? resolvedData.districts : [];
+        $scope.userPrecincts = resolvedData.userPrecincts ? resolvedData.userPrecincts : [];
         $scope.users = usersHolder.get();
+
         $scope.houseTypes = houseTypes;
         precinctData.getAllNotExpand(function (data) {
             $scope.precincts = data.value;
@@ -192,7 +191,7 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
             editableUserPrecinct = userPrecinct;
             $scope.addUserMode = false;
             userData.getUserPrecinct({ userId: userPrecinct.UserId, precinctId: userPrecinct.PrecinctId }, function (res) {
-                $scope.selected.userPprecinct = res;
+                $scope.selected.userPrecinct = res;
             }, errorHandler);
         };
 
