@@ -94,8 +94,8 @@ userControllers.controller('listUsersController', ['$rootScope', '$location', '$
         };
 }]);
 
-userControllers.controller('editUserController', ['$rootScope', '$scope', '$location', '$filter', '$q', 'serviceUtil', 'userData', 'config', 'precinctData', 'usersHolder', 'resolvedUser', 'regionData', 'checkPermissions',
-    function ($rootScope, $scope, $location, $filter, $q, serviceUtil, userData, config, precinctData, usersHolder, resolvedUser, regionData, checkPermissions) {
+userControllers.controller('editUserController', ['$rootScope', '$scope', '$location', '$filter', '$q', 'serviceUtil', 'userData', 'config', 'precinctData', 'usersHolder', 'resolvedUser', 'regionData', 'checkPermissions', 'modelFactory',
+    function ($rootScope, $scope, $location, $filter, $q, serviceUtil, userData, config, precinctData, usersHolder, resolvedUser, regionData, checkPermissions, modelFactory) {
 
         var selectedItems = {}, deleteItems = {};
         var alertMsg = "Увага! Дані в таблиці 'name' будуть оновлені.\n Всі не збережені зміни будуть скасовані, продовжити?";
@@ -117,14 +117,13 @@ userControllers.controller('editUserController', ['$rootScope', '$scope', '$loca
         $scope.user.logins = [];
 
         if (resolvedUser) {
-            $scope.user = resolvedUser;
+            $scope.user = modelFactory.createObject("user",resolvedUser);
             $scope.user.precincts = resolvedUser.UserPrecincts;
             $scope.user.regionParts = resolvedUser.UserRegionParts;
             $scope.user.regions = resolvedUser.UserRegions;
             $scope.user.roles = resolvedUser.Roles;
             $scope.user.logins = resolvedUser.Logins;
         }
-
 
         $scope.onEdit = function(propName) {
 
@@ -228,24 +227,24 @@ userControllers.controller('editUserController', ['$rootScope', '$scope', '$loca
             var param = { userId: $scope.user.Id };
             var sources = {
                 regionParts: function() {
-                    userData.getUserRegionPartsByUserId(param, function (data) {
+                    userData.getUserRegionPartsByUserId(param, function(data) {
                         successCallback(data.value);
-                    }, errorHandler)
+                    }, errorHandler);
                 },
                 precincts: function() {
-                    userData.getUserPrecinctsByUserId(param, function (data) {
+                    userData.getUserPrecinctsByUserId(param, function(data) {
                         successCallback(data.value);
-                    }, errorHandler)
+                    }, errorHandler);
                 },
                 roles: function() {
-                    usersHolder.asyncGetUserRoles(param.userId).then(function (userRoles) {
+                    usersHolder.asyncGetUserRoles(param.userId).then(function(userRoles) {
                         successCallback(userRoles);
-                    }, errorHandler)
+                    }, errorHandler);
                 },
                 regions: function() {
-                    userData.getUserRegionsByUserId(param, function (data) {
+                    userData.getUserRegionsByUserId(param, function(data) {
                         successCallback(data.value);
-                    }, errorHandler)
+                    }, errorHandler);
                 }
             }
 
@@ -255,26 +254,11 @@ userControllers.controller('editUserController', ['$rootScope', '$scope', '$loca
         $scope.saveUser = function () {
             $scope.saving.user = true;
             $rootScope.errorMsg = '';
-            // todo: model factory
-            var userRaw = {
-                "FirstName": null,
-                "Email": null,
-                "EmailConfirmed": null,
-                "PasswordHash": null,
-                "SecurityStamp": null,
-                "PhoneNumber": null,
-                "PhoneNumberConfirmed": null,
-                "TwoFactorEnabled": null,
-                "LockoutEndDateUtc": null,
-                "LockoutEnabled": null,
-                "AccessFailedCount": null,
-                "Id": null,
-                "UserName": null
-            }
-            serviceUtil.copyProperties($scope.user, userRaw);
-            userData.update({ id: $scope.user.Id }, userRaw, function() {
+            var userRaw = modelFactory.createObject('user', $scope.user);
+            userData.update({ id: $scope.user.Id }, userRaw, function () {
                 $scope.saving.user = false;
-                usersHolder.update($scope.user);
+                userRaw.Roles = $scope.user.roles;
+                usersHolder.update({ Id: $scope.user.Id }, userRaw);
                 usersHolder.sort();
                 $rootScope.successMsg = 'Зміни успішно збережено!';
             }, errorHandler);
@@ -308,14 +292,14 @@ userControllers.controller('editUserController', ['$rootScope', '$scope', '$loca
         $scope.saveUserPrecinctChanges = function () {
                     
             $rootScope.errorMsg = '';
-
+            var ok;
             if ($scope.isEditing.regionParts) {
-                var ok = confirm(alertMsg.replace(/name/g,'Райони'));
+                ok = confirm(alertMsg.replace(/name/g,'Райони'));
                 if (!ok) return;
             }
 
             if ($scope.isEditing.regions) {
-                var ok = confirm(alertMsg.replace(/name/g, 'Області'));
+                ok = confirm(alertMsg.replace(/name/g, 'Області'));
                 if (!ok) return;
             }
 
@@ -352,7 +336,8 @@ userControllers.controller('editUserController', ['$rootScope', '$scope', '$loca
                         $scope.saving.userRoles = false;
                         commonSuccessHandler('roles');
                         dataSource('roles', function (roles) {
-                            usersHolder.updateRoles($scope.user, roles);
+                            usersHolder.update({ Id: $scope.user.Id }, { Roles: roles });
+                            $scope.user.roles = roles;
                         });
                     }, errorHandler);
             }, errorHandler);           
@@ -360,14 +345,14 @@ userControllers.controller('editUserController', ['$rootScope', '$scope', '$loca
 
         $scope.saveUserRegionPartsChanges = function () {
             $rootScope.errorMsg = '';
-
+            var ok;
             if ($scope.isEditing.precincts) {
-                var ok = confirm(alertMsg.replace(/name/g, 'Дільниці'));
+                ok = confirm(alertMsg.replace(/name/g, 'Дільниці'));
                 if (!ok) return;
             }
 
             if ($scope.isEditing.regions) {
-                var ok = confirm(alertMsg.replace(/name/g, 'Області'));
+                ok = confirm(alertMsg.replace(/name/g, 'Області'));
                 if (!ok) return;
             }
 
@@ -393,14 +378,14 @@ userControllers.controller('editUserController', ['$rootScope', '$scope', '$loca
 
         $scope.saveUserRegionsChanges = function () {
             $rootScope.errorMsg = '';
-
+            var ok;
             if ($scope.isEditing.precincts) {
-                var ok = confirm(alertMsg.replace(/name/g, 'Дільниці'));
+                ok = confirm(alertMsg.replace(/name/g, 'Дільниці'));
                 if (!ok) return;
             }
 
             if ($scope.isEditing.regionParts) {
-                var ok = confirm(alertMsg.replace(/name/g, 'Райони'));
+                ok = confirm(alertMsg.replace(/name/g, 'Райони'));
                 if (!ok) return;
             }
 
@@ -485,7 +470,7 @@ userControllers.controller('editUserController', ['$rootScope', '$scope', '$loca
             return { RegionPartId: $scope.selected.regionPartId, isUser: $scope.checkOnlyUserPrecincts() };
         };
 
-        $scope.onSelectRegionPart = function ($item, $model, $label) {
+        $scope.onSelectRegionPart = function ($item, $model) {
             $scope.selected.regionPart = $item;
             $scope.selected.regionPartId = $model;
         };

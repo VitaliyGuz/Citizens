@@ -151,13 +151,13 @@ angular.module("userServices", ['ngResource'])
             set: function (data) {
                 if (data && angular.isArray(data)) users = data;
             },
-            update: function (elem) {
-                var ind = this.indexOf(elem);
-                if (ind >= 0) users[ind] = elem;
-            },
-            updateRoles: function (user,newRoles) {
-                var ind = this.indexOf(user);
-                if (ind >= 0 && newRoles) users[ind].Roles = newRoles;
+            update: function (key,delta) {
+                var ind = this.indexOf(key);
+                if (ind >= 0) {
+                    Object.keys(delta).forEach(function(prop) {
+                        users[ind][prop] = delta[prop];
+                    });
+                }
             },
             add: function (elem) {
                 if (users && elem) users.push(elem);

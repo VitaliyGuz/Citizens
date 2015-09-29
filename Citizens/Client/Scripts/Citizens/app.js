@@ -212,7 +212,7 @@ app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider',
 }]);
 
 app.constant("config", Object.freeze({
-    baseUrl: 'https://poltava2015.azurewebsites.net',//'http://localhost:6600','http://apicitizens.azurewebsites.net', #Deploy
+    baseUrl: 'https://poltava2015.azurewebsites.net',//'https://localhost:44301','http://localhost:6600','http://apicitizens.azurewebsites.net', #Deploy
     pageSize: 20, // by default 20
     pageSizeTabularSection: 10,
     checkDeleteItem: true,
@@ -736,6 +736,21 @@ app.factory('modelFactory', ['serviceUtil', function (serviceUtil) {
             "Number": 0,
             "PrecinctId": 0,
             "TopId": 0
+        },
+        user: {
+            "FirstName": null,
+            "Email": null,
+            "EmailConfirmed": null,
+            "PasswordHash": null,
+            "SecurityStamp": null,
+            "PhoneNumber": null,
+            "PhoneNumberConfirmed": null,
+            "TwoFactorEnabled": null,
+            "LockoutEndDateUtc": null,
+            "LockoutEnabled": null,
+            "AccessFailedCount": null,
+            "Id": null,
+            "UserName": null
         }
     };
     
