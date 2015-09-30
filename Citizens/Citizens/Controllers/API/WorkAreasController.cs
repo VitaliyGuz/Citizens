@@ -306,11 +306,19 @@ namespace Citizens.Controllers.API
             var workAreaIds = paramIds as List<int> ?? paramIds.ToList();
             if (workAreaIds.Count == 0) return Ok();
 
+            var proponentPropertyId = 0;
+
+            try
+            {
+                proponentPropertyId = (int)parameters["ProponentPropertyId"];
+            }
+            catch (KeyNotFoundException){/*NOP*/}
+                
             var tableIds = new DataTable();
             tableIds.Columns.Add("Id", typeof(Int32));
             workAreaIds.ForEach(id => tableIds.Rows.Add(id));
 
-            var parameter = new SqlParameter
+            var parameterTable = new SqlParameter
             {
                 ParameterName = "@Ids",
                 SqlDbType = SqlDbType.Structured,
@@ -321,30 +329,38 @@ namespace Citizens.Controllers.API
             var sql = @"Declare  @EmptyMajorId int
 Select top 1 @EmptyMajorId = id from people
 where FirstName = ''
-SELECT DISTINCT WorkAreas.Id AS Участок, Streets.Name + ' (' + StreetTypes.Name + ')' AS Улица, PrecinctAddresses.House AS [Номер дома],
-	People.Id as Person, People.ApartmentStr as Apartment, CASE WHEN People.[MajorId]<>@EmptyMajorId THEN People.[MajorId] ELSE NULL END as Старший
+SELECT DISTINCT WorkAreas.Id AS Участок,
+    Streets.Name + ' (' + StreetTypes.Name + ')' AS Улица,
+    PrecinctAddresses.House AS [Номер дома],
+	People.Id as Person,
+    People.ApartmentStr as Apartment,
+    CASE WHEN People.[MajorId]<>@EmptyMajorId THEN People.[MajorId] ELSE NULL END as Старший,
+    PersonAdditionalProperties.PropertyValueId as ProponentPropertyId
 	into #Temp
-	FROM            People INNER JOIN
-                         PrecinctAddresses ON People.CityId = PrecinctAddresses.CityId AND People.StreetId = PrecinctAddresses.StreetId AND People.House = PrecinctAddresses.House INNER JOIN
-                         WorkAreas ON PrecinctAddresses.WorkAreaId = WorkAreas.Id INNER JOIN
-                         Precincts ON PrecinctAddresses.PrecinctId = Precincts.Id 
-						 INNER JOIN
-                         Streets ON Streets.Id = PrecinctAddresses.StreetId INNER JOIN
-                         StreetTypes ON Streets.StreetTypeId = StreetTypes.Id
-						 INNER JOIN @Ids Ids ON Ids.Id = WorkAreas.Id
+	FROM People INNER JOIN PrecinctAddresses ON People.CityId = PrecinctAddresses.CityId
+            AND People.StreetId = PrecinctAddresses.StreetId
+            AND People.House = PrecinctAddresses.House
+        INNER JOIN WorkAreas ON PrecinctAddresses.WorkAreaId = WorkAreas.Id
+        INNER JOIN Streets ON Streets.Id = PrecinctAddresses.StreetId
+        INNER JOIN StreetTypes ON Streets.StreetTypeId = StreetTypes.Id
+        INNER JOIN @Ids Ids ON Ids.Id = WorkAreas.Id
+        LEFT JOIN PersonAdditionalProperties ON PersonAdditionalProperties.PersonId = People.Id
+            AND PersonAdditionalProperties.PropertyValueId=@ProponentPropertyValueId
+      
 SELECT Участок , Улица,Старший,( select distinct [Номер дома] + ',' as 'data()' from #Temp t2 where t1.[Улица]=t2.[Улица] and t1.Участок=t2.Участок for xml path('') ) as [Номер дома],
-	Count(Distinct Person) as PeopleCount, Count(Distinct Apartment) as ApartmentCount
+	Count(Distinct Person) as PeopleCount, Count(Distinct Apartment) as ApartmentCount, Count(ProponentPropertyId) as CountProponentPropertyId
 	into #Temp2
-	FROM            #Temp t1
+	FROM #Temp t1
 	group by Участок , Улица,[Номер дома],Старший
+
 SELECT Участок as Id , ( select distinct Улица + [Номер дома] + ',' as 'data()' from #Temp2 t2 where t1.Участок=t2.Участок for xml path('') ) as AddressesStr,
-	Sum(ApartmentCount) as CountHouseholds, Count(Distinct Старший) as CountMajors, Sum(PeopleCount) as CountElectors
-	FROM            #Temp2 t1
+	Sum(ApartmentCount) as CountHouseholds, Count(Distinct Старший) as CountMajors, Sum(PeopleCount) as CountElectors, SUM(CountProponentPropertyId) as CountProponents
+	FROM #Temp2 t1
 	group by Участок
+
     Drop table #Temp
     Drop table #Temp2
 ";
-
             //var response = db.Database.ExecuteSqlCommand(sql, parameter);
             //var response = new List<WorkArea>();
             //await db.Database.SqlQuery<WorkArea>(sql, parameter).ForEachAsync(w => response.Add(new WorkArea {
@@ -379,7 +395,9 @@ SELECT Участок as Id , ( select distinct Улица + [Номер дом�
             //});
             //var resp = await Task.WhenAll<WorkAreaComputed>(tasks);
 
-            var response = await db.Database.SqlQuery<WorkAreaComputed>(sql, parameter).ToListAsync();
+            var response = await db.Database
+                .SqlQuery<WorkAreaComputed>(sql, parameterTable, new SqlParameter("ProponentPropertyValueId", proponentPropertyId))
+                .ToListAsync();
 
             return Ok(response);
         }

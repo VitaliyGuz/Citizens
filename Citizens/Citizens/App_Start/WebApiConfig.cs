@@ -78,12 +78,12 @@ namespace Citizens
                 .Function("GetSupporters")
                 .ReturnsCollectionFromEntitySet<Person>("People");
 
-            builder.EntityType<WorkArea>()
+            var caclComputedPropertiesAction = builder.EntityType<WorkArea>()
                 .Collection
-                .Action("CaclComputedProperties")
-                .ReturnsCollection<WorkAreaComputed>()
-                //.ReturnsCollectionFromEntitySet<WorkArea>("WorkAreas")
-                .CollectionParameter<int>("WorkAreaIds");
+                .Action("CaclComputedProperties");
+            caclComputedPropertiesAction.ReturnsCollection<WorkAreaComputed>();
+            caclComputedPropertiesAction.CollectionParameter<int>("WorkAreaIds");
+            caclComputedPropertiesAction.Parameter<int>("ProponentPropertyId").OptionalParameter = true;
 
             builder.EntityType<Person>()
                 .Function("Precinct")

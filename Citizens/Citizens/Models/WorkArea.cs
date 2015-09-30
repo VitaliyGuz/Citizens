@@ -48,5 +48,7 @@ namespace Citizens.Models
         public int CountElectors { get; set; }
         
         public int CountHouseholds { get; set; }
+
+        public int CountProponents { get; set; }
     }
 }

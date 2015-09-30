@@ -30,26 +30,29 @@ angular.module("peopleServices", ['ngResource', 'precinctServices']).
             urlOdataValues = config.baseUrl + '/odata/PropertyValues',
             urlOdataKeys = config.baseUrl + '/odata/PropertyKeys',
             key = "(PersonId=:personId,PropertyKeyId=:propertyKeyId)",
-            params = { personId: "@personId", propertyKeyId: "@propertyKeyId" };
+            params = { id: { id: "@id" } };
+        params.propertyKey = { propertyKeyId: "@propertyKeyId" };
+        params.key = angular.extend({}, { personId: "@personId" }, params.propertyKey);
+        params.filter = { filter: "@filter" };
         return $resource('', {},
 		{
-		    'getByKey': { method: 'GET', params: params, url: urlOdata + key + "?$expand=PropertyKey,PropertyValue" },
-		    'update': { method: 'PUT', params: params, url: urlOdata + key },
+		    'getByKey': { method: 'GET', params: params.key, url: urlOdata + key + "?$expand=PropertyKey,PropertyValue" },
+		    'update': { method: 'PUT', params: params.key, url: urlOdata + key },
 		    'save': { method: "POST", url: urlOdata },
-		    'remove': { method: 'DELETE', params: params, url: urlOdata + key },
-		    'getKey': { method: 'GET', params: { id: "@id" }, url: urlOdataKeys + "(:id)" },
-		    'getKeys': { method: 'GET', params: { filter: "@filter" }, url: urlOdataKeys + "?$orderby=Name:filter", cache: true },
-		    'getValue': { method: 'GET', params: { id: "@id" }, url: urlOdataValues + "(:id)" },
-		    'getValuesByKeyId': { method: 'GET', params: { keyId: "@keyId" }, url: urlOdataValues + "?$filter=PropertyKeyId eq :keyId&$orderby=Value" },
-		    'getValues': { method: 'GET', url: urlOdataValues + "?$orderby=PropertyKeyId,Value", cache: true },
+		    'remove': { method: 'DELETE', params: params.key, url: urlOdata + key },
+		    'getKey': { method: 'GET', params: params.id, url: urlOdataKeys + "(:id)" },
+		    'getKeys': { method: 'GET', params: params.filter, url: urlOdataKeys + "?$orderby=Name:filter", cache: true },
+		    'getValue': { method: 'GET', params: params.id, url: urlOdataValues + "(:id)" },
+		    'getValuesByKeyId': { method: 'GET', params: params.propertyKey, url: urlOdataValues + "?$filter=PropertyKeyId eq :propertyKeyId&$orderby=Value" },
+		    'getValues': { method: 'GET', params: params.filter, url: urlOdataValues + "?$orderby=PropertyKeyId,Value:filter", cache: true },
 		    'getRange': { method: 'POST', url: urlOdata + "/GetRange"},
 		    'addRange': { method: 'POST', url: urlOdata + "/AddRange"},
-		    'updateKey': { method: 'PUT', params: { id: "@id" }, url: urlOdataKeys + "(:id)" },
-		    'updateValue': { method: 'PUT', params: { id: "@id" }, url: urlOdataValues + "(:id)" },
+		    'updateKey': { method: 'PUT', params: params.id, url: urlOdataKeys + "(:id)" },
+		    'updateValue': { method: 'PUT', params: params.id, url: urlOdataValues + "(:id)" },
 		    'saveKey': { method: "POST", url: urlOdataKeys },
 		    'saveValue': { method: "POST", url: urlOdataValues },
-		    'removeKey': { method: 'DELETE', params: { id: "@id" }, url: urlOdataKeys + "(:id)" },
-		    'removeValue': { method: 'DELETE', params: { id: "@id" }, url: urlOdataValues + "(:id)" }
+		    'removeKey': { method: 'DELETE', params: params.id, url: urlOdataKeys + "(:id)" },
+		    'removeValue': { method: 'DELETE', params: params.id, url: urlOdataValues + "(:id)" }
 		});
     }]).
     factory("propertyTypes", [function () {

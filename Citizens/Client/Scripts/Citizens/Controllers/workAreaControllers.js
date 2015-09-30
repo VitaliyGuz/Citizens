@@ -2,8 +2,8 @@
 
 var workAreaControllers = angular.module('workAreaControllers', ['workAreaServices', 'printService']);
 
-workAreaControllers.controller("listWorkAreasController", ['$location', '$rootScope', '$scope', 'config', 'serviceUtil', 'workAreaResource', 'filterSettings',
-    function ($location, $rootScope, $scope, config, serviceUtil, workAreaResource, filterSettings) {
+workAreaControllers.controller("listWorkAreasController", ['$location', '$rootScope', '$scope', 'config', 'serviceUtil', 'workAreaResource', 'filterSettings', 'peopleDataService',
+    function ($location, $rootScope, $scope, config, serviceUtil, workAreaResource, filterSettings, peopleDataService) {
         
         $rootScope.pageTitle = 'Робочі дільниці';
         $scope.tableHead = [
@@ -12,13 +12,14 @@ workAreaControllers.controller("listWorkAreasController", ['$location', '$rootSc
             'Топ',
             'Район',
             'Адреси',
-            'К-сть виборців',
-            'Планова к-сть старших',
-            'Факт. к-сть старших',
+            'К-сть\n прихильників',
+            'К-сть\n виборців',
+            'Планова\n к-сть\n старших',
+            'Факт.\n к-сть\n старших',
             '% старших',
             'Явка',
-            'К-сть необхідних голосів',
-            'К-сть домогосподарств',
+            'К-сть\n необхідних\n голосів',
+            'К-сть\n домо-\nгосподарств',
             'Дії'
         ];
         $scope.loader = {};
@@ -45,6 +46,7 @@ workAreaControllers.controller("listWorkAreasController", ['$location', '$rootSc
         getWorkAreasPage();
 
         $scope.calcPeopleAtPrecincts = function () {
+            $rootScope.errorMsg = '';
             if (!$scope.workAreas || $scope.workAreas.length === 0) return;
             $scope.loader.calcPeople = true;
             var total = $scope.workAreas.length, count = 0;
@@ -74,24 +76,27 @@ workAreaControllers.controller("listWorkAreasController", ['$location', '$rootSc
             //}, errorHandler);
 
             //----------------------------------- many requests with one item ----------------------------------
-            $scope.workAreas.forEach(function (wa) {
-                workAreaResource.caclComputedProperties({ "WorkAreaIds": [wa.Id] }, function (resp) {
-                    if (resp) {
-                        if (resp.value.length > 0) {
+            peopleDataService.additionalPropsResource.getValues({ filter: "&$filter=Value eq 'прихильник' and PropertyKey/Name eq 'статус'" }, function (propValue) {
+                var proponentPropertyId = propValue.value[0] ? propValue.value[0].Id : 0;
+                $scope.workAreas.forEach(function (wa) {
+                    workAreaResource.caclComputedProperties({ "WorkAreaIds": [wa.Id], "ProponentPropertyId": proponentPropertyId }, function (resp) {
+                        if (resp) {
                             var computedProps = resp.value[0];
-                            Object.keys(computedProps).forEach(function (prop) {
-                                wa[prop] = computedProps[prop];
-                            });
-                            wa.countMajorsPlan = serviceUtil.computational.countMajorsPlan(wa.CountElectors);
-                            wa.percentageMajors = Math.round(wa.CountMajors * 100 / wa.countMajorsPlan);
-                            wa.voterTurnout = serviceUtil.computational.voterTurnout(wa.CountElectors);
-                            wa.requiredVotes = serviceUtil.computational.requiredVotes(wa.CountElectors);
+                            if (computedProps) {
+                                Object.keys(computedProps).forEach(function (prop) {
+                                    wa[prop] = computedProps[prop];
+                                });
+                                wa.countMajorsPlan = serviceUtil.computational.countMajorsPlan(wa.CountElectors);
+                                wa.percentageMajors = Math.round(wa.CountMajors * 100 / wa.countMajorsPlan);
+                                wa.voterTurnout = serviceUtil.computational.voterTurnout(wa.CountElectors);
+                                wa.requiredVotes = serviceUtil.computational.requiredVotes(wa.CountElectors);
+                            }
+                            count++;
+                            if (count === total) $scope.loader.calcPeople = false;
                         }
-                        count++;
-                        if(count === total)  $scope.loader.calcPeople = false;
-                    }
-                }, errorHandler);
-            });
+                    }, errorHandler);
+                });
+            },errorHandler);
         };
 
         function getWorkAreasPage() {
@@ -121,10 +126,10 @@ workAreaControllers.controller("listWorkAreasController", ['$location', '$rootSc
             return getSkip() + ind + 1;
         };
 
-        $scope.edit = function (workArea) {
-            $rootScope.errorMsg = '';
-            $location.url('/work-area/' + workArea.Id + '/' + $scope.pagination.currentPage).search("precinctId", workArea.PrecinctId);
-        };
+        //$scope.edit = function (workArea) {
+        //    $rootScope.errorMsg = '';
+        //    $location.url('/work-area/' + workArea.Id + '/' + $scope.pagination.currentPage).search("precinctId", workArea.PrecinctId);
+        //};
 
         $scope.delete = function (workArea) {
             if (config.checkDeleteItem) {

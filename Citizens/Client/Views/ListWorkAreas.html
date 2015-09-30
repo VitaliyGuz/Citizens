@@ -39,10 +39,15 @@
     <tbody>
         <tr dir-paginate="workArea in workAreas | itemsPerPage: pagination.pageSize" current-page="pagination.currentPage" total-items="pagination.totalItems" pagination-id="workAreasPagination">
             <td>{{ getIndex($index) }}</td>
-            <td>{{ workArea.Precinct.Number }}.{{ workArea.Number }}</td>
+            <td>
+                <a ng-href="/work-area/{{workArea.Id}}/{{pagination.currentPage}}?precinctId={{workArea.PrecinctId}}" title="Перейти на сторінку робочої дільниці">
+                    {{ workArea.Precinct.Number }}.{{ workArea.Number }}
+                </a>
+            </td>
             <td>{{ workArea.Top.LastName }} {{ workArea.Top.FirstName }} {{ workArea.Top.MidleName }}</td>
             <td>{{ workArea.Precinct.RegionPart.Name }}</td>
             <td>{{ workArea.AddressesStr }}</td>
+            <td>{{ workArea.CountProponents }}</td>
             <td>{{ workArea.CountElectors }}</td>
             <td>{{ workArea.countMajorsPlan }}</td>
             <td>{{ workArea.CountMajors }}</td>
@@ -51,9 +56,9 @@
             <td>{{ workArea.requiredVotes }}</td>
             <td>{{ workArea.CountHouseholds }}</td>
             <td>
-                <button class="btn btn-xs" ng-click="edit(workArea)" title="Редагувати">
+                <!--<button class="btn btn-xs" ng-click="edit(workArea)" title="Редагувати">
                     <span class="glyphicon glyphicon-edit"></span>
-                </button>
+                </button>-->
                 <button class="btn btn-xs" ng-click="delete(workArea)" title="Видалити">
                     <span class="glyphicon glyphicon-trash"></span>
                 </button>
@@ -61,6 +66,5 @@
         </tr>
     </tbody>
 </table>
-<hr>
 <dir-pagination-controls boundary-links="true" on-page-change="onPageChange(newPageNumber)" pagination-id="workAreasPagination"></dir-pagination-controls>
 
