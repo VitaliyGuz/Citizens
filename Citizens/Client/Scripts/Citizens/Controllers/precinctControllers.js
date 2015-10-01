@@ -763,7 +763,7 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
 
         $scope.doneEditingThead = function (propName) {
             $scope.theadEditing[propName] = false;
-            $scope.query[propName] = $;
+            $scope.query[propName] = undefined;
         };
 
     }]);

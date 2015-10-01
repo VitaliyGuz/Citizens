@@ -312,7 +312,7 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
 
         $scope.doneEditingThead = function (propName) {
             $scope.theadEditing[propName] = false;
-            $scope.query[propName] = $;
+            $scope.query[propName] = undefined;
         };
 
         $scope.checked = function (address, isPrecinctAddress) {
