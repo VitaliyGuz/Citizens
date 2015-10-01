@@ -465,7 +465,8 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
         $scope.propKeys = resolvedData.additionalProps.keys;
         propValues = resolvedData.additionalProps.values;
         $scope.houseTypes = houseTypes;
-        function getPropertyValuesByKeyId (keyId) {
+
+        $scope.getPropertyValuesByKeyId = function (keyId) {
             return propValues.filter(function (item) {
                 return item.PropertyKeyId === keyId;
             });
@@ -639,17 +640,11 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
         };
 
         $scope.onChangePropertyKey = function () {
-            $scope.isPrimitive = $scope.selected.property.Key.PropertyType.html.indexOf('ref') === 0  ? false : true;
             $scope.selected.property.Value = '';
             $scope.selected.property.ValueId = 0;
-            if ($scope.selected.property.Key.PropertyType.html === 'ref'){
-                $scope.propFilteredValues = getPropertyValuesByKeyId($scope.selected.property.Key.Id);
-            }
         };
     
         $scope.getTemplate = function (prop) {
-            $scope.isDate = false;
-            if (prop.key.PropertyType.html === 'date') $scope.isDate = true;
             if ($scope.selected.property.Key && prop.key.Id === $scope.selected.property.Key.Id && !$scope.addPropertyMode) return 'edit';
             else return 'display';
         };
@@ -658,28 +653,18 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
             var typeStr, prop;
             $scope.addPropertyMode = false;
             editInd = ind;
-            $scope.isPrimitive = true;
-            peopleDataService.additionalPropsResource.getByKey({
-                personId: $scope.person.Id, propertyKeyId: propKeyId }, function (res) {
+            peopleDataService.additionalPropsResource.getByKey({personId: $scope.person.Id, propertyKeyId: propKeyId}, function (res) {
                 prop = getPropertyPairs(res);
+                $scope.selected.property.Key = prop.key;
                 typeStr = prop.key.PropertyType.html;
-                if (typeStr.indexOf('ref') === 0) {
-                    $scope.isPrimitive = false;
-                }
                 if (typeStr === 'date') {
                     $scope.selected.property.Value = serviceUtil.formatDate(new Date(prop.value.desc), config.LOCALE_DATE_FORMAT);
                 } else if (typeStr === 'number') {
                     $scope.selected.property.Value = Number(prop.value.desc);
                 } else {
                     $scope.selected.property.Value = prop.value.desc;
-                    if (!$scope.isPrimitive) {
-                        $scope.selected.property.Value = prop.value.obj;
-                        if (typeStr === 'ref') {
-                            $scope.propFilteredValues = getPropertyValuesByKeyId(prop.key.Id);
-                        }
-                    }
+                    if (!prop.key.PropertyType.isPrimitive) $scope.selected.property.Value = prop.value.obj;
                 }
-                $scope.selected.property.Key = prop.key;
             }, errorHandler);
         };
 
@@ -690,7 +675,14 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
         
         $scope.addNewProperty = function () {
             $scope.addPropertyMode = true;
-            $scope.isPrimitive = true;
+            $scope.selected.property = {
+                Key: {
+                    PropertyType: {
+                        isPrimitive: true,
+                        html: 'text'
+                    }
+                }
+            };
         };
 
         $scope.saveProperty = function () {
@@ -699,7 +691,7 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
                 $rootScope.errorMsg = 'Спочатку необхідно зберегти фіз. особу';
                 return;
             }
-            if (!$scope.selected.property.Key) {
+            if (!$scope.selected.property.Key.Id) {
                 $rootScope.errorMsg = 'Не вибрано тип характеристики';
                 return;
             }
@@ -709,7 +701,7 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
                 return;
             }
             var propType = $scope.selected.property.Key.PropertyType;
-            if (propType.html.indexOf('ref') === 0 && !$scope.selected.property.ValueId) {
+            if (!propType.isPrimitive && !$scope.selected.property.ValueId) {
                 $rootScope.errorMsg = "Значення '" + $scope.selected.property.Value + "' для характеристики '" + $scope.selected.property.Key.Name + "' не знайдено";
                 return;
             }
@@ -720,7 +712,7 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
             newProperty.PersonId = $scope.person.Id;
             newProperty.PropertyKeyId = $scope.selected.property.Key.Id;
 
-            if (propType.html.indexOf('ref') === 0) {
+            if (!propType.isPrimitive) {
                 newPropValue = $scope.selected.property.ValueId;
             }
             if (propType.html === 'date') {
@@ -761,9 +753,9 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
                 var ok = confirm("Увага! Характеристику фіз. особи буде видалено, продовжити?");
                 if (!ok) return;
             }
-            peopleDataService.additionalPropsResource.remove(
-                { personId: $scope.person.Id, propertyKeyId: prop.key.Id},
-                function () {$scope.person.additionalProperties.splice(ind, 1)},
+            peopleDataService.additionalPropsResource.remove({ personId: $scope.person.Id, propertyKeyId: prop.key.Id},function() {
+                    $scope.person.additionalProperties.splice(ind, 1)
+                },
                 errorHandler
             );
         };

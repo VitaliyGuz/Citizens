@@ -147,8 +147,8 @@
 <script type="text/ng-template" id="display">
     <td>{{ $index + 1 }}</td>
     <td>{{ prop.key.Name }}</td>
-    <td ng-show="isDate">{{ prop.value.desc | date:'dd.MM.yyyy' }}</td>
-    <td ng-show="!isDate">{{ prop.value.desc }}</td>
+    <td ng-show="prop.key.PropertyType.html === 'date'">{{ prop.value.desc | date:'dd.MM.yyyy' }}</td>
+    <td ng-show="prop.key.PropertyType.html !== 'date'">{{ prop.value.desc }}</td>
     <td>
         <button class="btn btn-xs" ng-click="editProperty(prop.key.Id,$index)" title="Редагувати">
             <span class="glyphicon glyphicon-edit"></span>
@@ -168,10 +168,10 @@
     </td>
     <td ng-show="!addPropertyMode">{{ prop.key.Name }}</td>
     <td>
-        <input ng-if="isPrimitive && selected.property.Key.PropertyType.html !== 'date'" class="form-control" type="{{ selected.property.Key.PropertyType.html }}" ng-model="selected.property.Value" />
+        <input ng-if="selected.property.Key.PropertyType.isPrimitive && selected.property.Key.PropertyType.html !== 'date'" class="form-control" type="{{ selected.property.Key.PropertyType.html }}" ng-model="selected.property.Value" />
         <input ng-if="selected.property.Key.PropertyType.html === 'date'" class="form-control" type="text" datepicker ng-model="selected.property.Value" placeholder="дд.мм.рррр" />
         <input ng-if="selected.property.Key.PropertyType.html === 'ref'" type="text" ng-change="selected.property.ValueId=0" typeahead-on-select="onSelectProperty($item, $model, $label)" ng-model="selected.property.Value"
-               typeahead="p.Id as p.Value for p in propFilteredValues | filter: {Value:$viewValue} | orderByStartsWith:{Value:$viewValue} | limitTo:10" class="form-control">
+               typeahead="p.Id as p.Value for p in getPropertyValuesByKeyId(selected.property.Key.Id) | filter: {Value:$viewValue} | orderByStartsWith:{Value:$viewValue} | limitTo:10" class="form-control">
         <input ng-if="selected.property.Key.PropertyType.html === 'refCity'" type="text" ng-change="selected.property.ValueId=0" typeahead-on-select="onSelectProperty($item, $model, $label)" ng-model="selected.property.Value"
                typeahead="c.Id as c.CityType.Name +' '+c.Name + ' (' + c.RegionPart.Name + ' р-н)' for c in cities | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control">
         <input ng-if="selected.property.Key.PropertyType.html === 'refStreet'" type="text" ng-change="selected.property.ValueId=0" typeahead-on-select="onSelectProperty($item, $model, $label)" ng-model="selected.property.Value"
