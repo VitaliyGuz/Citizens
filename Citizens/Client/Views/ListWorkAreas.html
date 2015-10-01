@@ -46,7 +46,12 @@
             </td>
             <td>{{ workArea.Top.LastName }} {{ workArea.Top.FirstName }} {{ workArea.Top.MidleName }}</td>
             <td>{{ workArea.Precinct.RegionPart.Name }}</td>
-            <td>{{ workArea.AddressesStr }}</td>
+            <td>
+                {{ workArea.AddressesStr | limitTo:stringLimit }}
+                <a href="" ng-click="stringLimit = stringLimit ? undefined : 100" ng-show="workArea.addressesLen >= 100" >
+                    <br/>{{stringLimit>0 ? 'показати більше &#8595;' : '&#8593; згорнути'}}
+                </a>
+            </td>
             <td>{{ workArea.CountProponents }}</td>
             <td>{{ workArea.CountElectors }}</td>
             <td>{{ workArea.countMajorsPlan }}</td>

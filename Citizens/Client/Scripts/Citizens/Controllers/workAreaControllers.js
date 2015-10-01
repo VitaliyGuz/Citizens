@@ -39,6 +39,8 @@ workAreaControllers.controller("listWorkAreasController", ['$location', '$rootSc
             totalItems: 0
         };
 
+        $scope.stringLimit = 100;
+
         function getSkip() {
             return ($scope.pagination.currentPage - 1) * $scope.pagination.pageSize || 0;
         };
@@ -86,6 +88,7 @@ workAreaControllers.controller("listWorkAreasController", ['$location', '$rootSc
                                 Object.keys(computedProps).forEach(function (prop) {
                                     wa[prop] = computedProps[prop];
                                 });
+                                wa.addressesLen = wa.AddressesStr.length;
                                 wa.countMajorsPlan = serviceUtil.computational.countMajorsPlan(wa.CountElectors);
                                 wa.percentageMajors = Math.round(wa.CountMajors * 100 / wa.countMajorsPlan);
                                 wa.voterTurnout = serviceUtil.computational.voterTurnout(wa.CountElectors);
