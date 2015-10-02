@@ -51,7 +51,8 @@ namespace Citizens.Controllers.API
         [Logger(Roles = "Operators, SuperAdministrators")]
         public async Task<IHttpActionResult> Put([FromODataUri] int cityId, [FromODataUri] int? streetId, [FromODataUri] string house, [FromBody] Delta<PrecinctAddress> patch)
         {
-            Validate(patch.GetEntity());
+            var entity = patch.GetEntity();
+            Validate(entity);
 
             if (!ModelState.IsValid)
             {
@@ -68,6 +69,12 @@ namespace Citizens.Controllers.API
             if (precinctAddress == null)
             {
                 return NotFound();
+            }
+            if (!User.IsInRole("Administrators") &&
+                !User.IsInRole("SuperAdministrators") &&
+                entity.PrecinctId != precinctAddress.PrecinctId)
+            {
+                return StatusCode(HttpStatusCode.Forbidden);
             }
 
             patch.Put(precinctAddress);
@@ -104,7 +111,7 @@ namespace Citizens.Controllers.API
 
             if (precinctAddress.StreetId == 0)
             {
-                var nullStreet = db.Streets.Where(s => s.Name.Equals(string.Empty)).FirstOrDefault();
+                var nullStreet = db.Streets.FirstOrDefault(s => s.Name.Equals(string.Empty));
                 if (nullStreet == null) return BadRequest();
                 precinctAddress.StreetId = nullStreet.Id;
             }
@@ -150,7 +157,8 @@ namespace Citizens.Controllers.API
         [ODataRoute("PrecinctAddresses(CityId={cityId}, StreetId={streetId}, House={house})")]
         public async Task<IHttpActionResult> Patch([FromODataUri] int cityId, [FromODataUri] int? streetId, [FromODataUri] string house, [FromBody] Delta<PrecinctAddress> patch)
         {
-            Validate(patch.GetEntity());
+            var entity = patch.GetEntity();
+            Validate(entity);
 
             if (!ModelState.IsValid)
             {
@@ -167,6 +175,12 @@ namespace Citizens.Controllers.API
             if (precinctAddress == null)
             {
                 return NotFound();
+            }
+            if (!User.IsInRole("Administrators") &&
+                !User.IsInRole("SuperAdministrators") &&
+                entity.PrecinctId != precinctAddress.PrecinctId)
+            {
+                return StatusCode(HttpStatusCode.Forbidden);
             }
 
             patch.Patch(precinctAddress);

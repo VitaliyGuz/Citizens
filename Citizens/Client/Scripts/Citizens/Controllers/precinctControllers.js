@@ -203,11 +203,10 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
             $rootScope.errorMsg = '';
             precinctAddressesData.remove(serviceUtil.getAddressKey(address),function () {
                 $scope.precinctAddresses.splice($scope.precinctAddresses.indexOf(address), 1);
-                }, function(err) {
-                    err.description = "Заборонено видаляти адресу, за якою закріплена фізособа";
-                    errorHandler(err);
-                }
-            );
+            }, function (err) {
+                if (err.status !== 403) err.description = "Заборонено видаляти адресу, за якою закріплена фізособа";
+                errorHandler(err);
+            });
         };
 
         $scope.deletePrecinctDistrict = function (precinctDistrict, ind) {
