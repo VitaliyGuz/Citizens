@@ -288,7 +288,50 @@ namespace Citizens.Controllers.API
             
             return StatusCode(HttpStatusCode.Created);
         }
+
+        [HttpPost]
+        public async Task<IHttpActionResult> RemoveRange(ODataActionParameters parameters)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var paramProperties = parameters["Properties"] as IEnumerable<PersonAdditionalProperty>;
+            if (paramProperties == null) return BadRequest("Properties can't be null");
+
+            var properties = paramProperties as PersonAdditionalProperty[] ?? paramProperties.ToArray();
+            if (properties.Length == 0) return StatusCode(HttpStatusCode.NoContent);
+
+            var valuePropertyName = string.Empty;
+
+            try
+            {
+                valuePropertyName = (string)parameters["ValuePropertyName"];
+            }
+            catch (KeyNotFoundException) {/*NOP*/}
+
+            var removingItems = properties
+                .Join(db.PersonAdditionalProperties,
+                    p1 => new {p1.PersonId, p1.PropertyKeyId},
+                    p2 => new {p2.PersonId, p2.PropertyKeyId}, (k, v) => v)
+                .ToList();
+
+            if (!string.IsNullOrEmpty(valuePropertyName))
+            {
+                var propInfo = typeof (PersonAdditionalProperty).GetProperty(valuePropertyName);
+                var values = properties.Select(p => propInfo.GetValue(p)).Distinct().Where(v => v != null);
+                removingItems = removingItems.Where(p => values.Contains(propInfo.GetValue(p))).ToList();
+            }
+
+            db.PersonAdditionalProperties.RemoveRange(removingItems);
+
+            await db.SaveChangesAsync();
+            
+            return StatusCode(HttpStatusCode.NoContent);
+        }
     }
+
     class PersonAdditionalPropertyComparer : IEqualityComparer<PersonAdditionalProperty>
     {
         public bool Equals(PersonAdditionalProperty x, PersonAdditionalProperty y)

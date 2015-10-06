@@ -3,36 +3,50 @@
 </div>
 <div class="modal-body">
     <div class="alert {{alert.type}}" ng-show="alert.message">{{alert.message}}</div>
-    <div class="col-lg-6">
-        <div class="form-group">
-            <label>Тип</label>
-            <select ng-change="onChangePropertyKey()" class="form-control" ng-options="p as p.Name for p in propKeys"
-                    ng-model="property.Key" required>
-                <option value='' disabled>-Вибрати-</option>
-            </select>
-        </div>    
-    </div>
-    <div class="col-lg-6">
-        <div class="form-group">
-            <label>Значення</label>
-            <input ng-if="property.Key.PropertyType.isPrimitive && property.Key.PropertyType.html !== 'date'" class="form-control" type="{{ property.Key.PropertyType.html }}" ng-model="property.Value" />
-            <input ng-if="property.Key.PropertyType.html === 'date'" class="form-control" type="text" datepicker ng-model="property.Value" placeholder="дд.мм.рррр" />
-            <input ng-if="property.Key.PropertyType.html === 'ref'" type="text" ng-change="property.ValueId=0" typeahead-on-select="onSelectProperty($item)" ng-model="property.Value"
-                   typeahead="p as p.Value for p in getPropertyValuesByKeyId(property.Key.Id) | filter: {Value:$viewValue} | orderByStartsWith:{Value:$viewValue} | limitTo:10" class="form-control">
-            <input ng-if="property.Key.PropertyType.html === 'refCity'" type="text" ng-change="property.ValueId=0" typeahead-on-select="onSelectProperty($item)" ng-model="property.Value"
-                   typeahead="c as c.CityType.Name +' '+c.Name + ' (' + c.RegionPart.Name + ' р-н)' for c in cities | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control">
-            <input ng-if="property.Key.PropertyType.html === 'refStreet'" type="text" ng-change="property.ValueId=0" typeahead-on-select="onSelectProperty($item)" ng-model="property.Value"
-                   typeahead="s as s.StreetType.Name +' '+ s.Name for s in streets | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control">
+    <div class="row">
+        <div class="col-lg-6">
+            <label class="radio-inline">
+                <input type="radio" name="modeGroup" ng-model="opt.addMode" ng-value="true" checked/> Додати
+            </label>
+            <label class="radio-inline">
+                <input type="radio" name="modeGroup" ng-model="opt.addMode" ng-value="false" ng-change="opt.replaceExisting=false" /> Видалити
+            </label>
+        </div>
+        <div class="col-lg-6 form-group">
+            <label class="checkbox-inline">
+                <input type="checkbox" ng-model="opt.replaceExisting" ng-disabled="!opt.addMode" />
+                Заміняти існуючі значення на нове
+            </label>
         </div>
     </div>
-    <div class="form-group">
-        <label class="checkbox-inline">
-            <input type="checkbox" ng-model="replaceExisting"/>
-            Заміняти існуючі значення на нове
-        </label>
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="form-group">
+                <label>Тип</label>
+                <select ng-change="onChangePropertyKey()" class="form-control" ng-options="p as p.Name for p in propKeys"
+                        ng-model="property.Key" required>
+                    <option value='' disabled>-Вибрати-</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="form-group">
+                <label>Значення</label>
+                <input ng-if="property.Key.PropertyType.isPrimitive && property.Key.PropertyType.html !== 'date'" class="form-control" type="{{ property.Key.PropertyType.html }}" ng-model="property.Value" />
+                <input ng-if="property.Key.PropertyType.html === 'date'" class="form-control" type="text" datepicker ng-model="property.Value" placeholder="дд.мм.рррр" />
+                <input ng-if="property.Key.PropertyType.html === 'ref'" type="text" ng-change="property.ValueId=0" typeahead-on-select="onSelectProperty($item)" ng-model="property.Value"
+                       typeahead="p as p.Value for p in getPropertyValuesByKeyId(property.Key.Id) | filter: {Value:$viewValue} | orderByStartsWith:{Value:$viewValue} | limitTo:10" class="form-control">
+                <input ng-if="property.Key.PropertyType.html === 'refCity'" type="text" ng-change="property.ValueId=0" typeahead-on-select="onSelectProperty($item)" ng-model="property.Value"
+                       typeahead="c as c.CityType.Name +' '+c.Name + ' (' + c.RegionPart.Name + ' р-н)' for c in cities | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control">
+                <input ng-if="property.Key.PropertyType.html === 'refStreet'" type="text" ng-change="property.ValueId=0" typeahead-on-select="onSelectProperty($item)" ng-model="property.Value"
+                       typeahead="s as s.StreetType.Name +' '+ s.Name for s in streets | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control">
+            </div>
+        </div>
     </div>
-    <div class="form-horizontal">
-        <span>Кількість фізосіб, яким буде встановлено хар-ку: </span><strong>{{checkedPeople.value.length}}</strong>
+    <div class="row">
+        <div class="col-lg-12">
+            <span>Кількість фізосіб, яким буде змінено хар-ку: </span><strong>{{checkedPeople.value.length}}</strong>
+        </div>
     </div>
 </div>
 <div class="modal-footer">

@@ -117,6 +117,12 @@ namespace Citizens
             addRangeAction.Parameter<bool>("ReplaceExisting");
             addRangeAction.CollectionParameter<PersonAdditionalProperty>("Properties");
 
+            var removeRangeAction = builder.EntityType<PersonAdditionalProperty>()
+                .Collection
+                .Action("RemoveRange");
+            removeRangeAction.CollectionParameter<PersonAdditionalProperty>("Properties");
+            removeRangeAction.Parameter<string>("ValuePropertyName").OptionalParameter = true;
+
             builder.EntityType<Person>().Action("ClearMajor");
 
             config.EnableCaseInsensitive(caseInsensitive: true);

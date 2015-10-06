@@ -410,19 +410,30 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
                         PersonId: personId,
                         PropertyKeyId: prop.Key.Id,
                     };
-                    modelProp[prop.Key.PropertyType.field] = prop.Key.PropertyType.isPrimitive ? prop.Value : prop.ValueId;
+                    if (prop.Value) {
+                        modelProp[prop.Key.PropertyType.field] = prop.Key.PropertyType.isPrimitive ? prop.Value : prop.ValueId;
+                    }
                     return modelProp;
                 });
 
-                peopleDataService.additionalPropsResource.addRange({
-                    'ReplaceExisting': result.replaceExisting,
-                    'Properties': properties
-                }, function () {
+                var successHandler = function() {
                     $scope.loader.savingProps = false;
                     $rootScope.checkedPeople.value = [];
                     $rootScope.checkedPeople.pages = [];
-                    $rootScope.successMsg = "Додаткові характеристики успішно збережені!";
-                }, errorHandler);
+                    $rootScope.successMsg = "Додаткові характеристики успішно змінено!";
+                };
+
+                if (result.addMode) {
+                    peopleDataService.additionalPropsResource.addRange({
+                        'ReplaceExisting': result.replaceExisting,
+                        'Properties': properties
+                    }, successHandler, errorHandler);
+                } else {
+                    var params = {};
+                    if (prop.Value) params.ValuePropertyName = prop.Key.PropertyType.field;
+                    params.Properties = properties;
+                    peopleDataService.additionalPropsResource.removeRange(params, successHandler, errorHandler);
+                }
             });
         };
 
@@ -999,6 +1010,7 @@ peopleControllers.controller('modalAdditionalPropertyCtrl', ['$scope', '$modalIn
     };
 
     $scope.alert = {};
+    $scope.opt = { addMode: true, replaceExisting: false };
    
     $scope.onSelectProperty = function ($item) {
         $scope.property.ValueId = $item.Id;
@@ -1021,7 +1033,7 @@ peopleControllers.controller('modalAdditionalPropertyCtrl', ['$scope', '$modalIn
             return;
         };
 
-        if (!$scope.property.Value) {
+        if ($scope.opt.addMode && !$scope.property.Value) {
             $scope.alert = {
                 type: "alert-danger",
                 message: "Не вибрано значення характеристики"
@@ -1029,7 +1041,7 @@ peopleControllers.controller('modalAdditionalPropertyCtrl', ['$scope', '$modalIn
             return;
         };
         
-        if (!$scope.property.Key.PropertyType.isPrimitive && !$scope.property.ValueId) {
+        if ($scope.property.Value && !$scope.property.Key.PropertyType.isPrimitive && !$scope.property.ValueId) {
             $scope.alert = {
                 type: "alert-danger",
                 message: "Значення '" + $scope.property.Value + "' для характеристики '" + $scope.property.Key.Name + "' не знайдено"
@@ -1037,7 +1049,7 @@ peopleControllers.controller('modalAdditionalPropertyCtrl', ['$scope', '$modalIn
             return;
         };
 
-        if ($scope.property.Key.PropertyType.html === 'date') {
+        if ($scope.property.Key.PropertyType.html === 'date' && $scope.property.Value) {
             $scope.property.Value = serviceUtil.formatDate($scope.property.Value, config.LOCALE_ISO_DATE_FORMAT)
             if (!$scope.property.Value) {
                 $scope.alert = {
@@ -1050,7 +1062,8 @@ peopleControllers.controller('modalAdditionalPropertyCtrl', ['$scope', '$modalIn
 
         $modalInstance.close({
             property: $scope.property,
-            replaceExisting: $scope.replaceExisting == undefined ? false : $scope.replaceExisting
+            replaceExisting: $scope.opt.replaceExisting == undefined ? false : $scope.opt.replaceExisting,
+            addMode: $scope.opt.addMode
         });
     };
 

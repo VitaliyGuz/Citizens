@@ -47,6 +47,7 @@ angular.module("peopleServices", ['ngResource', 'precinctServices']).
 		    'getValues': { method: 'GET', params: params.filter, url: urlOdataValues + "?$orderby=PropertyKeyId,Value:filter", cache: true },
 		    'getRange': { method: 'POST', url: urlOdata + "/GetRange"},
 		    'addRange': { method: 'POST', url: urlOdata + "/AddRange"},
+		    'removeRange': { method: 'POST', url: urlOdata + "/RemoveRange"},
 		    'updateKey': { method: 'PUT', params: params.id, url: urlOdataKeys + "(:id)" },
 		    'updateValue': { method: 'PUT', params: params.id, url: urlOdataValues + "(:id)" },
 		    'saveKey': { method: "POST", url: urlOdataKeys },
