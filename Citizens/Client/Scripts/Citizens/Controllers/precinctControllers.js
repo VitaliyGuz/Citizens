@@ -117,7 +117,7 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
         $scope.saving = {};
         $scope.changingPresinct = false;
         $scope.addMode = true;
-
+        $scope.validation = { house: {} };
         //todo: rewrite all controllers where used pagination like this:
         $scope.pagination = {
             currentPage: 1,
@@ -164,6 +164,11 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
             $rootScope.errorMsg = serviceUtil.getErrorMessage(err);
         });
 
+        $scope.patterns = {
+            houseExceptBuilding: config.patterns.houseExceptBuilding,
+            houseBuilding: config.patterns.houseBuilding
+        };
+
         userData.getRoles(function (roles) {
             $scope.roles = roles.value;
         });
@@ -174,6 +179,7 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
             $scope.addAddressMode = false;
             precinctAddressesData.query(serviceUtil.getAddressKey(address), function (res) {
                 $scope.selected.address = res;
+                $scope.selected.address.houseExceptBuilding = serviceUtil.getHouseExceptBuilding(res.House);
             }, errorHandler);
         };
 
@@ -304,7 +310,7 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
             }
             $rootScope.errorMsg = '';
             $scope.saving.address = true;
-            
+            serviceUtil.parseHouseNumber($scope.selected.address);
             var address = modelFactory.createObject('precinctAddress',$scope.selected.address);
             address.PrecinctId = $scope.precinct.Id;
             if ($scope.addAddressMode || copyAddressMode) {
@@ -321,7 +327,7 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
                         precinctAddressesData.remove(serviceUtil.getAddressKey(oldValue), function () {
                             savePrecinctAddresses();
                         }, function (err) {
-                            err.description = "Заборонено редагувати адресу, за якою закріплена фізособа";
+                            if (err.status !== 403) err.description = "Заборонено редагувати адресу, за якою закріплена фізособа";
                             errorHandler(err);
                         });
                     });
@@ -447,6 +453,8 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
                 $scope.selected.address.City = $scope.precinct.City;
                 $scope.selected.address.CityId = $scope.precinct.City.Id;
             }
+            $scope.selected.address.houseExceptBuilding = '';
+            $scope.selected.address.HouseBuilding = '';
         };
 
         //todo: merge into one 'addNew' function like this:
@@ -497,6 +505,7 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
             }
             copyAddressMode = false;
             editableAddress = undefined;
+            $scope.validation.house.invalid = false;
         };
 
         //todo: merge into one 'reset' function like this:
@@ -765,6 +774,9 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
             $scope.query[propName] = undefined;
         };
 
+        $scope.houseValidation = function() {
+            $scope.validation.house.invalid = $scope.selected.address.houseExceptBuilding == undefined || $scope.selected.address.HouseBuilding == undefined;
+        };
     }]);
 
 precinctControllers.controller('geocodingController', ['$scope', '$rootScope', '$timeout', 'precinctData', 'serviceUtil', 'refreshToken', 'modelFactory', function ($scope, $rootScope, $timeout, precinctData, serviceUtil, refreshToken, modelFactory) {

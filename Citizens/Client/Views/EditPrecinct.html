@@ -125,7 +125,7 @@
                             </span>
                         </div>
                     </th>
-                    <th class="col-sm-2" title="Редагування здійснюється подвійним натиснення лівої кнопки миші на назві колонки">
+                    <th class="col-sm-3" title="Редагування здійснюється подвійним натиснення лівої кнопки миші на назві колонки">
                         <span ng-hide="theadEditing.house" ng-dblclick="onDblClickThead('house')">Буд. <span class="glyphicon glyphicon-filter"></span></span>
                         <div ng-show="theadEditing.house" class="input-group">
                             <input type="text" ng-model="query.house" class="form-control" placeholder="№ буд." autofocus>
@@ -175,7 +175,6 @@
                     <td ng-include="getTemplate(address,'Apartments')"></td>
                     <td ng-if="changingPresinct" ng-include="getTemplate(address,'Number')"></td>
                     <td ng-include="getTemplate(address,'Btn')"></td>
-
                 </tr>
             </tbody>
         </table>
@@ -248,7 +247,7 @@
         <script type="text/ng-template" id="editCity">
             <td>
                 <input type="text" ng-change="selected.address.CityId=0" typeahead-on-select="onSelectCity($item, $model, $label,selected.address)" ng-model="selected.address.City"
-                        typeahead="c.Id as c.CityType.Name +' '+c.Name + ' (' + c.RegionPart.Name + ' р-н)' for c in cities | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control" placeholder="Населений пункт">
+                       typeahead="c.Id as c.CityType.Name +' '+c.Name + ' (' + c.RegionPart.Name + ' р-н)' for c in cities | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control" placeholder="Населений пункт">
             </td>
         </script>
         <script type="text/ng-template" id="editStreet">
@@ -258,7 +257,21 @@
             </td>
         </script>
         <script type="text/ng-template" id="editHouse">
-            <td><input class="form-control" ng-model="selected.address.House" ></td>
+            <td>
+                <form name="house">
+                    <div class="input-group">
+                        <div ng-class="{'has-error': house.exceptBuilding.$invalid}">
+                            <input class="form-control" ng-model="selected.address.houseExceptBuilding" ng-change="houseValidation()" name="exceptBuilding"
+                                   ng-pattern="patterns.houseExceptBuilding" placeholder="номер">
+                        </div>
+                        <div class="input-group-addon">к.</div>
+                        <div ng-class="{'has-error': house.building.$invalid}">
+                            <input class="form-control" ng-model="selected.address.HouseBuilding" ng-change="houseValidation()" name="building"
+                                   ng-pattern="patterns.houseBuilding" placeholder="корпус">
+                        </div>
+                    </div>
+                </form>
+            </td>
         </script>
         <script type="text/ng-template" id="editHouseType">
             <td>
@@ -273,7 +286,7 @@
         <script type="text/ng-template" id="editNumber"></script>
         <script type="text/ng-template" id="editBtn">
             <td>
-                <button ng-click="saveAddress(address)" class="btn btn-sm btn-success" title="Зберегти зміни">
+                <button ng-click="saveAddress(address)" class="btn btn-sm btn-success" ng-disabled="validation.house.invalid" title="Зберегти зміни">
                     <span class="glyphicon glyphicon-save"></span>
                     <i ng-show="saving.address" class="fa fa-refresh fa-spin"></i>
                 </button>

@@ -32,7 +32,7 @@
         <tr>
             <th>Населений пункт</th>
             <th>Вулиця</th>
-            <th style="width: 100px">№ буд.</th>
+            <th style="width: 200px">№ буд.</th>
             <th style="width: 95px">Дільниця </th>
             <th style="width: 120px">Тип будинку</th>
             <th style="width: 80px">К-сть квартир</th>
@@ -53,7 +53,21 @@
                 <input type="text" ng-model="newAddress.Street" ng-change="newAddress.StreetId=0" typeahead-on-select="onSelectStreet($item,newAddress)"
                        typeahead="s as s.StreetType.Name +' '+ s.Name for s in streets | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control">
             </td>
-            <td><input class="form-control" ng-model="newAddress.House"></td>
+            <td>
+                <form name="house">
+                    <div class="input-group">
+                        <div ng-class="{'has-error': house.exceptBuilding.$invalid}">
+                            <input class="form-control" ng-model="newAddress.houseExceptBuilding" ng-change="houseValidation()" name="exceptBuilding"
+                                   ng-pattern="patterns.houseExceptBuilding" placeholder="номер">
+                        </div>
+                        <div class="input-group-addon">к.</div>
+                        <div ng-class="{'has-error': house.building.$invalid}">
+                            <input class="form-control" ng-model="newAddress.HouseBuilding" ng-change="houseValidation()" name="building"
+                                   ng-pattern="patterns.houseBuilding" placeholder="корпус">
+                        </div>
+                    </div>
+                </form>
+            </td>
             <td>
                 <input type="text" ng-model="newAddress.Precinct" ng-change="newAddress.PrecinctId=0" typeahead-on-select="onSelectPrecinct($item)"
                        typeahead="p as p.Number for p in precincts | filter: {Number:$viewValue} | orderByStartsWith:{Number:$viewValue} | limitTo:10" class="form-control">
@@ -65,7 +79,7 @@
             </td>
             <td><input class="form-control" ng-model="newAddress.Apartments" type="number"></td>
             <td>
-                <button ng-click="save()" class="btn btn-xs btn-success" title="Зберегти зміни">
+                <button ng-click="save()" class="btn btn-xs btn-success" ng-disabled="validation.house.invalid" title="Зберегти зміни">
                     <span class="glyphicon glyphicon-save"></span>
                     <i ng-show="loader.saving" class="fa fa-refresh fa-spin"></i>
                 </button>

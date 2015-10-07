@@ -216,14 +216,18 @@ app.constant("config", Object.freeze({
     pageSize: 20, // by default 20
     pageSizeTabularSection: 10,
     checkDeleteItem: true,
-    getExternalProviderUrl: function (provider) {
+    getExternalProviderUrl: function(provider) {
         var redirectUri = location.protocol + '//' + location.host + '/Views/AuthComplete.html';
         return this.baseUrl + "/api/Account/ExternalLogin?provider=" + provider + "&response_type=token&client_id=Citizens" + "&redirect_uri=" + redirectUri;
     },
     LOCALE_DATE_FORMAT: 'dd.MM.yyyy',
     LOCALE_ISO_DATE_FORMAT: 'yyyy-MM-ddT00:00:00+02:00',
-    pathPrintTemplates:'/Views/Print',
-    pathModalTemplates:'/Views/Modals'
+    pathPrintTemplates: '/Views/Print',
+    pathModalTemplates: '/Views/Modals',
+    patterns: {
+        houseExceptBuilding: /^(\d+[а-яА-Яі-їІ-Ї]*-?\d*\/)?\d*[а-яА-Яі-їІ-Ї]*-?\d*$/,
+        houseBuilding: /^\d+[а-яА-Яі-їІ-Ї]*,?-?\d*[а-яА-Яі-їІ-Ї]*\/?\d*$/
+    }
 }));
 
 app.filter('checkApartment', function () {
@@ -283,9 +287,9 @@ app.factory("serviceUtil", ["$filter", '$routeParams', '$rootScope', function ($
             if(!date) return undefined;
             if (angular.isDate(date)) return date;
             var regex = /^(\d{2}).(\d{2}).(\d{4})/,
-                maches = regex.exec(date);
-            if (maches) {
-                return new Date(maches[3], maches[2] - 1, maches[1]);
+                matches = regex.exec(date);
+            if (matches) {
+                return new Date(matches[3], matches[2] - 1, matches[1]);
             } else {
                 return undefined;
             }
@@ -405,6 +409,29 @@ app.factory("serviceUtil", ["$filter", '$routeParams', '$rootScope', function ($
                 }
             }
             return -1;
+        },
+        parseHouseNumber: function (address) {
+            if (!address.houseExceptBuilding) return;
+            var regex = /(\d*)([а-яА-Яі-їІ-Ї]*)([^\/]*)(\/)?(.*)?/;
+            address.House = address.houseExceptBuilding.toLocaleUpperCase();
+            var matches = regex.exec(address.House);
+            if (address.HouseBuilding) {
+                address.HouseBuilding = address.HouseBuilding.toLocaleUpperCase();
+                address.House = address.House + ' к.' + address.HouseBuilding;
+            }
+            if (matches) {
+                address.HouseNumber = parseInt(matches[1]) || null;
+                if (matches[2]) {
+                    address.HouseLetter = matches[2];
+                    if (matches[3]) address.HouseLetter = address.HouseLetter + matches[3];
+                } else {
+                    address.HouseLetter = '';
+                }
+                address.HouseFraction = matches[5] || '';
+            }
+        },
+        getHouseExceptBuilding: function(house) {
+            return house.replace(/\s[к|К].+/, '').replace(/\,/g, '').trim();
         }
     }
 }]);

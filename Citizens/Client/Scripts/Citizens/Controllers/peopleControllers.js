@@ -848,7 +848,7 @@ peopleControllers.controller('modalWorkAreaSelectionCtrl', ['$scope', '$modalIns
     };
 }]);
 
-peopleControllers.controller('modalHouseSelectionCtrl', ['$scope', '$modalInstance', 'precinctAddressesData', 'serviceUtil', 'houseTypes', 'precinctData', 'modelFactory', function ($scope, $modalInstance, precinctAddressesData, serviceUtil, houseTypes, precinctData, modelFactory) {
+peopleControllers.controller('modalHouseSelectionCtrl', ['$scope', '$modalInstance', 'precinctAddressesData', 'serviceUtil', 'config', 'houseTypes', 'precinctData', 'modelFactory', function ($scope, $modalInstance, precinctAddressesData, serviceUtil,config, houseTypes, precinctData, modelFactory) {
 
     if ($scope.person) {
         $scope.searchBy = {
@@ -861,6 +861,11 @@ peopleControllers.controller('modalHouseSelectionCtrl', ['$scope', '$modalInstan
     $scope.loader = {};
     $scope.alert = {};
     $scope.precinctAddresses = [];
+    $scope.validation = { house: {} };
+    $scope.patterns = {
+        houseExceptBuilding: config.patterns.houseExceptBuilding,
+        houseBuilding: config.patterns.houseBuilding
+    };
 
     precinctData.getAllNotExpand(function(resp) {
         $scope.precincts = resp.value;
@@ -882,6 +887,7 @@ peopleControllers.controller('modalHouseSelectionCtrl', ['$scope', '$modalInstan
         $scope.addMode = false;
         $scope.newAddress = {};
         $scope.alert = {};
+        $scope.validation.house.invalid = false;
     };
 
     $scope.searchAddress = function () {
@@ -929,7 +935,14 @@ peopleControllers.controller('modalHouseSelectionCtrl', ['$scope', '$modalInstan
             $scope.newAddress.Street = $scope.searchBy.street;
             $scope.newAddress.StreetId = $scope.searchBy.street.Id;
         }
-        if ($scope.searchBy && $scope.searchBy.house) $scope.newAddress.House = $scope.searchBy.house;
+        if ($scope.searchBy && $scope.searchBy.house) {
+            $scope.newAddress.houseExceptBuilding = serviceUtil.getHouseExceptBuilding($scope.searchBy.house);
+            $scope.newAddress.HouseBuilding = $scope.searchBy.house.replace($scope.newAddress.houseExceptBuilding,'').replace(/\s[к|К]\./, '').trim();
+        } else {
+            $scope.newAddress.houseExceptBuilding = '';
+            $scope.newAddress.HouseBuilding = '';
+        }
+        
     };
 
     $scope.save = function () {
@@ -958,7 +971,7 @@ peopleControllers.controller('modalHouseSelectionCtrl', ['$scope', '$modalInstan
 
         $scope.loader.saving = true;
         $scope.alert = {};
-        
+        serviceUtil.parseHouseNumber($scope.newAddress);
         if ($scope.newAddress.Precinct && !$scope.newAddress.PrecinctId) {
             precinctData.save({ "Number": $scope.newAddress.Precinct }, savePrecinctAddress, errorHandler);
         } else {
@@ -996,6 +1009,9 @@ peopleControllers.controller('modalHouseSelectionCtrl', ['$scope', '$modalInstan
         $scope.newAddress.PrecinctId = $item.Id;
     };
 
+    $scope.houseValidation = function () {
+        $scope.validation.house.invalid = $scope.newAddress.houseExceptBuilding == undefined || $scope.newAddress.HouseBuilding == undefined;
+    };
 }]);
 
 peopleControllers.controller('modalAdditionalPropertyCtrl', ['$scope', '$modalInstance', 'serviceUtil','config', function ($scope, $modalInstance, serviceUtil, config) {
