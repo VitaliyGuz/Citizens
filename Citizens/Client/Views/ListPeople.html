@@ -182,7 +182,7 @@
 <div class="row">
     <div class="col-md-2" access-permissions="SuperAdministrators">
         <button ng-click="addNew()" class="btn btn-sm btn-success">
-            <span class="glyphicon glyphicon-plus"></span> Створити нову фіз. особу
+            <span class="glyphicon glyphicon-plus"></span> Створити фіз. особу
         </button>
     </div>
     <div class="col-md-2">
@@ -191,13 +191,14 @@
             <i ng-show="loader.savingProps" class="fa fa-refresh fa-spin"></i>
         </button>
     </div>
-    <div ng-show="showFilters" class="col-md-4">
-        <button ng-click="applyFilter()" class="btn btn-sm btn-success">
-            <span class="glyphicon glyphicon-filter"></span> Застосувати фільтр
+    <div ng-show="showFilters" class="col-md-2">
+        <button ng-click="applyFilter()" class="btn btn-sm btn-success" title="Застосувати фільтр">
+            <span class="glyphicon glyphicon-filter"></span>
             <i ng-show="loader.filtering" class="fa fa-refresh fa-spin"></i>
         </button>
-        <button ng-click="resetFilter()" class="btn btn-sm btn-success">
-            <span class="glyphicon glyphicon-remove-sign"></span> Скасувати фільтр
+        <button ng-click="resetFilter()" class="btn btn-sm btn-success" title="Скасувати фільтр">
+            <span class="glyphicon glyphicon-filter"></span>
+            <span class="glyphicon glyphicon-remove"></span>
         </button>
     </div>
     <div class="col-md-4">
@@ -205,8 +206,11 @@
             <input type="checkbox" ng-model="showFilters"/> Показати фільтри
         </label>
         <label class="checkbox-inline">
-            <input type="checkbox" ng-model="checkedPeople.show" /> Режим вибору
+            <input type="checkbox" ng-model="checkedPeople.show"/> Режим вибору
         </label>
+    </div>
+    <div class="col-md-2">
+        <label>Всього: {{pagination.totalItems}} </label>
     </div>
 </div>
 <hr>
