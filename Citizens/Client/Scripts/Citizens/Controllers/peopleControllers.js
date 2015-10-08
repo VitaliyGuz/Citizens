@@ -937,7 +937,7 @@ peopleControllers.controller('modalHouseSelectionCtrl', ['$scope', '$modalInstan
         }
         if ($scope.searchBy && $scope.searchBy.house) {
             $scope.newAddress.houseExceptBuilding = serviceUtil.getHouseExceptBuilding($scope.searchBy.house);
-            $scope.newAddress.HouseBuilding = $scope.searchBy.house.replace($scope.newAddress.houseExceptBuilding,'').replace(/\s[к|К]\./, '').trim();
+            $scope.newAddress.HouseBuilding = $scope.searchBy.house.replace($scope.newAddress.houseExceptBuilding,'').replace(/\s[к|К]\./, '').replace(/\,/, '').replace(/\s/g, '').trim();
         } else {
             $scope.newAddress.houseExceptBuilding = '';
             $scope.newAddress.HouseBuilding = '';

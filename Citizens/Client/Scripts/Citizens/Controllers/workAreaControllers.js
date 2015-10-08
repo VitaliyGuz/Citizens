@@ -445,7 +445,14 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
                 if (!isContains) result.push(address);
                 return result;
             }, []);
-            addresses.forEach(serviceUtil.expandAddress);
+            addresses.forEach(function (adr) {
+                if (!adr.Apartment) adr.Apartment = 0;
+                adr.houseOrig = adr.House;
+                adr.houseExceptBuilding = serviceUtil.getHouseExceptBuilding(adr.House);
+                adr.HouseBuilding = adr.House.replace(adr.houseExceptBuilding, '').replace(/\s[к|К]\./, '').replace(/\,/, '').replace(/\s/g, '').trim();
+                serviceUtil.parseHouseNumber(adr);
+                serviceUtil.expandAddress(adr);
+            });
             serviceUtil.sortAddresses(addresses);
             return addresses;
         };

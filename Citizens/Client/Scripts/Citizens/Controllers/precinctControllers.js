@@ -144,7 +144,7 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
                 $scope.autocomplete.CityId = resolvedData.precinct.City.Id;
                 $scope.autocomplete.City = resolvedData.precinct.City;
             }
-            sortAddresses($scope.precinctAddresses);
+            serviceUtil.sortAddresses($scope.precinctAddresses);
             $scope.precinctDistricts = resolvedData.precinct.DistrictPrecincts;
             if ($scope.precinctDistricts){
                 $scope.precinctDistricts.sort(function(a, b) {
@@ -353,7 +353,7 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
                 } else {
                     $scope.precinctAddresses[$scope.precinctAddresses.indexOf(oldValue)] = res;
                 }
-                sortAddresses($scope.precinctAddresses);
+                serviceUtil.sortAddresses($scope.precinctAddresses);
                 $scope.resetAddress();
             };
         };
@@ -588,7 +588,7 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
                     item.Street = $scope.autocomplete.Street;
                 });
                 $scope.precinctAddresses = $scope.precinctAddresses.concat(arrAddresses);
-                sortAddresses($scope.precinctAddresses);
+                serviceUtil.sortAddresses($scope.precinctAddresses);
             }, errorHandler);
         };
 
@@ -620,58 +620,6 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
                     $rootScope.errorMsg = serviceUtil.getErrorMessage(err);
                 });
             });
-        };
-
-        function sortAddresses(addresses) {
-            function parseHouseNumber(strNumber) {
-                var houseNumbRegex = /(\d*)?([а-яА-Я]*)?\/?(\d*)/i,
-                    housingRegex = /к.(\d*)/i,
-                    matches = houseNumbRegex.exec(strNumber),
-                    housing = housingRegex.exec(strNumber) || 0;
-                return { beforeSlash: parseInt(matches[1]), letter: matches[2] || '', afterSlash: parseInt(matches[3]) || 0, housing: housing[1] || 0 };
-            };
-
-            function compareHouses(h1, h2) {
-                var compInt = h1.beforeSlash - h2.beforeSlash, compLetter, compAfterSlash;
-                if (compInt === 0) {
-                    compLetter = h1.letter.localeCompare(h2.letter);
-                    if (compLetter === 0) {
-                        compAfterSlash = h1.afterSlash - h2.afterSlash;
-                        if (compAfterSlash === 0) {
-                            return h1.housing - h2.housing;
-                        } else {
-                            return compAfterSlash;
-                        }
-                    } else {
-                        return compLetter;
-                    }
-                } else {
-                    return compInt;
-                }
-            };
-
-            function compareAddresses(a1, a2) {
-                var compCity, compStreet, compHouse, compTypeStreet;
-                compCity = serviceUtil.compareByName(a1.City, a2.City);
-                compStreet = serviceUtil.compareByName(a1.Street, a2.Street);
-                compTypeStreet = serviceUtil.compareByName(a1.Street.StreetType, a2.Street.StreetType);
-                compHouse = compareHouses(parseHouseNumber(a1.House), parseHouseNumber(a2.House));
-                if (compCity === 0) {
-                    if (compStreet === 0) {
-                        if (compTypeStreet === 0) {
-                            return compHouse;
-                        } else {
-                            return compTypeStreet;
-                        }
-                    } else {
-                        return compStreet;
-                    }
-                } else {
-                    return compCity;
-                }
-            };
-
-            if (addresses) addresses.sort(compareAddresses);
         };
 
         $scope.onSelectStreet = function ($item, $model, $label, model) {

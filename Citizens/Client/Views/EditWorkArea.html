@@ -219,7 +219,7 @@
                 <tr dir-paginate="address in data.workAreaAddresses | itemsPerPage: pagination.pageSize" current-page="pagination.currentPage.tabEditMajors" pagination-id="workAreaEditMajorsPagination">
                     <td>{{ getIndex($index,'tabEditMajors') + 1 }}</td>
                     <td><input type="checkbox" class="checkbox-inline" ng-click="toggleSelection(address)" ng-checked="checked(address)"></td>
-                    <td>{{ address.City.CityType.Name}}{{address.City.Name}}, {{ address.Street.StreetType.Name }} {{ address.Street.Name }} {{ address.House }}{{ address.ApartmentStr | checkApartment}}</td>
+                    <td>{{ address.City.CityType.Name}}{{address.City.Name}}, {{ address.Street.StreetType.Name }} {{ address.Street.Name }} {{ address.houseOrig }}{{ address.ApartmentStr | checkApartment}}</td>
                     <td>{{ address.Major.LastName }} {{ address.Major.FirstName }} {{ address.Major.MidleName }}</td>
                 </tr>
             </tbody>

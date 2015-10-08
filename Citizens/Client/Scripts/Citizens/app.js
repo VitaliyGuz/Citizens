@@ -332,53 +332,59 @@ app.factory("serviceUtil", ["$filter", '$routeParams', '$rootScope', function ($
                 })[0];
             }
         },
-        //todo: sort on server-side
+        
         sortAddresses: function (addresses) {
-            function parseHouseNumber(strNumber) {
-                var houseNumbRegex = /(\d*)?([а-яА-Я]*)?\/?(\d*)/i,
-                    housingRegex = /к.(\d*)/i,
-                    matches = houseNumbRegex.exec(strNumber),
-                    housing = housingRegex.exec(strNumber) || 0;
-                return { beforeSlash: parseInt(matches[1]), letter: matches[2] || '', afterSlash: parseInt(matches[3]) || 0, housing: housing[1] || 0 };
-            };
 
-            function compareHouses(h1, h2) {
-                var compInt = h1.beforeSlash - h2.beforeSlash, compLetter, compAfterSlash;
-                if (compInt === 0) {
-                    compLetter = h1.letter.localeCompare(h2.letter);
-                    if (compLetter === 0) {
-                        compAfterSlash = h1.afterSlash - h2.afterSlash;
-                        if (compAfterSlash === 0) {
-                            return h1.housing - h2.housing;
+            var compareByName =  this.compareByName;
+
+            function compareByHouse(a1, a2) {
+                var compNumber = a1.HouseNumber - a2.HouseNumber;
+                if (compNumber === 0) {                   
+                    var compFractionNumb = parseInt(a1.HouseFraction) - parseInt(a2.HouseFraction),
+                        compFractionStr = a1.HouseFraction.localeCompare(a2.HouseFraction),
+                        compFraction;
+                    if (isNaN(compFractionNumb)) {
+                        compFraction = compFractionStr;
+                    } else {
+                        compFraction = compFractionNumb === 0 ? compFractionStr : compFractionNumb;
+                    }
+                    if (compFraction === 0) {
+                        var compLetter = a1.HouseLetter.localeCompare(a2.HouseLetter);
+                        if (compLetter === 0) {
+                            var compBuildingStr = a1.HouseBuilding.localeCompare(a2.HouseBuilding),
+                            compBuildingNumb = parseInt(a1.HouseBuilding) - parseInt(a2.HouseBuilding);
+                            if (isNaN(compBuildingNumb)) {
+                                return compBuildingStr;
+                            } else {
+                                return compBuildingNumb === 0 ? compBuildingStr: compBuildingNumb;
+                            }
                         } else {
-                            return compAfterSlash;
+                            return compLetter;
                         }
                     } else {
-                        return compLetter;
-                    }
+                        return compFraction;
+                    }                   
                 } else {
-                    return compInt;
+                    return compNumber;
                 }
             };
 
-            var compareByNameFn =  this.compareByName;
-
             function compareAddresses(a1, a2) {
-                var compCity = compareByNameFn(a1.City, a2.City);
+                var compCity = compareByName(a1.City, a2.City);
                 var compStreet = 1, compTypeStreet = 1;
                 if (a1.Street && a2.Street) {
-                    compStreet = compareByNameFn(a1.Street, a2.Street);
-                    compTypeStreet = compareByNameFn(a1.Street.StreetType, a2.Street.StreetType);
+                    compStreet = compareByName(a1.Street, a2.Street);
+                    compTypeStreet = compareByName(a1.Street.StreetType, a2.Street.StreetType);
                 }
-                var compHouse = compareHouses(parseHouseNumber(a1.House), parseHouseNumber(a2.House));
+                var compHouse = compareByHouse(a1, a2);
                 var compApartment = 0;
-                if (a1.Apartment && a2.Apartment) compApartment = a1.Apartment - a2.Apartment;
+                if (a1.Apartment != null && a2.Apartment != null) compApartment = a1.Apartment - a2.Apartment;
                 if (compCity === 0) {
                     if (compStreet === 0) {
                         if (compTypeStreet === 0) {
-                            return compHouse === 0 ? compApartment : compHouse;
+                                return compHouse === 0 ? compApartment : compHouse;
                             } else {
-                            return compTypeStreet;
+                                return compTypeStreet;
                         }
                     } else {
                         return compStreet;
