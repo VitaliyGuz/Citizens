@@ -261,12 +261,12 @@
                 <form name="house">
                     <div class="input-group">
                         <div ng-class="{'has-error': house.exceptBuilding.$invalid}">
-                            <input class="form-control" ng-model="selected.address.houseExceptBuilding" ng-change="houseValidation()" name="exceptBuilding"
+                            <input class="form-control" ng-model="selected.address.houseExceptBuilding" ng-change="houseValidate()" name="exceptBuilding"
                                    ng-pattern="patterns.houseExceptBuilding" placeholder="номер">
                         </div>
                         <div class="input-group-addon">к.</div>
                         <div ng-class="{'has-error': house.building.$invalid}">
-                            <input class="form-control" ng-model="selected.address.HouseBuilding" ng-change="houseValidation()" name="building"
+                            <input class="form-control" ng-model="selected.address.HouseBuilding" ng-change="houseValidate()" name="building"
                                    ng-pattern="patterns.houseBuilding" placeholder="корпус">
                         </div>
                     </div>

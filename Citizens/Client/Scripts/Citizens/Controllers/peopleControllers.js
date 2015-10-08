@@ -1009,8 +1009,8 @@ peopleControllers.controller('modalHouseSelectionCtrl', ['$scope', '$modalInstan
         $scope.newAddress.PrecinctId = $item.Id;
     };
 
-    $scope.houseValidation = function () {
-        $scope.validation.house.invalid = $scope.newAddress.houseExceptBuilding == undefined || $scope.newAddress.HouseBuilding == undefined;
+    $scope.houseValidate = function () {
+        $scope.validation.house.invalid = this.house.$invalid;
     };
 }]);
 

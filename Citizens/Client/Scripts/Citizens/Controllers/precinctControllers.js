@@ -774,8 +774,8 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
             $scope.query[propName] = undefined;
         };
 
-        $scope.houseValidation = function() {
-            $scope.validation.house.invalid = $scope.selected.address.houseExceptBuilding == undefined || $scope.selected.address.HouseBuilding == undefined;
+        $scope.houseValidate = function () {
+            $scope.validation.house.invalid = this.house.$invalid;
         };
     }]);
 
