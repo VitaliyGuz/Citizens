@@ -31,20 +31,26 @@ angular.module("workAreaServices", ['ngResource', 'precinctServices', 'peopleSer
         function ($q, serviceUtil, precinctAddressesData, precinctData, workAreaResource, peopleResource) {
             return {
                 asyncLoad: function(routeParams) {
-                    var resolved = {}, deferred = $q.defer();
+                    var resolved = {}; //deferred = $q.defer();
 
-                    function errorHandler(err) {
-                        deferred.reject(err);
-                    };
+                    //function errorHandler(err) {
+                    //    deferred.reject(err);
+                    //};
 
                     if (routeParams.id) {
                         resolved.workArea = workAreaResource.getById({ id: routeParams.id }).$promise;
                         if (routeParams.precinctId) {
-                            resolved.precinctAddresses = deferred.promise;
-                            precinctAddressesData.getAllByPrecinctId({ precinctId: routeParams.precinctId }, function(resp) {
-                                serviceUtil.sortAddresses(resp.value);
-                                deferred.resolve(resp.value);
-                            }, errorHandler);
+                            //resolved.precinctAddresses = deferred.promise;
+                            //precinctAddressesData.getAllByPrecinctId({ precinctId: routeParams.precinctId }, function(resp) {
+                            //    serviceUtil.sortAddresses(resp.value);
+                            //    deferred.resolve(resp.value);
+                            //}, errorHandler);
+                            resolved.precinctAddresses = precinctAddressesData.getAllByPrecinctId({ precinctId: routeParams.precinctId }).$promise
+                                .then(function (data) {
+                                    serviceUtil.sortAddresses(data.value);
+                                    return data.value;
+                                });
+                            
                         }
                         if (routeParams.majorId) {
                             resolved.appointedMajor = peopleResource.getById({ id: routeParams.majorId }).$promise;
@@ -53,8 +59,11 @@ angular.module("workAreaServices", ['ngResource', 'precinctServices', 'peopleSer
                             resolved.appointedTop = peopleResource.getById({ id: routeParams.topId }).$promise;
                         }
                     } else {
-                        resolved.precincts = deferred.promise;
-                        precinctData.getAllNotExpand(function (resp) { deferred.resolve(resp.value) }, errorHandler);
+                        //resolved.precincts = deferred.promise;
+                        resolved.precincts = precinctData.getAllNotExpand().$promise
+                            .then(function(data) {
+                                return data.value;
+                            });
                     }
 
                     return $q.all(resolved);
