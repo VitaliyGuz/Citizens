@@ -172,8 +172,8 @@ workAreaControllers.controller("listWorkAreasController", ['$location', '$rootSc
         };
     }]);
 
-workAreaControllers.controller("editWorkAreaController", ['$location', '$rootScope', '$scope', '$modal', '$q', 'serviceUtil', 'config', 'precinctData', 'precinctAddressesData', 'resolvedData', 'workAreaResource', 'modelFactory', 'houseTypes', 'peopleDataService', 'filterSettings', 'printer',
-    function ($location, $rootScope, $scope, $modal,$q, serviceUtil, config, precinctData, precinctAddressesData, resolvedData, workAreaResource, modelFactory, houseTypes, peopleDataService,filterSettings,printer) {
+workAreaControllers.controller("editWorkAreaController", ['$location', '$rootScope', '$scope', '$modal', '$q', 'serviceUtil', 'config', 'precinctAddressesData', 'resolvedData', 'workAreaResource', 'modelFactory', 'houseTypes', 'peopleDataService', 'filterSettings', 'printer',
+    function ($location, $rootScope, $scope, $modal,$q, serviceUtil, config, precinctAddressesData, resolvedData, workAreaResource, modelFactory, houseTypes, peopleDataService,filterSettings,printer) {
         
         $rootScope.pageTitle = 'Робоча дільниця';
         $scope.loader = {};
@@ -586,30 +586,11 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
         };
 
         $scope.redirectToSupporters = function(major) {
-            var q = {
-                ref: {
-                    Major: {
-                        label: peopleDataService.getPersonLabel(major),
-                        Id: major.Id
-                    }
-                }
-            };
+            var q = { eq: { Major: major } };
+            q.eq.Major.label = peopleDataService.getPersonLabel(major);
             filterSettings.remove('people');
-            //var q = { ref: { Major: major } }, odataFilter = "&$filter=MajorId eq " + major.Id;
-            //q.ref.Major.label = peopleDataService.getPersonLabel(major);
-            //var peopleFilterSettings = filterSettings.get('people');
-            //if (peopleFilterSettings) {
-            //    peopleFilterSettings.props = q;
-            //    peopleFilterSettings.odataFilter = odataFilter;
-            //} else {
-            //    filterSettings.set('people', {
-            //        props: q,
-            //        odataFilter: odataFilter
-            //    });
-            //}
-            //$location.url("/people");
-            $location.url("/people").search("query",angular.toJson(q));
-            
+            filterSettings.set('people', { props: q });
+            $location.url("/people").search("query", angular.toJson({ eq: { Major: { Id: major.Id } } }));            
         };
 
         $scope.print = function () {

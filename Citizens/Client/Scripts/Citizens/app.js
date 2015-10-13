@@ -221,7 +221,7 @@ app.constant("config", Object.freeze({
         return this.baseUrl + "/api/Account/ExternalLogin?provider=" + provider + "&response_type=token&client_id=Citizens" + "&redirect_uri=" + redirectUri;
     },
     LOCALE_DATE_FORMAT: 'dd.MM.yyyy',
-    LOCALE_ISO_DATE_FORMAT: 'yyyy-MM-ddT00:00:00+02:00',
+    LOCALE_ISO_DATE_FORMAT: 'yyyy-MM-ddT00:00:00+00:00',
     pathPrintTemplates: '/Views/Print',
     pathModalTemplates: '/Views/Modals',
     patterns: {

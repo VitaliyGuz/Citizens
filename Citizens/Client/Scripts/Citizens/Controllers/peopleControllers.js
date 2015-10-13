@@ -2,8 +2,8 @@
 
 var peopleControllers = angular.module('peopleControllers', ['peopleServices']);
 
-peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$location', '$modal', 'peopleDataService', 'config', 'serviceUtil', 'resolvedAdditionalProperties', 'filterSettings', 'houseTypes',
-    function($rootScope, $scope, $location, $modal, peopleDataService, config, serviceUtil, resolvedAdditionalProperties, filterSettings, houseTypes) {
+peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$location', '$modal', 'peopleDataService', 'config', 'serviceUtil', 'resolvedAdditionalProperties', 'filterSettings', 'houseTypes', 'precinctData',
+    function ($rootScope, $scope, $location, $modal, peopleDataService, config, serviceUtil, resolvedAdditionalProperties, filterSettings, houseTypes, precinctData) {
         var propValues = [], odataFilter;
 
         $rootScope.pageTitle = 'Фізичні особи';
@@ -42,9 +42,9 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
         if (peopleQuerySettings) {
             if (peopleQuerySettings.props) {
                 $scope.query = peopleQuerySettings.props;
-                if ($scope.query.DateOfBirth) {
-                    $scope.query.DateOfBirth.from = serviceUtil.formatDate($scope.query.DateOfBirth.from, config.LOCALE_DATE_FORMAT);
-                    $scope.query.DateOfBirth.to = serviceUtil.formatDate($scope.query.DateOfBirth.to, config.LOCALE_DATE_FORMAT);
+                if ($scope.query.interval && $scope.query.interval.DateOfBirth) {
+                    $scope.query.interval.DateOfBirth.from = serviceUtil.formatDate($scope.query.interval.DateOfBirth.from, config.LOCALE_DATE_FORMAT);
+                    $scope.query.interval.DateOfBirth.to = serviceUtil.formatDate($scope.query.interval.DateOfBirth.to, config.LOCALE_DATE_FORMAT);
                 }
             }
             if (peopleQuerySettings.additionalProps) {
@@ -66,11 +66,22 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
             if (peopleQuerySettings.odataFilter) {
                 $scope.showFilters = true;
                 odataFilter = peopleQuerySettings.odataFilter;
+                setPeopleOnPage();
+            } else {
+                doFilter();
             }
-            setPeopleOnPage();
         } else if (search.query) {
-            $scope.showFilters = true;
             $scope.query = angular.fromJson(search.query);
+            if ($scope.query.eq.Major && $scope.query.eq.Major.Id) {
+                peopleDataService.resource.getByIdNotExpand({ id: $scope.query.eq.Major.Id }, function (person) {
+                    $scope.query.eq.Major = person; //don't remove (for update model view)
+                    $scope.query.eq.Major.label = peopleDataService.getPersonLabel(person);
+                    var settings = filterSettings.get('people');
+                    if (settings && settings.props && settings.props.eq && settings.props.eq.Major) {
+                        settings.props.eq.Major.label = $scope.query.eq.Major.label;
+                    }
+                });
+            }
             doFilter();
         } else {
             setPeopleOnPage();
@@ -138,13 +149,13 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
         function getODataFilterQuery() {
             var filterStr = '', filterInnerStr = '',
                 filterPatterns = {
-                    string: {
-                        startswith: "startswith(:fieldName, ':val') eq true",
-                        eq: ":fieldName eq ':val'"
-                    },
-                    num: ":fieldName eq :val",
-                    ref: ":fieldNameId eq :val",
-                    interval: ":fieldName ge :from and :fieldName le :to"
+                    eq: { tpl: ":fieldName eq :val", id: "Id" },
+                    stringEq: { tpl: ":fieldName eq ':val'" },
+                    stringStartsWith: { tpl: "startswith(:fieldName, ':val') eq true" },
+                    //ref: { tpl: ":fieldNameId eq :val" },
+                    interval: { tpl: ":fieldName ge :from and :fieldName le :to" },// only primitive types
+                    precinct: { tpl: "PrecinctAddress/Precinct/:fieldName eq :val", id: "/Id" },
+                    precinctAdr: { tpl: "PrecinctAddress/:fieldName eq :val", id: "/Id" }
                 },
                 filterBasePatternProp = "PersonAdditionalProperties/any(p::innerPattern and p/PropertyKeyId eq :propKeyId)",
                 filterPatternProp = filterBasePatternProp.replace(':innerPattern',"p/:fieldName eq :val"),
@@ -160,46 +171,41 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
             };
 
             // ---------------------------- filter by base properties ----------------------------
-            //redundant/hard way
-            //Object.keys(filterPatterns).forEach(function(patternName) {
-            //    var propNames = $scope.query[patternName];
-            //    if (propNames) {
-            //        Object.keys(propNames).forEach(function(propName) {
-            //            if (patternName === 'interval') {
-            //                var interval = $scope.query[patternName];
-            //                Object.keys(interval).forEach(function (type) {
-            //                    Object.keys(interval[type]).forEach(function (intervalPropName) {
-            //                        var valFrom, valTo;
-            //                        if (type === 'date') {
-            //                            valFrom = serviceUtil.formatDateToISO(interval.date[intervalPropName].from,{startOfDay: true});
-            //                            valTo = serviceUtil.formatDateToISO(interval.date[intervalPropName].to,{endOfDay: true});
-            //                        } else {
-            //                            valFrom = interval[type][intervalPropName].from;
-            //                            valTo = interval[type][intervalPropName].to;
-            //                        }
-            //                        if (valFrom && valTo) {
-            //                            filterStr = concatIfExist(filterStr, " and ") + filterPatterns[patternName]
-            //                                .replace(/:fieldName/g, intervalPropName)
-            //                                .replace(/:from/g, valFrom)
-            //                                .replace(/:to/g, valTo);
-            //                        }
-            //                    });
-            //                });
-            //            } else {
-            //                var val = $scope.query[patternName][propName];
-            //                if (val && patternName === 'ref') val = val.Id;
-            //                if (val) {
-            //                    filterStr = concatIfExist(filterStr, " and ") + filterPatterns[patternName]
-            //                        .replace(/:fieldName/g, propName)
-            //                        .replace(/:val/g, val);
-            //                }
-            //            }
-            //        });
-            //    }
-            //});
+            Object.keys(filterPatterns).forEach(function(patternName) {
+                var propNames = $scope.query[patternName];
+                if (propNames) {
+                    Object.keys(propNames).forEach(function(propName) {
+                        if (patternName === 'interval') {
+                            var valFrom = serviceUtil.formatDateToISO($scope.query.interval[propName].from, { startOfDay: true }),
+                                valTo = serviceUtil.formatDateToISO($scope.query.interval[propName].to, { endOfDay: true });
+                            if (!valFrom && !valTo) {
+                                valFrom = $scope.query.interval[propName].from;
+                                valTo = $scope.query.interval[propName].to;
+                            }
+                            if (valFrom && valTo) {
+                                filterStr = concatIfExist(filterStr, " and ") + filterPatterns[patternName].tpl
+                                    .replace(/:fieldName/g, propName)
+                                    .replace(/:from/g, valFrom)
+                                    .replace(/:to/g, valTo);
+                            }
+                        } else {
+                            var val = $scope.query[patternName][propName];
+                            if (val) {
+                                var strId = filterPatterns[patternName].id;
+                                if (strId && val.Id) {
+                                    val = val.Id;
+                                    propName = propName + strId;
+                                }
+                                filterStr = concatIfExist(filterStr, " and ") + filterPatterns[patternName].tpl
+                                    .replace(/:fieldName/g, propName)
+                                    .replace(/:val/g, val);
+                            }
+                        }
+                    });
+                }
+            });
 
-            //simple way
-            if ($scope.query) {
+            /*if ($scope.query) {
 
                 if ($scope.query.name) {
                     Object.keys($scope.query.name).forEach(function(propName) {
@@ -276,7 +282,7 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
                         .replace(/:fieldName/g, "Gender")
                         .replace(/:val/g, $scope.query.Gender);
                 }
-            }
+            }*/
 
             //---------------------------- filter by additional properties ----------------------------
             angular.forEach($scope.propKeys, function (propKey) {
@@ -336,6 +342,7 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
             $scope.loader.filtering = true;
             var filterQuery = getODataFilterQuery();
             if (filterQuery.length > 0) {
+                $scope.showFilters = true;
                 odataFilter = '&$filter=' + filterQuery;
                 filterSettings.set('people', {
                     props: angular.copy($scope.query),
@@ -464,7 +471,14 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
                 }
             });
         };
-    }]);
+
+        $scope.getPrecinctsByNumber = function(viewValue) {
+            var odataFilter = "&$filter=startswith(cast(Number,Edm.String),'value') eq true&$top=10".replace(/value/, viewValue);
+            return precinctData.getAllNotExpand({filter: odataFilter }).$promise.then(function (data) {
+                return data.value;
+            });
+       };
+}]);
 
 peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$location', '$modal', 'serviceUtil', 'precinctData', 'precinctAddressesData', 'config', 'resolvedData', 'houseTypes', 'modelFactory', 'peopleDataService', 'workAreaResource', 'checkPermissions',
     function ($rootScope, $scope, $location, $modal, serviceUtil, precinctData, precinctAddressesData, config, resolvedData, houseTypes, modelFactory, peopleDataService, workAreaResource, checkPermissions) {

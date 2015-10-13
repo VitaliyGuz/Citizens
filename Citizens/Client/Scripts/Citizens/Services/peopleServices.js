@@ -12,6 +12,7 @@ angular.module("peopleServices", ['ngResource', 'precinctServices']).
         return $resource('', {},
 		{
 		    'getById': { method: 'GET', params: { id: "@id" }, url: urlOdata + "(:id)" + expandSingle },
+		    'getByIdNotExpand': { method: 'GET', params: { id: "@id" }, url: urlOdata + "(:id)" },
 		    //'getPageItems': { method: 'GET', params: { skip: "@skip" }, url: urlOdata + "?" + paginate },
 		    //'getFilteredPageItems': { method: 'GET', params: { skip: "@skip", filter: '@filter' }, url: urlOdata + "?$filter=:filter" + paginate },
 		    'getPageItems': { method: 'GET', params: { skip: '@skip', filter: '@filter' }, url: urlOdata + "?" + paginate + ":filter" },
@@ -161,7 +162,7 @@ angular.module("peopleServices", ['ngResource', 'precinctServices']).
                 return deferred.promise;
             },
             getPersonLabel: function (person) {
-                serviceUtil.expandAddress(person);
+                if (!person.City || !person.Street) serviceUtil.expandAddress(person);
                 var strAddress = serviceUtil.addressToString(person),
                     dateOfBirth = new Date(person.DateOfBirth),
                     srtDateOfBirth = serviceUtil.isEmptyDate(dateOfBirth) ? '' : ', ' + dateOfBirth.toLocaleDateString() + ' р.н.';
