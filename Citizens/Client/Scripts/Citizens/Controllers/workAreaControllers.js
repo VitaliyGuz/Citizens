@@ -358,7 +358,7 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
             }
         };
 
-        $scope.getPeopleByName = peopleDataService.typeaheadPersonByNameFn();
+        $scope.getPeopleByName = peopleDataService.typeaheadPersonByName;
 
         $scope.onSelectPrecinct = function(item) {
             $scope.loader.loadingPrecinctAddresses = true;
@@ -661,6 +661,10 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
                 calcTotalSupporters();
             },errorHandler);
         };
+
+        $scope.onSelectPerson = function (item, model, label) {
+            if (item.input) model.label = item.input + ' ' + label;
+        }
     }]);
 
 workAreaControllers.controller('modalFullAddressesCtrl', ['$scope', '$modalInstance', 'addresses', function ($scope, $modalInstance, addresses) {

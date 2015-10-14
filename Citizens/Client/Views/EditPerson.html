@@ -83,17 +83,17 @@
         <div class="form-group col-lg-6">
             <label>Відповідальний (старший)</label>
             <div class="input-group">
-                <input typeahead="p as p.label for p in getPeopleByName($viewValue)" typeahead-on-select="onSelectMajor($item)"
-                       type="text" ng-model="person.Major" typeahead-loading="loadingPeople" typeahead-no-results="noResults" typeahead-min-length="10" class="form-control">
-                <div ng-show="noResults">
-                    <i class="glyphicon glyphicon-remove"></i> Фізособу не знайдено
-                </div>
+                <input typeahead="p as p.label for p in getPeopleByName($viewValue)" typeahead-on-select="onSelectMajor($item,$model,$label)" placeholder="Прізвище Ім'я По-батькові"
+                       type="text" ng-model="person.Major" typeahead-loading="loadingPeople" typeahead-no-results="noResults" class="form-control">
                 <span class="input-group-btn">
                     <button type="button" class="btn btn-default form-control" ng-click="clearMajor()" ng-disabled="!person.Major.Id" title="Очистити">
                         <span ng-hide="loadingPeople" class="glyphicon glyphicon-remove"></span>
                         <i ng-show="loadingPeople" class="fa fa-refresh fa-spin"></i>
                     </button>
                 </span>
+            </div>
+            <div ng-show="noResults">
+                <i class="glyphicon glyphicon-remove"></i> Фізособу не знайдено
             </div>
         </div>
         <div class="form-group col-lg-6">

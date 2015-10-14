@@ -13,10 +13,8 @@ angular.module("peopleServices", ['ngResource', 'precinctServices']).
 		{
 		    'getById': { method: 'GET', params: { id: "@id" }, url: urlOdata + "(:id)" + expandSingle },
 		    'getByIdNotExpand': { method: 'GET', params: { id: "@id" }, url: urlOdata + "(:id)" },
-		    //'getPageItems': { method: 'GET', params: { skip: "@skip" }, url: urlOdata + "?" + paginate },
-		    //'getFilteredPageItems': { method: 'GET', params: { skip: "@skip", filter: '@filter' }, url: urlOdata + "?$filter=:filter" + paginate },
 		    'getPageItems': { method: 'GET', params: { skip: '@skip', filter: '@filter' }, url: urlOdata + "?" + paginate + ":filter" },
-		    'getFilteredItems': { method: 'GET', params: { filter: '@filter' }, url: urlOdata + "?$filter=:filter" },
+		    'getFilteredItems': { method: 'GET', params: { filter: '@filter', top: '@top', orderby: '@orderby' }, url: urlOdata + "?$filter=:filter&$top=:top :orderby" },
 		    'update': { method: 'PUT', params: { id: "@id" }, url: urlOdata + "(:id)" },
 		    'save': { method: "POST", url: urlOdata },
 		    'remove': { method: 'DELETE', params: { id: "@id" }, url: urlOdata + "(:id)" },
@@ -79,126 +77,86 @@ angular.module("peopleServices", ['ngResource', 'precinctServices']).
     }])
     .factory('peopleDataService', ['$q', '$rootScope', 'serviceUtil', 'peopleResource', 'precinctData', 'additionalPropsResource', 'propertyTypes',
         function ($q, $rootScope, serviceUtil, peopleResource, precinctData, additionalPropsResource, propertyTypes) {
-        
-        //function getPersonPromise(routeParam) {
-        //    var deferred = $q.defer();
-        //    if (routeParam) {
-        //        peopleResource.getById({ id: routeParam
-        //        }, function (res) {
-        //            deferred.resolve(res);
-        //        }, function (err) {
-        //            err.description = 'Фізичну особу не знайдено';
-        //            deferred.reject(serviceUtil.getErrorMessage(err));
-        //        });
-        //    } else {
-        //        deferred.resolve();
-        //    }
-        //    return deferred.promise;
-        //};
 
-        function getAdditionalPropertiesPromise(method) {
-            var deferred = $q.defer();
-            additionalPropsResource[method](function (res) {
-                    deferred.resolve(res.value);
-                }, function (err) {
-                    err.description = 'Додаткові характеристики не завантажено';
-                    deferred.reject(serviceUtil.getErrorMessage(err));
-            });
-            return deferred.promise;
+        function getPersonLabel(person) {
+            if (!person.City || !person.Street) serviceUtil.expandAddress(person);
+            var strAddress = serviceUtil.addressToString(person),
+                dateOfBirth = new Date(person.DateOfBirth),
+                strDateOfBirth = serviceUtil.isEmptyDate(dateOfBirth) ? '' : ', ' + dateOfBirth.toLocaleDateString() + ' р.н.';
+            strAddress = strAddress ? ', ' + strAddress : '';
+            return person.LastName + ' ' + person.FirstName + ' ' + person.MidleName + '' + strDateOfBirth + '' + strAddress;
         };
-
-        //function getPrecinctsPromise() {
-        //    var deferred = $q.defer();
-        //    precinctData.getAllNotExpand(function (res) {
-        //        deferred.resolve(res.value);
-        //    }, function (err) {
-        //        err.description = 'Дільниці не завантажено';
-        //        deferred.reject(serviceUtil.getErrorMessage(err));
-        //    });
-        //    return deferred.promise;
-        //};
 
         return {
             asyncLoadData: function (routeParam) {
-                //var resolved = {}, deferred = $q.defer();
-                //function errorHandler(err) {
-                //    deferred.reject(err);
-                //};
-                //getPersonPromise(routeParam).then(function(person) {
-                //    resolved.person = person;
-                //    return getPrecinctsPromise();
-                //}, errorHandler).then(function (precincts) {
-                //    resolved.precincts = precincts;
-                //    deferred.resolve(resolved);
-                //}, errorHandler);
-
-                //return deferred.promise;
                 if (routeParam) {
                     var promise = peopleResource.getById({ id: routeParam }).$promise;
                     promise.catch(function (err) {
                         err.description = 'Фізичну особу не знайдено';
-                        $rootScope.errorMsg = serviceUtil.getErrorMessage(err);
+                        return $q.reject(err);
                     });
-                    //return $q.all({ person: promise });
+                    return $q.all({ person: promise });
                 } else {
-                    //return $q.when();
+                    return $q.when();
                 }
-                return routeParam ? $q.all({ person: promise }) : $q.when();
             },
+
             asyncLoadAdditionalProperties: function () {
-                var resolved = { }, deferred = $q.defer();
                 function errorHandler(err) {
-                    deferred.reject(err);
+                    err.description = 'Додаткові характеристики не завантажено';
+                    return $q.reject(err);
                 };
-                getAdditionalPropertiesPromise('getKeys').then(function (propKeys) {
-                    propertyTypes.castToObject(propKeys);
-                    resolved.keys = propKeys;
-                    return getAdditionalPropertiesPromise('getValues');
-                    }, errorHandler).then(function (propValues) {
-                        resolved.values = propValues;
-                    deferred.resolve(resolved);
-                }, errorHandler);
+                return $q.all({
+                    keys: additionalPropsResource.getKeys().$promise.then(function (data) {
+                        propertyTypes.castToObject(data.value);
+                        return data.value;
+                    }, errorHandler),
+                    values: additionalPropsResource.getValues().$promise.then(function(data) {
+                        return data.value;
+                    }, errorHandler) 
+                });
+                
+            },
 
-                return deferred.promise;
-            },
-            getPersonLabel: function (person) {
-                if (!person.City || !person.Street) serviceUtil.expandAddress(person);
-                var strAddress = serviceUtil.addressToString(person),
-                    dateOfBirth = new Date(person.DateOfBirth),
-                    srtDateOfBirth = serviceUtil.isEmptyDate(dateOfBirth) ? '' : ', ' + dateOfBirth.toLocaleDateString() + ' р.н.';
-                strAddress = strAddress ? ', ' + strAddress : '';
-                return person.LastName + ' ' + person.FirstName + ' ' + person.MidleName + '' + srtDateOfBirth + '' + strAddress;
-            },
-            typeaheadPersonByNameFn: function () {
-                var odataFilterPattern = ":propName eq ':val'";
-                var getPersonLabel = this.getPersonLabel;
-                return function (viewValue) {
-                    var names = viewValue.split(" "), filterQuery = '';
-                    if (names.length < 3) return [];
-                    var name = {
-                        LastName: names[0],
-                        FirstName: names[1],
-                        MidleName: names[2]
-                    };
-                    if (names.length > 3) {
-                        for (var i = 3; i < names.length; i++) {
-                            name.MidleName += ' ' + names[i];
-                        }
+            getPersonLabel: getPersonLabel,
+
+            typeaheadPersonByName: function (viewValue) {
+                var names = viewValue.split(" "),
+                name = {
+                    last: names[0],
+                    first: names[1],
+                    midle: names[2]
+                };
+                if (names.length > 3) {
+                    for (var i = 3; i < names.length; i++) {
+                        name.midle += ' ' + names[i];
                     }
-                    Object.keys(name).forEach(function (prop) {
-                        if (filterQuery) filterQuery = filterQuery + " and ";
-                        filterQuery = filterQuery + odataFilterPattern
-                            .replace(/:propName/g, prop)
-                            .replace(/:val/g, name[prop]);
-                    });
-
-                    return peopleResource.getFilteredItems({filter: filterQuery }).$promise.then(function (res) {
-                        return res.value.map(function (person) {
-                            person.label = getPersonLabel(person);
-                            return person;
+                }
+                if (name.last && !name.first && !name.midle) {
+                    return peopleResource.lastNames({ "startsWith": name.last }).$promise.then(function (res) {
+                        return res.value.map(function(lastName) {
+                            return { label: lastName};
                         });
                     });
                 }
+                if (name.last && name.first && !name.midle) {
+                    return peopleResource.firstNames({ "startsWith": name.first }).$promise.then(function (res) {
+                        return res.value.map(function (firstName) {
+                            return { label: firstName, input: name.last };
+                        });
+                    });
+                }
+                var filterQuery = "LastName eq 'lname' and FirstName eq 'fname' and startswith(MidleName,'mname') eq true"
+                    .replace(/lname/, name.last)
+                    .replace(/fname/, name.first)
+                    .replace(/mname/, name.midle);
+
+                return peopleResource.getFilteredItems({filter: filterQuery, top: 10, orderby: '&$orderby=MidleName' }).$promise.then(function (res) {
+                    return res.value.map(function (person) {
+                        person.label = getPersonLabel(person);
+                        return person;
+                    });
+                });
             },
             resource: peopleResource,
             additionalPropsResource: additionalPropsResource,

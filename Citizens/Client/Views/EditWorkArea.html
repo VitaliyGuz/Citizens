@@ -14,20 +14,20 @@
         <div class="form-group col-lg-8">
             <label>Топ</label>
             <div class="input-group">
-                <input typeahead="p as p.label for p in getPeopleByName($viewValue)"
-                       type="text" ng-model="data.workArea.Top" typeahead-loading="loadingPeople" typeahead-no-results="noResults" typeahead-min-length="10" class="form-control">
-                <div ng-show="noResults">
-                    <i class="glyphicon glyphicon-remove"></i> Фізособу не знайдено
-                </div>
+                <input typeahead="p as p.label for p in getPeopleByName($viewValue)" typeahead-on-select="onSelectPerson($item, $model, $label)" placeholder="Прізвище Ім'я По-батькові"
+                       type="text" ng-model="data.workArea.Top" typeahead-loading="loadingPeople.top" typeahead-no-results="noResults.top" class="form-control">
                 <span class="input-group-btn">
                     <button type="button" class="btn btn-default" ng-click="clearTop()" title="Очистити">
-                        <span ng-hide="loadingPeople" class="glyphicon glyphicon-remove"></span>
-                        <i ng-show="loadingPeople" class="fa fa-refresh fa-spin"></i>
+                        <span ng-hide="loadingPeople.top" class="glyphicon glyphicon-remove"></span>
+                        <i ng-show="loadingPeople.top" class="fa fa-refresh fa-spin"></i>
                     </button>
                     <a class="btn btn-default" ng-href="/person/{{data.workArea.Top.Id}}" ng-show="data.workArea.Top.Id" title="Відкрити">
                         <span class="glyphicon glyphicon-open"></span>
                     </a>
                 </span>
+            </div>
+            <div ng-show="noResults.top">
+                <i class="glyphicon glyphicon-remove"></i> Фізособу не знайдено
             </div>
         </div>
     </div>
@@ -187,10 +187,10 @@
                 </div>
                 <form ng-submit="linkMajors()">
                     <div class="form-group col-sm-6">
-                        <input typeahead="p as p.label for p in getPeopleByName($viewValue)" ng-model="data.selected.person" placeholder="Фізична особа (старший)"
-                               type="text" typeahead-loading="loadingPeople" typeahead-no-results="noResults" typeahead-min-length="10" class="form-control" ng-required="!data.selected.setEmptyPerson">
-                        <i ng-show="loadingPeople" class="fa fa-refresh fa-spin"></i>
-                        <div ng-show="noResults">
+                        <input typeahead="p as p.label for p in getPeopleByName($viewValue)" ng-model="data.selected.person" typeahead-on-select="onSelectPerson($item, $model, $label)" placeholder="Фізична особа (старший)"
+                               type="text" typeahead-loading="loadingPeople.major" typeahead-no-results="noResults.major" class="form-control" ng-required="!data.selected.setEmptyPerson">
+                        <i ng-show="loadingPeople.major" class="fa fa-refresh fa-spin"></i>
+                        <div ng-show="noResults.major">
                             <i class="glyphicon glyphicon-remove"></i> Фізособу не знайдено
                         </div>
                     </div>

@@ -396,7 +396,7 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
             });
         };
 
-        $scope.getPeopleByName = peopleDataService.typeaheadPersonByNameFn();
+        $scope.getPeopleByName = peopleDataService.typeaheadPersonByName;
 
         $scope.openAdditionalPropertySelection = function () {
 
@@ -477,8 +477,12 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
             return precinctData.getAllNotExpand({filter: odataFilter }).$promise.then(function (data) {
                 return data.value;
             });
-       };
-}]);
+        };
+        
+        $scope.onSelectMajor = function(item, model, label) {
+            if (item.input) model.label = item.input + ' ' + label;
+        }
+    }]);
 
 peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$location', '$modal', 'serviceUtil', 'precinctData', 'precinctAddressesData', 'config', 'resolvedData', 'houseTypes', 'modelFactory', 'peopleDataService', 'workAreaResource', 'checkPermissions',
     function ($rootScope, $scope, $location, $modal, serviceUtil, precinctData, precinctAddressesData, config, resolvedData, houseTypes, modelFactory, peopleDataService, workAreaResource, checkPermissions) {
@@ -660,8 +664,9 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
             $scope.selected.property.ValueId = $model;
         };
         
-        $scope.onSelectMajor = function ($item) {
-            $scope.person.MajorId = $item.Id;
+        $scope.onSelectMajor = function (item, model, label) {
+            if (item.Id) $scope.person.MajorId = item.Id;
+            if (item.input) model.label = item.input + ' ' + label;
         };
 
         $scope.onChangePropertyKey = function () {
@@ -785,7 +790,7 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
             );
         };
 
-        $scope.getPeopleByName = peopleDataService.typeaheadPersonByNameFn();
+        $scope.getPeopleByName = peopleDataService.typeaheadPersonByName;
 
         $scope.clearMajor = function() {
             $scope.person.Major = undefined;
