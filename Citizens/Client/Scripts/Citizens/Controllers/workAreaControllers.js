@@ -462,7 +462,7 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
         $scope.getSupporters = function () {
             if (!$scope.data.workArea || !$scope.data.workArea.Id) return;
             $scope.loader.loadingSupporters = true;
-            workAreaResource.getSupporters({ "id": $scope.data.workArea.Id }, function (resp) {
+            workAreaResource.getSupporters({ id: $scope.data.workArea.Id, expand: "$expand=Major" }, function (resp) {
                 if (resp) {
                     $scope.data.supporters = resp.value;
                     $scope.data.workAreaAddresses = reduceToAddresses(resp.value);
@@ -596,6 +596,7 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
         };
 
         $scope.print = function () {
+            if (!$scope.data.workArea.Id) return;
             $scope.loader.preparingPrint = true;
             var printData = {};
             printData.workArea = $scope.data.workArea;
@@ -603,26 +604,32 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
             $q.all({
                 computedProps: getComputedProperties(),
                 majors: workAreaResource.getMajors({ "id": $scope.data.workArea.Id }).$promise,
-                phonePropertyKey: peopleDataService.additionalPropsResource.getKeys({ "filter": "&$filter=Name eq 'тел. моб.'" }).$promise
+                phonePropertyKey: peopleDataService.additionalPropsResource.getKeys({ "filter": "&$filter=Name eq 'тел. моб.'" }).$promise,
+                proponentPropertyValue: peopleDataService.additionalPropsResource.getValues({ filter: "&$filter=Value eq 'прихильник' and PropertyKey/Name eq 'статус'" }).$promise
             }).then(function (resp) {
                 Object.keys(resp.computedProps).forEach(function(prop) {
                     printData[prop] = resp.computedProps[prop];
                 });
                 printData.majors = resp.majors.value;
-                if (resp.phonePropertyKey && resp.phonePropertyKey.value.length > 0) {
+                var promises = {};                
+                if (resp.phonePropertyKey.value.length > 0) {
                     var phonePropertyKeyId = resp.phonePropertyKey.value[0].Id;
-                    peopleDataService.additionalPropsResource.getRange({ "AdditionalProperties": getAdditionalProps(phonePropertyKeyId) }, function(aps) {
-                        printData.majors.forEach(function(major) {
-                            var prop = aps.value.filter(function (p) { return p.PersonId === major.Id })[0];
-                            if (prop) major.phoneNumber = prop.StringValue;
-                        });
-                        $scope.loader.preparingPrint = false;
-                        printer.print(config.pathPrintTemplates + "/workarea.print.html", printData);
-                    },errorHandler);
-                } else {
+                    promises.majorsPhoneNumbers = peopleDataService.additionalPropsResource.getRange({ "AdditionalProperties": getAdditionalProps(phonePropertyKeyId) }).$promise;
+                }
+                if (resp.proponentPropertyValue.value.length > 0) {
+                    var proponentPropertyValueId = resp.proponentPropertyValue.value[0].Id;
+                    var filterQuery = "PersonAdditionalProperties/any(p:p/PropertyValueId eq propValueId)".replace(/propValueId/, proponentPropertyValueId);
+                    promises.workAreaProponents = workAreaResource.getSupporters({ id: $scope.data.workArea.Id, filter: "$filter=" + filterQuery }).$promise;
+                }
+                $q.all(promises).then(function (resp) {
+                    printData.majors.forEach(function (major) {
+                        var phoneNumber = resp.majorsPhoneNumbers.value.filter(function (p) { return p.PersonId === major.Id })[0];
+                        if (phoneNumber) major.phoneNumber = phoneNumber.StringValue;
+                        major.proponents = resp.workAreaProponents.value.filter(function (p) { return p.MajorId === major.Id });
+                    });
                     $scope.loader.preparingPrint = false;
                     printer.print(config.pathPrintTemplates + "/workarea.print.html", printData);
-                }
+                }, errorHandler);
             }, errorHandler);
 
             function getAdditionalProps(propertyKeyId) {
@@ -632,22 +639,20 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
             };
 
             function getComputedProperties() {
-                var def = $q.defer();
-                workAreaResource.caclComputedProperties({ "WorkAreaIds": [$scope.data.workArea.Id] }, function (resp) {
+                return workAreaResource.caclComputedProperties({ "WorkAreaIds": [$scope.data.workArea.Id] }).$promise.then(function (resp) {
                     var data = {};
-                    if (resp) {
-                        if (resp.value.length > 0) {
-                            var computedProps = resp.value[0];
-                            data.countElectors = computedProps.CountElectors;
-                            data.addresses = computedProps.AddressesStr;
-                            data.countMajorsPlan = serviceUtil.computational.countMajorsPlan(computedProps.CountElectors);
-                            data.voterTurnout = serviceUtil.computational.voterTurnout(computedProps.CountElectors);
-                            data.requiredVotes = serviceUtil.computational.requiredVotes(computedProps.CountElectors);
-                        }                       
+                    if (resp && resp.value.length > 0) {
+                        var computedProps = resp.value[0];
+                        data.countElectors = computedProps.CountElectors;
+                        data.addresses = computedProps.AddressesStr;
+                        data.countMajorsPlan = serviceUtil.computational.countMajorsPlan(computedProps.CountElectors);
+                        data.voterTurnout = serviceUtil.computational.voterTurnout(computedProps.CountElectors);
+                        data.requiredVotes = serviceUtil.computational.requiredVotes(computedProps.CountElectors);
                     }
-                    def.resolve(data);
-                }, function(e) {def.reject(e)});
-                return def.promise;
+                    return data;
+                }, function (e) {
+                    return $q.reject(e);
+                });
             };
         };
 

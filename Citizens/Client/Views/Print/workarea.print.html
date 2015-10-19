@@ -6,7 +6,13 @@
 <h5>Cтарші:</h5>
 <ol>
     <li ng-repeat="major in majors">
-        {{ major.LastName }} {{ major.FirstName }} {{ major.MidleName }} - тел. {{major.phoneNumber}}
+        {{ major.LastName }} {{ major.FirstName }} {{ major.MidleName }} - тел. {{major.phoneNumber}}        
+        <br />Прихильники:
+        <ol>
+            <li ng-repeat="proponent in major.proponents">
+                {{ proponent.LastName }} {{ proponent.FirstName }} {{ proponent.MidleName }}
+            </li>
+        </ol>
     </li>
 </ol>
 <h5>Межі дільниці: {{addresses}}</h5>

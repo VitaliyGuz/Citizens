@@ -39,7 +39,7 @@
             <span class="glyphicon glyphicon-save"></span> Зберегти
             <i ng-show="loader.saving" class="fa fa-refresh fa-spin"></i>
         </button>
-        <button type="button" class="btn btn-sm btn-success" ng-click="print()" title="Друк">
+        <button type="button" class="btn btn-sm btn-success" ng-click="print()" ng-disabled="!data.workArea.Id" title="Друк">
             <span class="glyphicon glyphicon-print"></span> Друк
             <i ng-show="loader.preparingPrint" class="fa fa-refresh fa-spin"></i>
         </button>
