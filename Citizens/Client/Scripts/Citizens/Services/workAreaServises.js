@@ -21,8 +21,6 @@ angular.module("workAreaServices", ['ngResource', 'precinctServices', 'peopleSer
                 'caclComputedProperties': { method: 'POST', url: urlOdata + "/CaclComputedProperties" },
                 'getMajors': { method: 'GET', params: params.id, url: urlOdata + "(:id)/GetMajors()" },
                 'getSupporters': { method: 'GET', params: angular.extend({}, params.id, params.filter, { expand: "@expand" }),url: urlOdata + "(:id)/GetSupporters()?:expand:filter" },
-                'getSupportersByAddress': { method: 'GET', params: angular.extend({}, params.id, { cityId: "@cityId", streetId: "@streetId", house: "@house" }), url: urlOdata + "(:id)/GetSupporters()?$filter=CityId eq :cityId and StreetId eq :streetId and House eq ':house'" },
-                'getSupportersByMajor': { method: 'GET', params: angular.extend({}, params.id, { majorId: "@majorId" }), url: urlOdata + "(:id)/GetSupporters()?$filter=MajorId eq :majorId" },
                 'remove': { method: 'DELETE', params: params.id, url: urlOdata + "(:id)" }
             });
         }

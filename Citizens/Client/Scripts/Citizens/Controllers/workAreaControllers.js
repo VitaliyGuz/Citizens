@@ -546,22 +546,25 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
         };
 
         $scope.showApartments = function(address) {
-            openModalFullAddresses('getSupportersByAddress', {
+            var filterQuery = "CityId eq cityId and StreetId eq streetId and House eq 'house'"
+                .replace(/cityId/, address.CityId)
+                .replace(/streetId/, address.StreetId)
+                .replace(/house/, address.House);
+
+            openModalFullAddresses({
                 id: $scope.data.workArea.Id,
-                cityId: address.CityId,
-                streetId: address.StreetId,
-                house: address.House
+                filter:'$filter=' + filterQuery
             }, true);
         };
 
         $scope.showFullAddresses = function (major) {
-            openModalFullAddresses('getSupportersByMajor', {
+            openModalFullAddresses({
                 id: $scope.data.workArea.Id,
-                majorId: major.Id
+                filter: "$filter=MajorId eq majorId".replace(/majorId/, major.Id)
             });
         };
 
-        function openModalFullAddresses(method,params,onlyApartmens)  {
+        function openModalFullAddresses(params, onlyApartmens)  {
             $modal.open({
                 animation: false,
                 templateUrl: 'Views/Modals/addresses.html',
@@ -571,7 +574,7 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
                 resolve: {
                     addresses: function () {
                         var def = $q.defer();
-                        workAreaResource[method](params, function (resp) {
+                        workAreaResource.getSupporters(params, function (resp) {
                             var addresses = reduceToAddresses(resp.value);
                             if (onlyApartmens) addresses = addresses.filter(function(a) {
                                 return a.ApartmentStr;
