@@ -7,7 +7,7 @@
         </div>
         <div class="form-group col-lg-2">
             <label>Виборча дільниця</label>
-            <input type="text" typeahead="p as p.Number for p in data.precincts | filter: {Number:$viewValue} | orderByStartsWith:{Number:$viewValue} | limitTo:10"
+            <input type="text" typeahead="p as p.Number for p in getPrecinctsByNumber($viewValue)"
                    ng-model="data.workArea.Precinct" typeahead-on-select="onSelectPrecinct($item)" ng-disabled="data.workArea.Id" class="form-control" required>
             <i ng-show="loader.loadingPrecinctAddresses" class="fa fa-refresh fa-spin"></i>
         </div>

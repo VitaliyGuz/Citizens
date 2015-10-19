@@ -94,8 +94,8 @@ userControllers.controller('listUsersController', ['$rootScope', '$location', '$
         };
 }]);
 
-userControllers.controller('editUserController', ['$rootScope', '$scope', '$location', '$filter', '$q', 'serviceUtil', 'userData', 'config', 'precinctData', 'usersHolder', 'resolvedUser', 'regionData', 'checkPermissions', 'modelFactory',
-    function ($rootScope, $scope, $location, $filter, $q, serviceUtil, userData, config, precinctData, usersHolder, resolvedUser, regionData, checkPermissions, modelFactory) {
+userControllers.controller('editUserController', ['$rootScope', '$scope', '$location', '$filter', '$q', 'serviceUtil', 'userData', 'config', 'precinctResource', 'usersHolder', 'resolvedUser', 'regionData', 'checkPermissions', 'modelFactory',
+    function ($rootScope, $scope, $location, $filter, $q, serviceUtil, userData, config, precinctResource, usersHolder, resolvedUser, regionData, checkPermissions, modelFactory) {
 
         var selectedItems = {}, deleteItems = {};
         var alertMsg = "Увага! Дані в таблиці 'name' будуть оновлені.\n Всі не збережені зміни будуть скасовані, продовжити?";
@@ -130,7 +130,7 @@ userControllers.controller('editUserController', ['$rootScope', '$scope', '$loca
             var onEditUserPrecincts = function () {
                 selectedItems.precincts = [], deleteItems.precincts = [];
                 $scope.load.editingUserPrecincts = true;
-                precinctData.getAllNotExpand(function (data) {
+                precinctResource.getAllNotExpand(function (data) {
                     $scope.data.precincts = data.value.map(function (precinct) {
                         precinct.isUser = $scope.user.precincts.some(function (userPrecinct) {
                             return precinct.Id === userPrecinct.PrecinctId;

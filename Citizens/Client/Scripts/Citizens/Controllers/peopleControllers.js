@@ -2,8 +2,8 @@
 
 var peopleControllers = angular.module('peopleControllers', ['peopleServices']);
 
-peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$location', '$modal', 'peopleDataService', 'config', 'serviceUtil', 'resolvedAdditionalProperties', 'filterSettings', 'houseTypes', 'precinctData',
-    function ($rootScope, $scope, $location, $modal, peopleDataService, config, serviceUtil, resolvedAdditionalProperties, filterSettings, houseTypes, precinctData) {
+peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$location', '$modal', 'peopleDataService', 'config', 'serviceUtil', 'resolvedAdditionalProperties', 'filterSettings', 'precinctDataService',
+    function ($rootScope, $scope, $location, $modal, peopleDataService, config, serviceUtil, resolvedAdditionalProperties, filterSettings, precinctDataService) {
         var propValues = [], odataFilter;
 
         $rootScope.pageTitle = 'Фізичні особи';
@@ -29,7 +29,7 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
         
         $scope.houseTypes.push({ val: undefined, desc: '-Всі типи-' });
         $scope.houseTypes.push({ val: 'null', desc: 'Без типу' });
-        houseTypes.forEach(function (type) {
+        precinctDataService.houseTypes.forEach(function (type) {
             $scope.houseTypes.push({ val: "Citizens.Models.HouseType':type'".replace(/:type/g, type), desc: type });
         });
 
@@ -472,20 +472,15 @@ peopleControllers.controller("listPeopleController", ['$rootScope', '$scope', '$
             });
         };
 
-        $scope.getPrecinctsByNumber = function(viewValue) {
-            var odataFilter = "&$filter=startswith(cast(Number,Edm.String),'value') eq true&$top=10".replace(/value/, viewValue);
-            return precinctData.getAllNotExpand({filter: odataFilter }).$promise.then(function (data) {
-                return data.value;
-            });
-        };
+        $scope.getPrecinctsByNumber = precinctDataService.typeaheadPrecinctByNumber;
         
         $scope.onSelectMajor = function(item, model, label) {
             if (item.input) model.label = item.input + ' ' + label;
         }
     }]);
 
-peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$location', '$modal', 'serviceUtil', 'precinctData', 'precinctAddressesData', 'config', 'resolvedData', 'houseTypes', 'modelFactory', 'peopleDataService', 'workAreaResource', 'checkPermissions',
-    function ($rootScope, $scope, $location, $modal, serviceUtil, precinctData, precinctAddressesData, config, resolvedData, houseTypes, modelFactory, peopleDataService, workAreaResource, checkPermissions) {
+peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$location', '$modal', 'serviceUtil', 'config', 'resolvedData', 'modelFactory', 'peopleDataService', 'workAreaResource', 'checkPermissions',
+    function ($rootScope, $scope, $location, $modal, serviceUtil, config, resolvedData, modelFactory, peopleDataService, workAreaResource, checkPermissions) {
         var addMode = true, editInd, propValues = [], DATE_FORMAT = config.LOCALE_ISO_DATE_FORMAT;
         $rootScope.pageTitle = 'Фізична особа';
         $scope.tableHead = ['№', 'Назва', 'Значення'];
@@ -493,7 +488,6 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
         
         $scope.propKeys = resolvedData.additionalProps.keys;
         propValues = resolvedData.additionalProps.values;
-        $scope.houseTypes = houseTypes;
 
         $scope.getPropertyValuesByKeyId = function (keyId) {
             return propValues.filter(function (item) {
@@ -509,9 +503,6 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
                     $scope.dateOfBirth = serviceUtil.formatDate(new Date(resolvedData.data.person.DateOfBirth), config.LOCALE_DATE_FORMAT);
                 }
                 resolvedData.data.person.Major.label = peopleDataService.getPersonLabel(resolvedData.data.person.Major);
-                //$scope.person.address = resolvedData.data.person.PrecinctAddress;
-                //$scope.person.address.City = resolvedData.data.person.City;
-                //$scope.person.address.Street = resolvedData.data.person.Street;
                 $scope.person.additionalProperties = getPropertyPairs(resolvedData.data.person.PersonAdditionalProperties);
             }
             $scope.precincts = resolvedData.data.precincts;
@@ -573,11 +564,7 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
         };
 
         $scope.save = function () {
-            //if (!$scope.person.address.Precinct) {
-            //    $rootScope.errorMsg = 'Не вказано номер дільниці';
-            //    return;
-            //};
-
+           
             if (!$scope.person.CityId) {
                 $rootScope.errorMsg = "Не вказана адреса будинку";
                 return;
@@ -590,9 +577,7 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
 
             $rootScope.errorMsg = '';
             $scope.saving = true;
-            //var person = modelFactory.createObject('person', [$scope.person, $scope.person.address]);
             var person = modelFactory.createObject('person', $scope.person);
-            //var precinctAddress = modelFactory.createObject('precinctAddress', $scope.person.address);
             person.DateOfBirth = serviceUtil.formatDate($scope.dateOfBirth, DATE_FORMAT);
             if (!person.DateOfBirth) {
                 $scope.saving = false;
@@ -605,44 +590,21 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
             }
             
             if (!$scope.person.Major) person.MajorId = 0;
-            //if ($scope.person.address.Precinct && $scope.person.address.Precinct.Id) {
-            //    savePrecinctAddress({ Id: $scope.person.address.Precinct.Id });
-            //} else {
-            //    savePerson();
-            //    //precinctData.save({ "Number": $scope.person.address.Precinct }, savePrecinctAddress, errorHandler);
-            //}
-
-            //function savePrecinctAddress(precinct) {
-            //    var addressKey = serviceUtil.getAddressKey(precinctAddress);
-            //    precinctAddress.PrecinctId = precinct.Id;
-            //    precinctAddressesData.query(addressKey, function () {
-            //        precinctAddressesData.update(addressKey, precinctAddress, function() {
-            //            savePerson();
-            //        }, errorHandler);
-            //    }, function () {
-            //        precinctAddressesData.save(precinctAddress, function () {
-            //            savePerson();
-            //        }, errorHandler);
-            //    });
-            //};
-
-            //function savePerson() {
-                if (addMode) {
-                    peopleDataService.resource.save(person, function (res) {
-                        addMode = false;
-                        $scope.saving = false;
-                        $scope.person.Id = res.Id;
-                        $scope.person.additionalProperties = [];
-                        $rootScope.successMsg = "Фізичну особу створено успішно!";
-                    }, errorHandler);
-                } else {
-                    peopleDataService.resource.update({ id: $scope.person.Id
-                    }, person, function () {
-                        $scope.saving = false;
-                        $rootScope.successMsg = "Зміни успішно збережено!";
-                    }, errorHandler);
-                }
-            //};
+            if (addMode) {
+                peopleDataService.resource.save(person, function (res) {
+                    addMode = false;
+                    $scope.saving = false;
+                    $scope.person.Id = res.Id;
+                    $scope.person.additionalProperties = [];
+                    $rootScope.successMsg = "Фізичну особу створено успішно!";
+                }, errorHandler);
+            } else {
+                peopleDataService.resource.update({ id: $scope.person.Id
+                }, person, function () {
+                    $scope.saving = false;
+                    $rootScope.successMsg = "Зміни успішно збережено!";
+                }, errorHandler);
+            }
         };
 
         $scope.backToList = function () {
@@ -650,14 +612,6 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
             var currPage = serviceUtil.getRouteParam("currPage") || 1;
             $location.path('/people/' + currPage);
         };
-
-        //$scope.onSelectStreet = function ($item) {
-        //    $scope.person.address.StreetId = $item.Id;
-        //};
-
-        //$scope.onSelectCity = function ($item) {
-        //    $scope.person.address.CityId = $item.Id;
-        //};
 
         $scope.onSelectProperty = function ($item, $model) {
             $scope.selected.property.Value = $item;
@@ -867,7 +821,7 @@ peopleControllers.controller('modalWorkAreaSelectionCtrl', ['$scope', '$modalIns
     };
 }]);
 
-peopleControllers.controller('modalHouseSelectionCtrl', ['$scope', '$modalInstance', 'precinctAddressesData', 'serviceUtil', 'config', 'houseTypes', 'precinctData', 'modelFactory', function ($scope, $modalInstance, precinctAddressesData, serviceUtil,config, houseTypes, precinctData, modelFactory) {
+peopleControllers.controller('modalHouseSelectionCtrl', ['$scope', '$modalInstance', 'serviceUtil', 'config', 'precinctDataService', 'modelFactory', function($scope, $modalInstance, serviceUtil, config, precinctDataService, modelFactory) {
 
     if ($scope.person) {
         $scope.searchBy = {
@@ -886,10 +840,10 @@ peopleControllers.controller('modalHouseSelectionCtrl', ['$scope', '$modalInstan
         houseBuilding: config.patterns.houseBuilding
     };
 
-    precinctData.getAllNotExpand(function(resp) {
-        $scope.precincts = resp.value;
-    }, errorHandler);
+    $scope.houseTypes = precinctDataService.houseTypes;
 
+    $scope.getPrecinctsByNumber = precinctDataService.typeaheadPrecinctByNumber;
+    
     $scope.cancel = function () {
         $modalInstance.dismiss();
     };
@@ -933,7 +887,7 @@ peopleControllers.controller('modalHouseSelectionCtrl', ['$scope', '$modalInstan
         if ($scope.searchBy.house) filterQuery = filterQuery + " and House eq ':house'".replace(/:house/g, $scope.searchBy.house);
         $scope.loader.searching = true;
         $scope.alert = {};
-        precinctAddressesData.getAll({filter: "&$filter=" + filterQuery}, function(addresses) {
+        precinctDataService.resources.address.getAll({ filter: "&$filter=" + filterQuery }, function (addresses) {
             serviceUtil.sortAddresses(addresses.value);
             $scope.precinctAddresses = addresses.value;
             $scope.loader.searching = false;
@@ -992,16 +946,18 @@ peopleControllers.controller('modalHouseSelectionCtrl', ['$scope', '$modalInstan
         $scope.alert = {};
         serviceUtil.parseHouseNumber($scope.newAddress);
         if ($scope.newAddress.Precinct && !$scope.newAddress.PrecinctId) {
-            precinctData.save({ "Number": $scope.newAddress.Precinct }, savePrecinctAddress, errorHandler);
+            precinctDataService.resources.precinct.save({ "Number": $scope.newAddress.Precinct }, savePrecinctAddress, errorHandler);
         } else {
             savePrecinctAddress($scope.newAddress.Precinct);
         }
 
         function savePrecinctAddress(precinct) {
-            var modelAddress = modelFactory.createObject('precinctAddress', $scope.newAddress);
-            modelAddress.PrecinctId = precinct.Id;
             $scope.newAddress.Precinct = precinct;
-            precinctAddressesData.save(modelAddress, function (resp) {
+            $scope.newAddress.PrecinctId = precinct.Id;
+            var modelAddress = modelFactory.createObject('precinctAddress', $scope.newAddress);
+            //modelAddress.PrecinctId = precinct.Id;
+            //$scope.newAddress.Precinct = precinct;
+            precinctDataService.resources.address.save(modelAddress, function (resp) {
                 $scope.loader.saving = false;
                 if (!$scope.newAddress.Street) $scope.newAddress.Street = { Id: resp.StreetId };
                 $scope.precinctAddresses.push($scope.newAddress);

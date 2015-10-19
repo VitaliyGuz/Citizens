@@ -73,8 +73,8 @@ app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider',
             controller: 'editPrecinctController',
             resolve: {
                 commonData: function (commonData) { return commonData.asyncLoad() },
-                resolvedData: function($route, dataForEditPrecinctPage) {
-                    return dataForEditPrecinctPage.asyncLoad($route.current.params.id);
+                resolvedData: function ($route, precinctDataService) {
+                    return precinctDataService.asyncLoadData($route.current.params.id);
                 }
             }
         },

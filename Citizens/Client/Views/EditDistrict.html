@@ -48,7 +48,7 @@
     <td>{{ $index + 1 }}</td>
     <td>
         <input type="text" ng-change="selected.precinctId=0" typeahead-on-select="onSelectPrecinct($item, $model, $label)" ng-model="selected.precinct"
-               typeahead="p.Id as p.Number for p in precincts | filter: {Number:$viewValue} | orderByStartsWith:{Number:$viewValue} | limitTo:10" class="form-control" required>
+               typeahead="p.Id as p.Number for p in getPrecinctsByNumber($viewValue)" class="form-control" required>
     </td>
     <td>
         <button ng-click="savePrecinct(districtPrecinct,$index)" class="btn btn-sm btn-success" title="Зберегти">

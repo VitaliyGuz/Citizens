@@ -172,8 +172,8 @@ workAreaControllers.controller("listWorkAreasController", ['$location', '$rootSc
         };
     }]);
 
-workAreaControllers.controller("editWorkAreaController", ['$location', '$rootScope', '$scope', '$modal', '$q', 'serviceUtil', 'config', 'precinctAddressesData', 'resolvedData', 'workAreaResource', 'modelFactory', 'houseTypes', 'peopleDataService', 'filterSettings', 'printer',
-    function ($location, $rootScope, $scope, $modal,$q, serviceUtil, config, precinctAddressesData, resolvedData, workAreaResource, modelFactory, houseTypes, peopleDataService,filterSettings,printer) {
+workAreaControllers.controller("editWorkAreaController", ['$location', '$rootScope', '$scope', '$modal', '$q', 'serviceUtil', 'config', 'precinctDataService', 'resolvedData', 'workAreaResource', 'modelFactory', 'peopleDataService', 'filterSettings', 'printer',
+    function ($location, $rootScope, $scope, $modal, $q, serviceUtil, config, precinctDataService, resolvedData, workAreaResource, modelFactory, peopleDataService, filterSettings, printer) {
         
         $rootScope.pageTitle = 'Робоча дільниця';
         $scope.loader = {};
@@ -193,10 +193,10 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
         $scope.totalCount = {workArea: 0, precinct: 0, supporters: 0};
         
         $scope.data = resolvedData;
-        $scope.data.houseTypes = houseTypes;
+        $scope.data.houseTypes = precinctDataService.houseTypes;
         if (!$scope.data.precinctAddresses) $scope.data.precinctAddresses = [];
-        if (!$scope.data.majors) $scope.data.majors = [];
-        if (!$scope.data.workAreaAddresses) $scope.data.workAreaAddresses = [];
+        $scope.data.majors = [];
+        $scope.data.workAreaAddresses = [];
 
         if ($scope.data.workArea) {
             if (resolvedData.appointedTop) {
@@ -213,6 +213,8 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
         } else {
             $scope.tabActive.tabAddresses = true;
         }
+
+        $scope.getPrecinctsByNumber = precinctDataService.typeaheadPrecinctByNumber;
 
         $scope.saveChanges = function () {
 
@@ -267,7 +269,7 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
                     if (address.isDeselected) modelAddress.WorkAreaId = null;
                     if (address.isSelected) modelAddress.WorkAreaId = $scope.data.workArea.Id;
 
-                    precinctAddressesData.update(serviceUtil.getAddressKey(modelAddress), modelAddress, function(resp) {
+                    precinctDataService.resources.address.update(serviceUtil.getAddressKey(modelAddress), modelAddress, function (resp) {
                         address.WorkAreaId = resp.WorkAreaId;
                         address.isDeselected = false;
                         address.isSelected = false;
@@ -362,7 +364,7 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
 
         $scope.onSelectPrecinct = function(item) {
             $scope.loader.loadingPrecinctAddresses = true;
-            precinctAddressesData.getAllByPrecinctId({ precinctId: item.Id }, function(res) {
+            precinctDataService.resources.address.getAllByPrecinctId({ precinctId: item.Id }, function (res) {
                 $scope.loader.loadingPrecinctAddresses = false;
                 serviceUtil.sortAddresses(res.value);
                 $scope.data.precinctAddresses = res.value;

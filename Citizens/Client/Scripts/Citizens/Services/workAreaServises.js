@@ -27,25 +27,16 @@ angular.module("workAreaServices", ['ngResource', 'precinctServices', 'peopleSer
             });
         }
     ])
-    .factory('workAreaDataService', ['$q', 'serviceUtil', 'precinctAddressesData', 'precinctData', 'workAreaResource', 'peopleResource',
-        function ($q, serviceUtil, precinctAddressesData, precinctData, workAreaResource, peopleResource) {
+    .factory('workAreaDataService', ['$q', 'serviceUtil', 'precinctAddressResource', 'workAreaResource', 'peopleResource',
+        function ($q, serviceUtil, precinctAddressResource, workAreaResource, peopleResource) {
             return {
                 asyncLoad: function(routeParams) {
-                    var resolved = {}; //deferred = $q.defer();
-
-                    //function errorHandler(err) {
-                    //    deferred.reject(err);
-                    //};
+                    var promises = {};
 
                     if (routeParams.id) {
-                        resolved.workArea = workAreaResource.getById({ id: routeParams.id }).$promise;
+                        promises.workArea = workAreaResource.getById({ id: routeParams.id }).$promise;
                         if (routeParams.precinctId) {
-                            //resolved.precinctAddresses = deferred.promise;
-                            //precinctAddressesData.getAllByPrecinctId({ precinctId: routeParams.precinctId }, function(resp) {
-                            //    serviceUtil.sortAddresses(resp.value);
-                            //    deferred.resolve(resp.value);
-                            //}, errorHandler);
-                            resolved.precinctAddresses = precinctAddressesData.getAllByPrecinctId({ precinctId: routeParams.precinctId }).$promise
+                            promises.precinctAddresses = precinctAddressResource.getAllByPrecinctId({ precinctId: routeParams.precinctId }).$promise
                                 .then(function (data) {
                                     serviceUtil.sortAddresses(data.value);
                                     return data.value;
@@ -53,20 +44,14 @@ angular.module("workAreaServices", ['ngResource', 'precinctServices', 'peopleSer
                             
                         }
                         if (routeParams.majorId) {
-                            resolved.appointedMajor = peopleResource.getById({ id: routeParams.majorId }).$promise;
+                            promises.appointedMajor = peopleResource.getById({ id: routeParams.majorId }).$promise;
                         }
                         if (routeParams.topId) {
-                            resolved.appointedTop = peopleResource.getById({ id: routeParams.topId }).$promise;
+                            promises.appointedTop = peopleResource.getById({ id: routeParams.topId }).$promise;
                         }
-                    } else {
-                        //resolved.precincts = deferred.promise;
-                        resolved.precincts = precinctData.getAllNotExpand().$promise
-                            .then(function(data) {
-                                return data.value;
-                            });
                     }
 
-                    return $q.all(resolved);
+                    return $q.all(promises);
                 }
             };
         }

@@ -75,8 +75,8 @@ angular.module("peopleServices", ['ngResource', 'precinctServices']).
             }
         }
     }])
-    .factory('peopleDataService', ['$q', '$rootScope', 'serviceUtil', 'peopleResource', 'precinctData', 'additionalPropsResource', 'propertyTypes',
-        function ($q, $rootScope, serviceUtil, peopleResource, precinctData, additionalPropsResource, propertyTypes) {
+    .factory('peopleDataService', ['$q', 'serviceUtil', 'peopleResource', 'additionalPropsResource', 'propertyTypes',
+        function ($q, serviceUtil, peopleResource, additionalPropsResource, propertyTypes) {
 
         function getPersonLabel(person) {
             if (!person.City || !person.Street) serviceUtil.expandAddress(person);
@@ -84,7 +84,8 @@ angular.module("peopleServices", ['ngResource', 'precinctServices']).
                 dateOfBirth = new Date(person.DateOfBirth),
                 strDateOfBirth = serviceUtil.isEmptyDate(dateOfBirth) ? '' : ', ' + dateOfBirth.toLocaleDateString() + ' р.н.';
             strAddress = strAddress ? ', ' + strAddress : '';
-            return person.LastName + ' ' + person.FirstName + ' ' + person.MidleName + '' + strDateOfBirth + '' + strAddress;
+            var label = person.LastName + ' ' + person.FirstName + ' ' + person.MidleName + '' + strDateOfBirth + '' + strAddress;
+            return label.trim();
         };
 
         return {

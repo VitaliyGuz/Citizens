@@ -229,8 +229,8 @@
         </script>
         <script type="text/ng-template" id="changePresinctNumber">
             <td>
-                <input type="text" ng-change="selected.newPrecinctId=0" typeahead-on-select="onSelectPrecinctNumber($item, $model, $label)" ng-model="selected.newPrecinct"
-                       typeahead="p.Id as p.Number for p in precincts | filter: {Number:$viewValue} | orderByStartsWith:{Number:$viewValue} | limitTo:10" class="form-control">
+                <input type="text" ng-change="selected.newPrecinctId=0" typeahead-on-select="onSelectPrecinctNumber($item)" ng-model="selected.newPrecinct"
+                       typeahead="p as p.Number for p in getPrecinctsByNumber($viewValue)" class="form-control">
             </td>
         </script>
         <script type="text/ng-template" id="changePresinctBtn">
