@@ -109,7 +109,7 @@ namespace Citizens
                 .Collection
                 .Action("GetRange")
                 .ReturnsCollectionFromEntitySet<PersonAdditionalProperty>("PersonAdditionalProperties")
-                .CollectionParameter<PersonAdditionalProperty>("AdditionalProperties");
+                .CollectionParameter<PersonAdditionalProperty>("Keys");
 
             var addRangeAction = builder.EntityType<PersonAdditionalProperty>()
                 .Collection

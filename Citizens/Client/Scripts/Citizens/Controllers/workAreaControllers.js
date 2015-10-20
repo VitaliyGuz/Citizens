@@ -605,7 +605,7 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
             printData.workArea = $scope.data.workArea;
 
             $q.all({
-                computedProps: getComputedProperties(),
+                computedProps: getComputedPropertiesPromise(),
                 majors: workAreaResource.getMajors({ "id": $scope.data.workArea.Id }).$promise,
                 phonePropertyKey: peopleDataService.additionalPropsResource.getKeys({ "filter": "&$filter=Name eq 'тел. моб.'" }).$promise,
                 proponentPropertyValue: peopleDataService.additionalPropsResource.getValues({ filter: "&$filter=Value eq 'прихильник' and PropertyKey/Name eq 'статус'" }).$promise
@@ -617,7 +617,7 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
                 var promises = {};                
                 if (resp.phonePropertyKey.value.length > 0) {
                     var phonePropertyKeyId = resp.phonePropertyKey.value[0].Id;
-                    promises.majorsPhoneNumbers = peopleDataService.additionalPropsResource.getRange({ "AdditionalProperties": getAdditionalProps(phonePropertyKeyId) }).$promise;
+                    promises.majorsPhoneNumbers = peopleDataService.additionalPropsResource.getRange({ "Keys": getKeys(phonePropertyKeyId) }).$promise;
                 }
                 if (resp.proponentPropertyValue.value.length > 0) {
                     var proponentPropertyValueId = resp.proponentPropertyValue.value[0].Id;
@@ -635,13 +635,13 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
                 }, errorHandler);
             }, errorHandler);
 
-            function getAdditionalProps(propertyKeyId) {
+            function getKeys(propertyKeyId) {
                 return printData.majors.map(function (m) {
                     return {PersonId: m.Id, PropertyKeyId: propertyKeyId};
                 });
             };
 
-            function getComputedProperties() {
+            function getComputedPropertiesPromise() {
                 return workAreaResource.caclComputedProperties({ "WorkAreaIds": [$scope.data.workArea.Id] }).$promise.then(function (resp) {
                     var data = {};
                     if (resp && resp.value.length > 0) {

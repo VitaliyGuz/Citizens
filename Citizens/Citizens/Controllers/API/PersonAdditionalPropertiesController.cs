@@ -230,15 +230,18 @@ namespace Citizens.Controllers.API
                 return BadRequest(ModelState);
             }
 
-            var param = parameters["AdditionalProperties"] as IEnumerable<PersonAdditionalProperty>;
-            if (param == null) return BadRequest("Not found property 'AdditionalProperties'");
+            var param = parameters["Keys"] as IEnumerable<PersonAdditionalProperty>;
+            if (param == null) return BadRequest("Not found parameter 'Keys'");
             
-            var additionalProperties = param as PersonAdditionalProperty[] ?? param.ToArray();
+            var apKeys = param as PersonAdditionalProperty[] ?? param.ToArray();
             
-            var resp = additionalProperties
-                .Join(db.PersonAdditionalProperties.Include("PropertyValue"),
-                    a => new { a.PersonId, a.PropertyKeyId },
-                    p => new { p.PersonId, p.PropertyKeyId }, (k, v) => v);
+            var propertyKeyIds = apKeys.Select(x => x.PropertyKeyId).Distinct();
+            var personIds = apKeys.Select(x => x.PersonId).Distinct();
+            var resp = db.PersonAdditionalProperties
+                .Where(p => propertyKeyIds.Contains(p.PropertyKeyId) && personIds.Contains(p.PersonId))
+                .ToList()
+                .Join(apKeys, a => new { a.PersonId, a.PropertyKeyId }, 
+                              p => new { p.PersonId, p.PropertyKeyId }, (k, v) => k);
 
             return Ok(resp);
         }
