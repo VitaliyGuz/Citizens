@@ -1,4 +1,5 @@
-﻿using System.Data.Entity;
+﻿using System.Collections.Generic;
+using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Net;
@@ -259,6 +260,44 @@ namespace Citizens.Controllers.API
         private bool PrecinctExists(int key)
         {
             return db.Precincts.Count(e => e.Id == key) > 0;
+        }
+
+        [HttpPost]
+        [ODataRoute("Precincts({precinctId})/AddAddresses")]
+        public async Task<IHttpActionResult> AddAddresses([FromODataUri] int precinctId, ODataActionParameters parameters)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var param = parameters["Addresses"] as IEnumerable<PrecinctAddress>;
+            if (param == null) return BadRequest("Not found parameter 'Addresses'");
+
+            var addresses = param as PrecinctAddress[] ?? param.Distinct(new PrecinctAddressComparer()).ToArray();
+            if (addresses.Length == 0) return StatusCode(HttpStatusCode.Created);
+
+            if (!PrecinctExists(precinctId)) return BadRequest("Precinct not found");
+
+            var exist = addresses.Where(a => db.PrecinctAddresses
+                .Count(pa => pa.CityId == a.CityId && pa.StreetId == a.StreetId && pa.House == a.House) > 0)
+                .ToList();
+
+            if (exist.Any())
+            {
+                var respBuilder = new PrecinctAddressConflictResponseBuilder(exist,db);
+                return new TextResult(respBuilder.ToString(), Request, HttpStatusCode.Conflict);
+            }
+
+            foreach (var a in addresses)
+            {
+                a.PrecinctId = precinctId;
+            }
+
+            db.PrecinctAddresses.AddRange(addresses);
+            await db.SaveChangesAsync();
+
+            return StatusCode(HttpStatusCode.Created);
         }
     }
 }

@@ -338,20 +338,23 @@ app.factory("serviceUtil", ["$filter", '$routeParams', '$rootScope', function ($
             var compareByName =  this.compareByName;
 
             function compareByHouse(a1, a2) {
-                var compNumber = a1.HouseNumber - a2.HouseNumber;
+                var houseNumber1 = a1.HouseNumber == undefined ? parseInt(a1.House) : a1.HouseNumber;
+                var houseNumber2 = a2.HouseNumber == undefined ? parseInt(a2.House) : a2.HouseNumber;
+                var compNumber = houseNumber1 - houseNumber2;
+                if (isNaN(compNumber)) return 0;
                 if (compNumber === 0) {                   
                     var compFractionNumb = parseInt(a1.HouseFraction) - parseInt(a2.HouseFraction),
-                        compFractionStr = a1.HouseFraction.localeCompare(a2.HouseFraction),
-                        compFraction;
+                        compFractionStr = a1.HouseFraction != undefined ? a1.HouseFraction.localeCompare(a2.HouseFraction) : 0,
+                        compFraction = 0;
                     if (isNaN(compFractionNumb)) {
                         compFraction = compFractionStr;
                     } else {
                         compFraction = compFractionNumb === 0 ? compFractionStr : compFractionNumb;
                     }
                     if (compFraction === 0) {
-                        var compLetter = a1.HouseLetter.localeCompare(a2.HouseLetter);
+                        var compLetter = a1.HouseLetter != undefined ? a1.HouseLetter.localeCompare(a2.HouseLetter) : 0;
                         if (compLetter === 0) {
-                            var compBuildingStr = a1.HouseBuilding.localeCompare(a2.HouseBuilding),
+                            var compBuildingStr = a1.HouseBuilding != undefined ? a1.HouseBuilding.localeCompare(a2.HouseBuilding) : 0,
                             compBuildingNumb = parseInt(a1.HouseBuilding) - parseInt(a2.HouseBuilding);
                             if (isNaN(compBuildingNumb)) {
                                 return compBuildingStr;
@@ -371,7 +374,7 @@ app.factory("serviceUtil", ["$filter", '$routeParams', '$rootScope', function ($
 
             function compareAddresses(a1, a2) {
                 var compCity = compareByName(a1.City, a2.City);
-                var compStreet = 1, compTypeStreet = 1;
+                var compStreet = 0, compTypeStreet = 0;
                 if (a1.Street && a2.Street) {
                     compStreet = compareByName(a1.Street, a2.Street);
                     compTypeStreet = compareByName(a1.Street.StreetType, a2.Street.StreetType);

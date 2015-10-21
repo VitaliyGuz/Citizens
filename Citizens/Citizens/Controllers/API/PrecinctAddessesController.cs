@@ -1,6 +1,8 @@
-﻿using System.Data.Entity.Infrastructure;
+﻿using System.Collections.Generic;
+using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.OData;
@@ -107,8 +109,6 @@ namespace Citizens.Controllers.API
                 return BadRequest(ModelState);
             }
 
-            var textConflict = "";
-
             if (precinctAddress.StreetId == 0)
             {
                 var nullStreet = db.Streets.FirstOrDefault(s => s.Name.Equals(string.Empty));
@@ -129,23 +129,12 @@ namespace Citizens.Controllers.API
             }
             catch (DbUpdateException)
             {
-                //if (PrecinctAddressExists(precinctAddress.CityId, precinctAddress.StreetId, precinctAddress.House))
-                //{
-                PrecinctAddress precinctAddress2 = db.PrecinctAddresses.Include("Precinct").Include("City.CityType").Include("Street.StreetType").SingleOrDefault(precinctAddress1 => precinctAddress1.CityId == precinctAddress.CityId && precinctAddress1.StreetId == precinctAddress.StreetId && precinctAddress1.House == precinctAddress.House);
-                if (precinctAddress2 != null)
+                if (PrecinctAddressExists(precinctAddress.CityId, precinctAddress.StreetId, precinctAddress.House))
                 {
-                    textConflict = textConflict + "Адреса " + precinctAddress.City.CityType.Name + precinctAddress.City.Name +
-                                       ", " + precinctAddress.Street.StreetType.Name + precinctAddress.Street.Name +
-                                       "," + precinctAddress.House + " вже знаходиться в дільниці " +
-                                       precinctAddress2.Precinct.Number.ToString() + "\r\n";
-                    //return Conflict();
-                    return new TextResult(textConflict, Request, HttpStatusCode.Conflict);
+                    var respBuilder = new PrecinctAddressConflictResponseBuilder(precinctAddress,db);
+                    return new TextResult(respBuilder.ToString(), Request, HttpStatusCode.Conflict);
                 }
-                //}
-                //else
-                //{
                 throw;
-                //}
             }
 
             return Created(precinctAddress);
@@ -260,6 +249,58 @@ namespace Citizens.Controllers.API
         private bool PrecinctAddressExists([FromODataUri] int cityId, [FromODataUri] int? streetId, [FromODataUri] string house)
         {
             return db.PrecinctAddresses.Count(precinctAddress => precinctAddress.CityId == cityId && precinctAddress.StreetId == streetId && precinctAddress.House == house) > 0;
+        }
+    }
+
+    class PrecinctAddressComparer : IEqualityComparer<PrecinctAddress>
+    {
+        public bool Equals(PrecinctAddress x, PrecinctAddress y)
+        {
+            return x.CityId == y.CityId && x.StreetId == y.StreetId && x.House == y.House;
+        }
+
+        public int GetHashCode(PrecinctAddress obj)
+        {
+            return obj.CityId.GetHashCode() ^ obj.StreetId.GetHashCode() ^ obj.House.GetHashCode();
+        }
+    }
+
+    public class PrecinctAddressConflictResponseBuilder
+    {
+        private readonly CitizenDbContext db;
+
+        private readonly List<PrecinctAddress> addresses;
+
+        public override string ToString()
+        {
+            var builder = new StringBuilder();
+            addresses.ForEach(a =>
+            {
+                var expanded = db.PrecinctAddresses.Include("Precinct")
+                        .Include("City.CityType")
+                        .Include("Street.StreetType")
+                        .FirstOrDefault(
+                            i => i.CityId == a.CityId && i.StreetId == a.StreetId && i.House == a.House);
+                if (expanded != null)
+                {
+                    builder.Append(string.Format("Адреса {0}{1}, {2}{3} {4} вже знаходиться в дільниці {5}\n", expanded.City.CityType.Name, expanded.City.Name,
+                        expanded.Street.StreetType.Name, expanded.Street.Name,
+                        expanded.House, expanded.Precinct.Number));
+                }
+            });
+            return builder.ToString();
+        }
+
+        public PrecinctAddressConflictResponseBuilder(List<PrecinctAddress> addresses, CitizenDbContext db)
+        {
+            this.addresses = addresses;
+            this.db = db;
+        }
+
+        public PrecinctAddressConflictResponseBuilder(PrecinctAddress address, CitizenDbContext db)
+        {
+            this.db = db;
+            addresses = new List<PrecinctAddress>(1) {address};
         }
     }
 }

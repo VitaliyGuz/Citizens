@@ -559,7 +559,6 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
                     var address = modelFactory.createObject('precinctAddress', $scope.autocomplete);
                     address.House = houseNumb.toString();
                     address.HouseNumber = houseNumb;
-                    address.PrecinctId = $scope.precinct.Id;
                     arr.push(address);
                     houseNumb++;
                 }
@@ -568,7 +567,7 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
 
             $scope.saving.autocompleteAddresses = true;
             var addresses = getAddresses();
-            precinctDataService.resources.precinct.saveAll({ PrecinctAddresses: addresses }, function () {
+            precinctDataService.resources.precinct.addAddresses({ id: $scope.precinct.Id }, {Addresses: addresses }, function () {
                 $scope.saving.autocompleteAddresses = false;
                 addresses.forEach(function(item) {
                     item.City = $scope.autocomplete.City;

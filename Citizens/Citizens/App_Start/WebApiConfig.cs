@@ -125,6 +125,10 @@ namespace Citizens
 
             builder.EntityType<Person>().Action("ClearMajor");
 
+            builder.EntityType<Precinct>()
+                .Action("AddAddresses")
+                .CollectionParameter<PrecinctAddress>("Addresses");
+
             config.EnableCaseInsensitive(caseInsensitive: true);
             config.EnableUnqualifiedNameCall(unqualifiedNameCall: true);
             config.EnableEnumPrefixFree(enumPrefixFree: true);
