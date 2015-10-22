@@ -173,7 +173,7 @@ authServices.factory('authInterceptor', ['$q', '$location', '$rootScope', '$inje
                     configReq.headers.Authorization = authData.accessToken;
                 }
             }
-            if (diff <= 30 && !refreshingToken && authData) {
+            if (!refreshingToken && authData) {
                 refreshingToken = true;
                 var refreshToken = $injector.get('refreshToken'); // cannot inject $http servise in interceptor provider
                 refreshToken(function(result) {
