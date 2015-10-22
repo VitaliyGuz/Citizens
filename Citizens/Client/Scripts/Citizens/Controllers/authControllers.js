@@ -48,10 +48,6 @@ authControllers.controller('loginController', ['$rootScope', '$scope', '$locatio
 
     $scope.externalLogin = function (providerName) {
         $scope.alert = {};
-        if (!$scope.user) {
-            $scope.alert.error = "Введіть e-mail та пароль";
-            return;
-        }
         $scope.loadingData.extLogin = true;
         var externalProviderUrl = config.getExternalProviderUrl(providerName);
         window.$windowScope = $scope;
