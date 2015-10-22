@@ -36,15 +36,23 @@ authControllers.controller('loginController', ['$rootScope', '$scope', '$locatio
         }
     };
 
-    $scope.login = function (){
-        $scope.loadingData.login = true;
+    $scope.login = function () {
         $scope.alert = {};
+        if (!$scope.user) {
+            $scope.alert.error = "Введіть e-mail та пароль";
+            return;
+        }
+        $scope.loadingData.login = true;
         Login($scope.user.name, $scope.user.password, responseHandler);
     };
 
     $scope.externalLogin = function (providerName) {
-        $scope.loadingData.extLogin = true;
         $scope.alert = {};
+        if (!$scope.user) {
+            $scope.alert.error = "Введіть e-mail та пароль";
+            return;
+        }
+        $scope.loadingData.extLogin = true;
         var externalProviderUrl = config.getExternalProviderUrl(providerName);
         window.$windowScope = $scope;
         var popup = window.open(externalProviderUrl, "Authenticate Account", "location=0,status=0,width=500,height=650");

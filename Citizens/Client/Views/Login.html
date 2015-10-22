@@ -2,7 +2,7 @@
     <h2>Вхід в систему</h2>
     <div ng-show="alert.error" class="alert alert-danger ">{{alert.error}}</div>
     <div ng-show="alert.info" class="alert alert-info ">{{alert.info}}</div>
-    <form name="form" ng-submit="login()" role="form">
+    <!--<form name="form" ng-submit="login()" role="form">-->
         <div class="form-group" ng-class="{ 'has-error': form.userName.$dirty && form.userName.$error.required }">
             <label for="userName">E-mail:</label>
             <input type="text" name="userName" id="userName" class="form-control" ng-model="user.name" required />
@@ -14,7 +14,7 @@
             <span ng-show="form.password.$dirty && form.password.$error.required" class="help-block">Пароль обов'язковий для заповнення</span>
         </div>
         <div class="form-actions">
-            <button type="submit" ng-disabled="form.$invalid" class="btn btn-primary">Ввійти
+            <button type="submit" ng-click="login()" ng-disabled="form.$invalid" class="btn btn-primary">Ввійти
                 <i ng-show="!loadingData.login" class="glyphicon glyphicon-log-in"></i>
                 <i ng-show="loadingData.login" class="fa fa-refresh fa-spin"></i>
             </button>
@@ -24,5 +24,5 @@
             </button>
             <!--<a href="/register" class="btn btn-link">Реєстрація</a>-->
         </div>
-    </form>
+    <!--</form>-->
 </div>
