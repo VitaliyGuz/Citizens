@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Data.SqlClient;
 using System.Linq;
@@ -237,7 +238,7 @@ namespace Citizens.Controllers.API
         [HttpGet]
         [ODataRoute("WorkAreas({id})/GetMajors()")]
         [EnableQuery]
-        public IHttpActionResult GetMajors(int id)
+        public async Task<IHttpActionResult> GetMajors(int id)
         {
             if (!ModelState.IsValid)
             {
@@ -245,33 +246,18 @@ namespace Citizens.Controllers.API
             }
 
             if (id == 0) return BadRequest("WorkAreaId equal 0");
-
-            var response = db.People.Include("Major").Include("PrecinctAddress")
+            
+            var dic = db.People.Include("Major").Include("PrecinctAddress")
                 .Where(p => p.PrecinctAddress.WorkAreaId == id)
-                .GroupBy(k => k.Major, g => g.Id, (k, g) => new 
+                .GroupBy(k => k.Major, g => g.Id, (k, g) => new
                 {
                     Person = k,
                     CountSupporters = g.Distinct().Count()
-                })
-                .AsEnumerable()
-                .Select(x => new Person
-                {
-                    Id = x.Person.Id,
-                    FirstName = x.Person.FirstName,
-                    LastName = x.Person.LastName,
-                    MidleName = x.Person.MidleName,
-                    CityId = x.Person.CityId,
-                    StreetId = x.Person.StreetId,
-                    House = x.Person.House,
-                    Apartment = x.Person.Apartment,
-                    ApartmentStr = x.Person.ApartmentStr,
-                    DateOfBirth = x.Person.DateOfBirth,
-                    Gender = x.Person.Gender,
-                    MajorId = x.Person.MajorId,
-                    CountSupporters = x.CountSupporters
-                })
+                });
+            await dic.ForEachAsync(x => x.Person.CountSupporters = x.CountSupporters);
+            var response = dic.Select(e => e.Person)
                 .Where(p => !p.LastName.Equals(string.Empty) && !p.MidleName.Equals(string.Empty) && !p.FirstName.Equals(string.Empty));
-
+                
             return Ok(response);
         }
 
