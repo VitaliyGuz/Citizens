@@ -3,9 +3,9 @@
 <div class="row form-inline">
     <div class="col-md-6">
         <label>Пошук:</label>
-        <input ng-model="query[queryBy]" type="text" ng-change="onFilterQueryChange(true)" class="form-control" placeholder="Введіть слово">
+        <input ng-model="filter.query[filter.queryBy]" type="text" ng-change="onFilterQueryChange(true)" class="form-control" placeholder="Введіть слово">
         <label>по:</label>
-        <select ng-model="queryBy" ng-change="onFilterQueryChange(false)" class="form-control">
+        <select ng-model="filter.queryBy" ng-change="onFilterQueryChange(false)" class="form-control">
             <option value="Number">Округ</option>
             <option value="DistrictType.Name">Тип</option>
         </select>
@@ -24,8 +24,8 @@
         </tr>
     </thead>
     <tbody>
-        <tr dir-paginate="district in getDistricts() | filterByFirstChar: query | itemsPerPage: pageSize" current-page="currentPage" pagination-id="districtsPagination">
-            <td>{{ getIndex(district) + 1 }}</td>
+        <tr dir-paginate="district in districts | filter: filter.expression | itemsPerPage: pagination.pageSize" current-page="pagination.currentPage" pagination-id="districtsPagination">
+            <td>{{ getIndex($index) + 1 }}</td>
             <td>{{ district.Number }} {{ city.Name }}</td>
             <td>{{ district.DistrictType.Name }}</td>
             <td>

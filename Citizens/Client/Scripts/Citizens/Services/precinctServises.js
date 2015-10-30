@@ -24,25 +24,26 @@ angular.module("precinctServices", ['ngResource'])
             'remove': { method: 'DELETE', params: params, url: urlOdata + "(:id)" }
         });
     }])
-    .factory("districtResource", ['$resource', 'config', function ($resource, config) {
-        var urlOdata = config.baseUrl + '/odata/Districts',
-            urlDistrictTypes = config.baseUrl + '/odata/DistrictTypes',
-            urlDistrictPrecincts = config.baseUrl + '/odata/DistrictPrecincts',
-            params = { id: "@id" },
-            paramKey = { districtId: "@districtId", precinctId: "@precinctId" },
+    .factory("districtResource", ['$resource', '$cacheFactory', 'config', function ($resource, $cacheFactory, config) {
+        var urls = {base: config.baseUrl},
+            params = {id: { id: "@id" }},
             key = "(DistrictId=:districtId,PrecinctId=:precinctId)";
+        params.key = { districtId: "@districtId", precinctId: "@precinctId" };
+        urls.districts = urls.base + '/odata/Districts';
+        urls.districtTypes = urls.base + '/odata/DistrictTypes';
+        urls.districtPrecincts = urls.base + '/odata/DistrictPrecincts';
         return $resource('', {},
         {
-            'query': { method: 'GET', params: params, url: urlOdata + "(:id)?$expand=DistrictType", cache: true },
-            'getById': { method: 'GET', params: params, url: urlOdata + "(:id)?$expand=DistrictType,DistrictPrecincts($expand=Precinct)" },
-            'update': { method: 'PUT', params: params, url: urlOdata + "(:id)" },
-            'save': { method: "POST", url: urlOdata },
-            'remove': { method: 'DELETE', params: params, url: urlOdata + "(:id)" },
-            'getTypes': { method: 'GET', url: urlDistrictTypes, cache: true },
-            'getPrecinctDistrict': { method: 'GET', params: paramKey, url: urlDistrictPrecincts + key + '?$expand=District($expand=DistrictType)' },
-            'updatePrecinctDistrict': { method: 'PUT', params: paramKey, url: urlDistrictPrecincts + key },
-            'savePrecinctDistrict': { method: "POST", url: urlDistrictPrecincts },
-            'removePrecinctDistrict': { method: 'DELETE', params: paramKey, url: urlDistrictPrecincts + key }
+            'query': { method: 'GET', params: params.id, url: urls.districts + "(:id)?$expand=DistrictType", cache: false },// DON'T CACHE! caching already implemented in districts cache
+            'getById': { method: 'GET', params: params.id, url: urls.districts + "(:id)?$expand=DistrictType,DistrictPrecincts($expand=Precinct)" },
+            'update': { method: 'PUT', params: params.id, url: urls.districts + "(:id)" },
+            'save': { method: "POST", url: urls.districts },
+            'remove': { method: 'DELETE', params: params.id, url: urls.districts + "(:id)" },
+            'getTypes': { method: 'GET', url: urls.districtTypes, cache: true },
+            'getPrecinctDistrict': { method: 'GET', params: params.key, url: urls.districtPrecincts + key + '?$expand=District($expand=DistrictType)' },
+            'updatePrecinctDistrict': { method: 'PUT', params: params.key, url: urls.districtPrecincts + key },
+            'savePrecinctDistrict': { method: "POST", url: urls.districtPrecincts },
+            'removePrecinctDistrict': { method: 'DELETE', params: params.key, url: urls.districtPrecincts + key }
         });
     }])
     .factory("precinctAddressResource", ['$resource', 'config', function($resource, config) {
@@ -60,8 +61,8 @@ angular.module("precinctServices", ['ngResource'])
             'remove': { method: 'DELETE', params: params, url: urlOdata + key }
         });
     }])
-    .factory('precinctDataService', ['$q', 'precinctResource', 'districtResource', 'userData', 'usersHolder', 'precinctAddressResource',
-        function ($q, precinctResource, districtResource, userData, usersHolder, precinctAddressResource) {
+    .factory('precinctDataService', ['$q', 'precinctResource', 'districtDataService', 'userData', 'usersHolder', 'precinctAddressResource',
+        function ($q, precinctResource, districtDataService, userData, usersHolder, precinctAddressResource) {
 
             function getUsersByPrecinctId(precinctId) {
                 return usersHolder.asyncLoad().then(function () {
@@ -101,11 +102,10 @@ angular.module("precinctServices", ['ngResource'])
                         return data.value;
                     };
 
-                    promises.districts = districtResource.query().$promise
-                        .then(successHandler, function (err) {
-                            err.description = 'Округи не завантажено';
-                            return $q.reject(err);
-                        });
+                    promises.districts = districtDataService.asyncCacheAll().then(function () {
+                        return districtDataService.cache.get();
+                    });
+
                     if (routeParam) {
                         promises.precinct = precinctResource.getById({ id: routeParam }).$promise
                             .catch(function (err) {
@@ -138,44 +138,27 @@ angular.module("precinctServices", ['ngResource'])
                 resources: {
                     precinct: precinctResource,
                     address: precinctAddressResource,
-                    district: districtResource
+                    district: districtDataService.resource
                 } 
             };
-    }])//todo: refactor like userHolder
-    .factory('districtsHolder', function () {
-        var districts, index;
+    }])
+    .factory('districtDataService', ['$q','Cache', 'districtResource', function ($q, Cache, districtResource) {
+        var cache = new Cache();
+        cache.compareFn = function (a, b) {
+            return a.Number - b.Number;
+        };
         return {
-            get: function() {
-                return districts;
+            asyncCacheAll: function() {
+                if (!cache.isEmpty()) return $q.when();
+                return districtResource.query().$promise.then(function (data) {
+                    cache.set(data.value);
+                    cache.sort();
+                }, function(e) {
+                    e.description = 'Округи не завантажено';
+                    return $q.reject(e);
+                });
             },
-            set: function(data) {
-                if (data && angular.isArray(data)) districts = data;
-            },
-            setEditIndex: function(ind) {
-                index = undefined;
-                if (ind != undefined && ind >= 0) index = ind;
-            },
-            update: function(elem) {
-                if (index >= 0 && elem) districts[index] = elem;
-            },
-            add: function(elem) {
-                if (districts && elem) districts.push(elem);
-            },
-            remove: function(elem) {
-                districts.splice(this.indexOf(elem), 1);
-            },
-            isEmpty: function() {
-                return districts ? districts.length <= 0 : true;
-            },
-            indexOf: function(elem) {
-                return elem && districts ? districts.indexOf(elem) : undefined;
-            },
-            sort: function() {
-                if (districts) {
-                    districts.sort(function(a, b) {
-                        return a.Number - b.Number;
-                    });
-                }
-            }
-        }
-    });
+            cache: cache,
+            resource: districtResource
+        };
+    }]);

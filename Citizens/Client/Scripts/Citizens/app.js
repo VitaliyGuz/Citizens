@@ -81,12 +81,34 @@ app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider',
         routeListDistricts = {
             templateUrl: 'Views/ListDistricts.html',
             controller: 'listDistrictsController',
-            resolve: { commonData: function (commonData) { return commonData.asyncLoad() } }
+            resolve: {
+                commonData: function (commonData) { return commonData.asyncLoad() },
+                districts: function (districtDataService) {
+                    return districtDataService.asyncCacheAll();
+                }
+            }
         },
         routeEditDistrict = {
             templateUrl: 'Views/EditDistrict.html',
             controller: 'editDistrictController',
-            resolve: { commonData: function (commonData) { return commonData.asyncLoad() } }
+            resolve: {
+                commonData: function (commonData) { return commonData.asyncLoad() },
+                resolvedData: function ($q, $route, districtResource) {
+                    return $q.all({
+                        district: $route.current.params.id ? districtResource.getById({ id: $route.current.params.id }).$promise
+                            .catch(function(e) {
+                                e.description = 'Округ не знайдено';
+                                return $q.reject(e);
+                            }) : undefined,
+                        types: districtResource.getTypes().$promise.then(function(resp) {
+                            return resp.value;
+                        }, function (e) {
+                            e.description = 'Типи округів не завантажено';
+                            return $q.reject(e);
+                        })
+                    });
+                }
+            }
         },
         routeEditUser = {
             templateUrl: 'Views/Admin/EditUser.html',
@@ -193,6 +215,7 @@ app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider',
         when('/logout', {
             resolve: {
                 logout: function ($location, Credentials, usersHolder) {
+                    //todo: remove all cached data
                     Credentials.clear();
                     usersHolder.removeAll();
                     $location.path('/login');
@@ -229,13 +252,13 @@ app.constant("config", Object.freeze({
         houseBuilding: /^\d+[а-яА-Яі-їІ-Ї]*,?-?\d*[а-яА-Яі-їІ-Ї]*\/?\d*$/
     }
 }));
-
+//todo: replace to filters.js file
 app.filter('checkApartment', function () {
     return function (input) {
         return input ? ", кв." + input : '';
     };
 });
-
+//todo: replace to utils.js file
 app.factory("serviceUtil", ["$filter", '$routeParams', '$rootScope', function ($filter, $routeParams, $rootScope) {
     return {
         getErrorMessage: function (error) {
@@ -441,6 +464,14 @@ app.factory("serviceUtil", ["$filter", '$routeParams', '$rootScope', function ($
         },
         getHouseExceptBuilding: function(house) {
             return house.replace(/\s[к|К].+/, '').replace(/\,/g, '').trim();
+        },
+        getFilterExpression: function (props, value) {
+            if (!props) return {};
+            function build(obj) {
+                obj[props.shift()] = props.length === 0 ? value : build({});
+                return obj;
+            };
+            return build({});
         }
     }
 }]);
@@ -513,7 +544,7 @@ app.run(["$rootScope", "$timeout", '$location', 'Credentials', 'checkPermissions
         $rootScope.loading = false;
     });
 }]);
-
+//todo: replace to filters.js file
 app.filter("orderByStartsWith", function () {
     return function (items, viewValue) {
         var key, value;
@@ -558,7 +589,7 @@ app.filter("orderByStartsWith", function () {
        });
     }
 });
-
+//todo: delete filterByFirstChar
 app.filter("filterByFirstChar", function () {
     return function (input, search) {
         if (!input) return input;
@@ -602,7 +633,7 @@ app.filter("filterByFirstChar", function () {
         return result;
     }
 });
-
+//todo: try load data in run func 
 app.factory('commonData', ['$q', '$rootScope', 'cityData', 'streetData', 'regionPartData', 'neighborhoodData', 'serviceUtil', function ($q, $rootScope, cityData, streetData, regionPartData, neighborhoodData, serviceUtil) {
 
     function getPromiseAndLoadData(param) {
@@ -646,7 +677,7 @@ app.factory('commonData', ['$q', '$rootScope', 'cityData', 'streetData', 'region
         }
     };
 }]);
-
+//todo: use $cacheFactory
 app.factory('filterSettings', [function () {
     var settings = {};
     return {
@@ -661,7 +692,7 @@ app.factory('filterSettings', [function () {
         }
     }
 }]);
-
+//todo: replace to directives.js file
 app.directive('datepicker', ['serviceUtil', function (serviceUtil) {
     return {
         restrict: 'A',
@@ -682,7 +713,7 @@ app.directive('datepicker', ['serviceUtil', function (serviceUtil) {
         }
     }
 }]);
-
+//todo: replace to directives.js file
 app.directive('accessPermissions', ['checkPermissions', function (checkPermissions) {
     return {
         restrict: 'A',
@@ -809,6 +840,48 @@ app.factory('modelFactory', ['serviceUtil', function (serviceUtil) {
             return model;
         }
     }
+}]);
+
+app.service('Cache',['serviceUtil', function (serviceUtil) {
+    return function() {
+        var cache = [];
+        this.get = function() {
+            return cache;
+        };
+        this.set = function(data) {
+            if (data && angular.isArray(data)) cache = data;
+        };
+        this.update = function (key, delta) {
+            var ind = this.indexOf(key);
+            if (ind >= 0) {
+                Object.keys(delta).forEach(function(prop) {
+                    cache[ind][prop] = delta[prop];
+                });
+            }
+        };
+        this.add = function (value) {
+            if (value) cache.push(value);
+        };
+        this.remove = function (value) {
+            var ind = this.indexOf(value);
+            if (ind >= 0) cache.splice(ind, 1);
+        };
+        this.removeAll = function () {
+            cache = [];
+        };
+        this.isEmpty = function () {
+            return cache.length <= 0;
+        };
+        this.indexOf = function (elem) {
+            return elem ? serviceUtil.objectIndexOf(cache, elem) : -1;
+        };
+        this.compareFn = null;
+        this.sort = function () {
+            if (!angular.isFunction(this.compareFn))
+                throw "'compareFn' is not a function";
+            cache.sort(this.compareFn);
+        }
+    };
 }]);
 
 //app.directive('myDatepicker', ['serviceUtil',function (serviceUtil) {
