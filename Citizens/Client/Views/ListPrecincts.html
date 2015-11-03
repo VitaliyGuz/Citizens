@@ -35,12 +35,16 @@
     <tbody>
         <tr dir-paginate="precinct in precincts | itemsPerPage: pagination.pageSize" current-page="pagination.currentPage" total-items="pagination.totalItems" pagination-id="precinctsPagination">
             <td>{{ getIndex($index) }}</td>
-            <td>{{ precinct.Number }}</td>
+            <td>
+                <a ng-href="/precinct/{{precinct.Id}}/{{pagination.currentPage}}" ng-click="errorMsg = ''" title="Перейти на сторінку дільниці">
+                    {{ precinct.Number }}
+                </a>
+            </td>
             <td>{{ precinct.Street.StreetType.Name }}{{ precinct.Street.Name }}, {{ precinct.House }}, {{ precinct.City.CityType.Name }}{{ precinct.City.Name }}, {{ precinct.City.RegionPart.Name }} р-н.</td>
             <td>
-                <button class="btn btn-xs" ng-click="edit(precinct)" title="Редагувати">
+                <!--<button class="btn btn-xs" ng-click="edit(precinct)" title="Редагувати">
                     <span class="glyphicon glyphicon-edit"></span>
-                </button>
+                </button>-->
                 <button class="btn btn-xs" ng-click="delete(precinct)" title="Видалити">
                     <span class="glyphicon glyphicon-trash"></span>
                 </button>

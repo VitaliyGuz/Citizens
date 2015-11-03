@@ -14,30 +14,30 @@
     <div class="container row form-horizontal">
         <div class="form-group col-lg-2">
             <label>Номер</label>
-            <input ng-model="precinct.Number" type="text" class="form-control" required>
+            <input ng-model="data.precinct.Number" type="text" class="form-control" required>
         </div>
         <div class="form-group col-lg-3">
             <label>Населений пункт</label>
-            <input type="text" ng-change="precinct.CityId=0" typeahead-on-select="onSelectCity($item, $model, $label,precinct)" ng-model="precinct.City"
+            <input type="text" ng-change="data.precinct.CityId=0" typeahead-on-select="onSelectCity($item, $model, $label,data.precinct)" ng-model="data.precinct.City"
                    typeahead="c.Id as c.CityType.Name +' '+c.Name + ' (' + c.RegionPart.Name + ' р-н)' for c in cities | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control" required>
         </div>
         <div class="form-group col-lg-3">
             <label>Вулиця</label>
-            <input type="text" ng-change="precinct.StreetId=0" typeahead-on-select="onSelectStreet($item, $model, $label,precinct)" ng-model="precinct.Street"
+            <input type="text" ng-change="data.precinct.StreetId=0" typeahead-on-select="onSelectStreet($item, $model, $label,data.precinct)" ng-model="data.precinct.Street"
                    typeahead="s.Id as s.StreetType.Name +' '+ s.Name for s in streets | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control" required>
         </div>
         <div class="form-group col-lg-1">
             <label>Буд.</label>
-            <input ng-model="precinct.House" type="text" class="form-control" required>
+            <input ng-model="data.precinct.House" type="text" class="form-control" required>
         </div>
         <div class="form-group col-lg-2">
             <label>Мікрорайон</label>
-            <input type="text" ng-change="precinct.NeighborhoodId=null" typeahead-on-select="onSelectNeighborhood($item, $model, $label)" ng-model="precinct.Neighborhood"
+            <input type="text" ng-change="data.precinct.NeighborhoodId=null" typeahead-on-select="onSelectNeighborhood($item, $model, $label)" ng-model="data.precinct.Neighborhood"
                    typeahead="n.Id as n.Name for n in neighborhoods | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control">
         </div>
         <div class="form-group col-lg-2">
             <label>Район</label>
-            <input type="text" ng-change="precinct.RegionPartId=0" typeahead-on-select="onSelectRegionPart($item, $model, $label)" ng-model="precinct.RegionPart"
+            <input type="text" ng-change="data.precinct.RegionPartId=0" typeahead-on-select="onSelectRegionPart($item, $model, $label)" ng-model="data.precinct.RegionPart"
                    typeahead="r.Id as r.Name +' ('+ r.RegionPartType +')' for r in regionParts | filter: {Name:$viewValue} | orderByStartsWith:{Name:$viewValue} | limitTo:10" class="form-control" required>
         </div>
         <!--<div class="form-group col-lg-2">
@@ -82,7 +82,7 @@
                         <input class="form-control" ng-model="autocomplete.HouseTo" placeholder="буд. по" required />
                     </div>
                     <div class="form-group col-lg-2">
-                        <select class="form-control" ng-model="autocomplete.HouseType" ng-options="ht as ht for ht in houseTypes">
+                        <select class="form-control" ng-model="autocomplete.HouseType" ng-options="ht as ht for ht in data.houseTypes">
                             <option value='' disabled>-Тип будинку-</option>
                         </select>
                     </div>
@@ -139,7 +139,7 @@
                     <th class="col-sm-2" title="Редагування здійснюється подвійним натиснення лівої кнопки миші на назві колонки">
                         <span ng-hide="theadEditing.houseType" ng-dblclick="onDblClickThead('houseType')">Тип будинку <span class="glyphicon glyphicon-filter"></span></span>
                         <div ng-show="theadEditing.houseType" class="input-group">
-                            <select class="form-control" ng-model="query.houseType" ng-options="ht as ht for ht in houseTypes"></select>
+                            <select class="form-control" ng-model="query.houseType" ng-options="ht as ht for ht in data.houseTypes"></select>
                             <span class="input-group-btn">
                                 <button type="button" class="btn btn-default" ng-click="doneEditingThead('houseType')" title="Скасувати фільтр">
                                     <span class="glyphicon glyphicon-remove"></span>
@@ -166,8 +166,8 @@
                     <td ng-include="'editApartments'"></td>
                     <td ng-include="'editBtn'"></td>
                 </tr>
-                <tr dir-paginate="address in precinctAddresses | filter: {City: { Name: query.city }, Street: { Name: query.street }, House: query.house, HouseType: query.houseType} | itemsPerPage: pagination.pageSize" current-page="pagination.currentPage" pagination-id="precinctAddressesPagination">
-                    <td>{{ getIndex($index) + 1 }}</td>
+                <tr dir-paginate="address in data.precinctAddresses | filter: {City: { Name: query.city }, Street: { Name: query.street }, House: query.house, HouseType: query.houseType} | itemsPerPage: pagination.pageSize" current-page="pagination.currentPage.addresses" pagination-id="precinctAddressesPagination">
+                    <td>{{ getIndex($index,'addresses') + 1 }}</td>
                     <td ng-include="getTemplate(address,'City')"></td>
                     <td ng-include="getTemplate(address,'Street')"></td>
                     <td ng-include="getTemplate(address,'House')"></td>
@@ -178,7 +178,7 @@
                 </tr>
             </tbody>
         </table>
-        <dir-pagination-controls boundary-links="true" on-page-change="onPageChange(newPageNumber)" pagination-id="precinctAddressesPagination"></dir-pagination-controls>
+        <dir-pagination-controls boundary-links="true" on-page-change="onPageChange(newPageNumber, 'addresses')" pagination-id="precinctAddressesPagination"></dir-pagination-controls>
 
         <script type="text/ng-template" id="displayCity">
             <td>{{address.City.CityType.Name}} {{address.City.Name}}</td>
@@ -275,7 +275,7 @@
         </script>
         <script type="text/ng-template" id="editHouseType">
             <td>
-                <select class="form-control" ng-model="selected.address.HouseType" ng-options="ht as ht for ht in houseTypes" >
+                <select class="form-control" ng-model="selected.address.HouseType" ng-options="ht as ht for ht in data.houseTypes" >
                     <option value='' disabled>-Вибрати-</option>
                 </select>
             </td>
@@ -313,7 +313,7 @@
             </thead>
             <tbody>
             <tr ng-show="addDistrictMode" ng-include="'editDistrict'"></tr>
-            <tr ng-repeat="precinctDistrict in precinctDistricts" ng-include="getTemplateDistricts(precinctDistrict)"></tr>
+                <tr ng-repeat="precinctDistrict in data.precinct.DistrictPrecincts" ng-include="getTemplateDistricts(precinctDistrict)"></tr>
             </tbody>
         </table>
         <script type="text/ng-template" id="displayDistrict">
@@ -332,7 +332,7 @@
         <script type="text/ng-template" id="editDistrict">
             <td>{{ $index + 1 }}</td>
             <td>
-                <select class="form-control" ng-options="d.Id as d.Number + ' (' + d.DistrictType.Name + ')' for d in districts"
+                <select class="form-control" ng-options="d.Id as d.Number + ' (' + d.DistrictType.Name + ')' for d in data.districts"
                         ng-model="selected.precinctDistrict.DistrictId">
                     <option value='' disabled>-Вибрати-</option>
                 </select>
@@ -349,13 +349,13 @@
             </td>
         </script>
     </tab>
-    <tab heading="Користувачі">
+    <tab heading="Користувачі" access-permissions="Administrators,SuperAdministrators">
         <br />
         <label>Автоматичне заповнення користувачів:</label>
         <div class="row">
             <form ng-submit="autoCompleteUserPrecincts()">
                 <div class="form-group col-lg-3">
-                    <select class="form-control" ng-options="role as role.Name for role in roles"
+                    <select class="form-control" ng-options="role as role.Name for role in data.roles"
                             ng-model="autocomplete.role" required>
                         <option value='' disabled>-Вибрати роль-</option>
                     </select>
@@ -382,34 +382,46 @@
                 </tr>
             </thead>
             <tbody>
-                <tr ng-show="addUserMode" ng-include="'editUser'"></tr>
-                <tr ng-repeat="userPrecinct in userPrecincts" ng-include="getTemplateUsers(userPrecinct)"></tr>
+                <tr ng-show="addUserMode">
+                    <td></td>
+                    <td ng-include="'editUser'"></td>
+                    <td></td>
+                    <td ng-include="'editBtn'"></td>
+                </tr>
+                <tr dir-paginate="userPrecinct in data.userPrecincts | itemsPerPage: pagination.pageSize" current-page="pagination.currentPage.users" pagination-id="precinctUsersPagination">
+                    <td>{{ getIndex($index,'users') + 1 }}</td>
+                    <td ng-include="getTemplateUsers(userPrecinct,'User')"></td>
+                    <td>{{ userRolesToString(userPrecinct.User) }}</td>
+                    <td ng-include="getTemplateUsers(userPrecinct,'Btn')"></td>
+                </tr>
             </tbody>
         </table>
+        <dir-pagination-controls boundary-links="true" on-page-change="onPageChange(newPageNumber, 'users')" pagination-id="precinctUsersPagination"></dir-pagination-controls>
+
         <script type="text/ng-template" id="displayUser">
-            <td>{{ $index + 1 }}</td>
             <td>{{ userPrecinct.User.FirstName }}</td>
-            <td>{{ userRolesToString(userPrecinct.User) }}</td>
+        </script>
+        <script type="text/ng-template" id="displayBtn">
             <td>
                 <button class="btn btn-xs" ng-click="editUserPrecinct(userPrecinct)" title="Редагувати">
                     <span class="glyphicon glyphicon-edit"></span>
                 </button>
-                <button class="btn btn-xs" ng-click="deleteUserPrecinct(userPrecinct,$index)" title="Видалити">
+                <button class="btn btn-xs" ng-click="deleteUserPrecinct(userPrecinct)" title="Видалити">
                     <span class="glyphicon glyphicon-trash"></span>
                 </button>
             </td>
         </script>
         <script type="text/ng-template" id="editUser">
-            <td>{{ $index + 1 }}</td>
             <td>
-                <select class="form-control" ng-options="user.Id as user.FirstName + ' (' + user.Email + ')' for user in users"
+                <select class="form-control" ng-options="user.Id as user.FirstName + ' (' + user.Email + ')' for user in data.users"
                         ng-model="selected.userPrecinct.UserId">
                     <option value='' disabled>-Вибрати-</option>
                 </select>
             </td>
-            <td>{{ userRolesToString(userPrecinct.User) }}</td>
+        </script>
+        <script type="text/ng-template" id="editBtn">
             <td>
-                <button ng-click="saveUserPrecinct(userPrecinct,$index)" class="btn btn-sm btn-success" title="Зберегти зміни">
+                <button ng-click="saveUserPrecinct(userPrecinct)" class="btn btn-sm btn-success" title="Зберегти зміни">
                     <span class="glyphicon glyphicon-save"></span>
                     <i ng-show="saving.userPrecinct" class="fa fa-refresh fa-spin"></i>
                 </button>

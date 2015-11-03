@@ -61,10 +61,12 @@ angular.module("precinctServices", ['ngResource'])
             'remove': { method: 'DELETE', params: params, url: urlOdata + key }
         });
     }])
-    .factory('precinctDataService', ['$q', 'precinctResource', 'districtDataService', 'userData', 'usersHolder', 'precinctAddressResource',
-        function ($q, precinctResource, districtDataService, userData, usersHolder, precinctAddressResource) {
+    .factory('precinctDataService', ['$q', 'precinctResource', 'districtDataService', 'userData', 'usersHolder', 'precinctAddressResource', 'checkPermissions',
+        function ($q, precinctResource, districtDataService, userData, usersHolder, precinctAddressResource, checkPermissions) {
 
             function getUsersByPrecinctId(precinctId) {
+                var permit = checkPermissions(['SuperAdministrators', 'Administrators']);
+                if (!permit) return [];
                 return usersHolder.asyncLoad().then(function () {
                     return userData.getUserPrecinctsByPrecinctId({ precinctId: precinctId }).$promise.then(function (res) {
                         if (!usersHolder.isEmpty()) {
