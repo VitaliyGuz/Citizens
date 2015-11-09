@@ -120,7 +120,6 @@ precinctControllers.controller("editPrecinctController", ['$location', '$rootSco
         $scope.data = resolvedData || {};
         $scope.data.users = usersHolder.get();
         $scope.data.houseTypes = precinctDataService.houseTypes;
-        serviceUtil.sortAddresses($scope.data.precinctAddresses);
 
         if ($scope.data.precinct) {
             if ($scope.data.precinct.City) {

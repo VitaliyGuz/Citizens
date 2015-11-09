@@ -61,8 +61,8 @@ angular.module("precinctServices", ['ngResource'])
             'remove': { method: 'DELETE', params: params, url: urlOdata + key }
         });
     }])
-    .factory('precinctDataService', ['$q', 'precinctResource', 'districtDataService', 'userData', 'usersHolder', 'precinctAddressResource', 'checkPermissions',
-        function ($q, precinctResource, districtDataService, userData, usersHolder, precinctAddressResource, checkPermissions) {
+    .factory('precinctDataService', ['$q', 'serviceUtil', 'precinctResource', 'districtDataService', 'userData', 'usersHolder', 'precinctAddressResource', 'checkPermissions',
+        function ($q, serviceUtil, precinctResource, districtDataService, userData, usersHolder, precinctAddressResource, checkPermissions) {
 
             function getUsersByPrecinctId(precinctId) {
                 var permit = checkPermissions(['SuperAdministrators', 'Administrators']);
@@ -92,6 +92,17 @@ angular.module("precinctServices", ['ngResource'])
                 });
             };
 
+            function getPrecinctAddresses(precinctId) {
+                return precinctAddressResource.getAllByPrecinctId({ precinctId: precinctId }).$promise
+                    .then(function (data) {
+                        serviceUtil.sortAddresses(data.value);
+                        return data.value;
+                    }, function (err) {
+                        err.description = 'Адреси дільниці не завантажено';
+                        return $q.reject(err);
+                    });
+            };
+
             return {
                 asyncLoadData: function(routeParam) {
                     var promises = {
@@ -115,11 +126,7 @@ angular.module("precinctServices", ['ngResource'])
                                 return $q.reject(err);
                             });
 
-                        promises.precinctAddresses = precinctAddressResource.getAllByPrecinctId({ precinctId: routeParam }).$promise
-                            .then(successHandler, function (err) {
-                                err.description = 'Адреси дільниці не завантажено';
-                                return $q.reject(err);
-                            });
+                        promises.precinctAddresses = getPrecinctAddresses(routeParam);
 
                         promises.userPrecincts = getUsersByPrecinctId(routeParam);
                     }
@@ -127,6 +134,8 @@ angular.module("precinctServices", ['ngResource'])
                 },
 
                 asyncGetUsersByPrecinct: getUsersByPrecinctId,
+
+                asyncGetPrecinctAddresses: getPrecinctAddresses,
                 
                 typeaheadPrecinctByNumber: function(viewValue) {
                     var odataFilter = "&$filter=startswith(cast(Number,Edm.String),'value') eq true".replace(/value/, viewValue);
