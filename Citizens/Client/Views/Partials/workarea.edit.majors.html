@@ -1,0 +1,43 @@
+﻿<div ng-controller="tabEditMajorsCntl">
+    <div class="row">
+        <form ng-submit="linkMajors()">
+            <div class="form-group col-sm-6">
+                <input typeahead="p as p.label for p in getPeopleByName($viewValue)" ng-model="data.selected.person" typeahead-on-select="onSelectPerson($item, $model, $label)" placeholder="Фізична особа (старший)"
+                       type="text" typeahead-loading="loadingPeople.major" typeahead-no-results="noResults.major" class="form-control" ng-required="!data.selected.setEmptyPerson">
+                <i ng-show="loadingPeople.major" class="fa fa-refresh fa-spin"></i>
+                <div ng-show="noResults.major">
+                    <i class="glyphicon glyphicon-remove"></i> Фізособу не знайдено
+                </div>
+            </div>
+            <div class="col-sm-2">
+                <button type="submit" class="btn btn-default">
+                    <span ng-hide="loader.savingPeople" class="glyphicon glyphicon-save"></span>
+                    <i ng-show="loader.savingPeople" class="fa fa-refresh fa-spin"></i> Зберегти
+                </button>
+            </div>
+            <div class="col-sm-2 checkbox">
+                <input type="checkbox" class="checkbox-inline" ng-model="data.selected.setEmptyPerson" /> Очистити старшого
+            </div>
+        </form>
+    </div>
+
+    <table class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>№</th>
+                <th><input type="checkbox" class="checkbox-inline" ng-click="selectAll()" ng-checked="checkedCurrentPage()" title="Відмітити всі"></th>
+                <th>Адреса</th>
+                <th>Старший</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr dir-paginate="address in data.workAreaAddresses | itemsPerPage: pagination.pageSize" current-page="pagination.currentPage" pagination-id="workAreaEditMajorsPagination">
+                <td>{{ getIndex($index) + 1 }}</td>
+                <td><input type="checkbox" class="checkbox-inline" ng-click="toggleSelection(address)" ng-checked="address.isSelected"></td>
+                <td>{{ address.City.CityType.Name}}{{address.City.Name}}, {{ address.Street.StreetType.Name }} {{ address.Street.Name }} {{ address.houseOrig }}{{ address.ApartmentStr | checkApartment}}</td>
+                <td>{{ address.Major.LastName }} {{ address.Major.FirstName }} {{ address.Major.MidleName }}</td>
+            </tr>
+        </tbody>
+    </table>
+    <dir-pagination-controls boundary-links="true" on-page-change="onPageChange(newPageNumber)" pagination-id="workAreaEditMajorsPagination"></dir-pagination-controls>
+</div>

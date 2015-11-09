@@ -172,47 +172,83 @@ workAreaControllers.controller("listWorkAreasController", ['$location', '$rootSc
         };
     }]);
 
-workAreaControllers.controller("editWorkAreaController", ['$location', '$rootScope', '$scope', '$modal', '$q', 'serviceUtil', 'config', 'precinctDataService', 'resolvedData', 'workAreaResource', 'modelFactory', 'peopleDataService', 'filterSettings', 'printer',
-    function ($location, $rootScope, $scope, $modal, $q, serviceUtil, config, precinctDataService, resolvedData, workAreaResource, modelFactory, peopleDataService, filterSettings, printer) {
-        
-        $rootScope.pageTitle = 'Робоча дільниця';
-        $scope.loader = {};
-        var tabs = ["tabMajors", "tabAddresses", "tabEditMajors"],
-            checkedPages = {tabEditMajors: []};
-        $scope.pagination = {
-            currentPage: { },
-            pageSize: config.pageSizeTabularSection
-        };
-        $scope.tabActive = {};
-        tabs.forEach(function(tab) {
-            $scope.pagination.currentPage[tab] = 1;
-            $scope.tabActive[tab] = false;
-        });
+workAreaControllers.controller("editWorkAreaController", ['$location', '$rootScope', '$scope', '$modal', '$q', '$routeParams', 'serviceUtil', 'config', 'precinctDataService', 'resolvedData', 'workAreaDataService', 'modelFactory', 'peopleDataService', 'printer',
+    function ($location, $rootScope, $scope, $modal, $q, $routeParams, serviceUtil, config, precinctDataService, resolvedData, workAreaDataService, modelFactory, peopleDataService, printer) {
 
-        $scope.query = {};
-        $scope.totalCount = {workArea: 0, precinct: 0, supporters: 0};
-        
-        $scope.data = resolvedData;
-        $scope.data.houseTypes = precinctDataService.houseTypes;
-        if (!$scope.data.precinctAddresses) $scope.data.precinctAddresses = [];
-        $scope.data.majors = [];
-        $scope.data.workAreaAddresses = [];
+        activate();
 
-        if ($scope.data.workArea) {
-            if (resolvedData.appointedTop) {
-                $scope.tabActive.tabAddresses = true;
-                $scope.data.workArea.Top = resolvedData.appointedTop;
-            } else if (resolvedData.appointedMajor) {
-                $scope.tabActive.tabEditMajors = true;
-                $scope.data.selected = { person: resolvedData.appointedMajor };
-                $scope.data.selected.person.label = peopleDataService.getPersonLabel(resolvedData.appointedMajor);
-            } else {
-                $scope.tabActive.tabAddresses = true;
+        function activate() {
+            $rootScope.pageTitle = 'Робоча дільниця';
+
+            $scope.loader = {};
+
+            $scope.tabs = {
+                addresses: {
+                    isActive: false,
+                    tplUrl: config.pathPartialTemplates + '/workarea.addresses.html',
+                    link: getTabLink('addresses')
+                    /*checkedPages: [],
+                    currPage: 1,
+                    pageSize: config.pageSizeTabularSection*/
+                },
+                majors: {
+                    isActive: false,
+                    tplUrl: config.pathPartialTemplates + '/workarea.majors.html',
+                    link: getTabLink('majors')
+                    /*checkedPages: [],
+                    currPage: 1,
+                    pageSize: config.pageSizeTabularSection*/
+                },
+                editMajors: {
+                    isActive: false,
+                    tplUrl: config.pathPartialTemplates + '/workarea.edit.majors.html',
+                    link: getTabLink('editMajors')
+                    /*checkedPages: [],
+                    currPage: 1,
+                    pageSize: config.pageSizeTabularSection*/
+                }
+            };
+
+            function getTabLink(tabName) {
+                var queryParams = $location.search();
+                if (!queryParams) return '';
+                queryParams.tab = tabName;
+                var q = '?';
+                Object.keys(queryParams).forEach(function (key) {
+                    if (q.length > 1) q += '&';
+                    q += key + '=' + queryParams[key];
+                });
+                return $location.path() + q;
+            };
+
+            var activeTab = $routeParams.tab || 'addresses';
+            $scope.tabs[activeTab].isActive = true;
+
+            $scope.query = {};
+            $scope.totalCount = { workArea: 0, precinct: 0, supporters: 0 };
+
+            $scope.data = resolvedData;
+            $scope.data.houseTypes = precinctDataService.houseTypes;
+            $scope.data.workAreaAddresses = [];
+
+            if ($scope.data.workArea) {
+                if (resolvedData.appointedTop) {
+                    $scope.data.workArea.Top = resolvedData.appointedTop;
+                }
+                if (resolvedData.appointedMajor) {
+                    $scope.data.selected = { person: resolvedData.appointedMajor };
+                    $scope.data.selected.person.label = peopleDataService.getPersonLabel(resolvedData.appointedMajor);
+                }
+                $scope.data.workArea.Top.label = peopleDataService.getPersonLabel($scope.data.workArea.Top);
+                if ($scope.tabs.addresses.isActive) calcTolatPeople();
+
+                if ($scope.tabs.majors.isActive) calcTotalSupporters();
+
+                if ($scope.tabs.editMajors.isActive)
+                    $scope.data.workAreaAddresses = workAreaDataService.reduceToAddresses($scope.data.supporters);
             }
-            $scope.data.workArea.Top.label = peopleDataService.getPersonLabel($scope.data.workArea.Top);
-        } else {
-            $scope.tabActive.tabAddresses = true;
-        }
+            
+        };
 
         $scope.getPrecinctsByNumber = precinctDataService.typeaheadPrecinctByNumber;
 
@@ -246,15 +282,15 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
             }
             
             if (addMode) {
-                workAreaResource.save(modelWorkArea, updatePrecinctAddresses, errorHandler);
+                workAreaDataService.resource.save(modelWorkArea, updatePrecinctAddresses, $scope.errorHandler);
             } else {
-                workAreaResource.update({ id: $scope.data.workArea.Id }, modelWorkArea, updatePrecinctAddresses, errorHandler);
+                workAreaDataService.resource.update({ id: $scope.data.workArea.Id }, modelWorkArea, updatePrecinctAddresses, $scope.errorHandler);
             }
 
-            function updatePrecinctAddresses(newWorkArea) {
+            function updatePrecinctAddresses(workArea) {
                 if (addMode) {
-                    $scope.data.workArea.Id = newWorkArea.Id;
-                    $scope.data.workAreaId = newWorkArea.Id;//don't remove
+                    $scope.data.workArea.Id = workArea.Id;
+                    $scope.data.workAreaId = workArea.Id;//don't remove
                 }
                 var addressesForUpdate = $scope.data.precinctAddresses.filter(function(a) {
                     return a.isDeselected || a.isSelected;
@@ -275,7 +311,7 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
                         address.isSelected = false;
                         count++;
                         if (count === total) successHandler();
-                    }, errorHandler);
+                    }, $scope.errorHandler);
                 });
             };
 
@@ -286,7 +322,7 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
             };
         };
 
-        function errorHandler(e) {
+        $scope.errorHandler = function (e) {
             $scope.loader = {};
             $rootScope.errorMsg = serviceUtil.getErrorMessage(e);
         };
@@ -297,118 +333,67 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
             $location.url('/work-areas/' + currPage);
         };
 
-        $scope.getIndex = function (ind,tab) {
-            return ($scope.pagination.currentPage[tab] - 1) * $scope.pagination.pageSize + ind;
+        /*$scope.getIndex = function (ind, tab) {
+            return ($scope.tabs[tab].currPage - 1) * $scope.tabs[tab].pageSize + ind;
         };
 
-        $scope.onPageChange = function(newPageNumber,tab) {
-            $scope.pagination.currentPage[tab] = newPageNumber;
-        };
-
-        $scope.onDblClickThead = function (propName) {
-            if (!$scope.theadEditing) {
-                $scope.theadEditing = {};
-            }
-            $scope.theadEditing[propName] = true;
-        };
-
-        $scope.doneEditingThead = function (propName) {
-            $scope.theadEditing[propName] = false;
-            $scope.query[propName] = undefined;
-        };
-
-        $scope.checked = function (address, isPrecinctAddress) {
-            if (isPrecinctAddress) {
-                return (address.WorkAreaId && address.WorkAreaId === $scope.data.workArea.Id) | address.isSelected;
-            } else {
-                return address.isSelected;
-            }
-        };
-
-        $scope.toggleSelection = function (address, isPrecinctAddress) {
-            if (isPrecinctAddress) {
-                if (address.WorkAreaId && address.WorkAreaId === $scope.data.workArea.Id) {
-                    address.isDeselected = address.isDeselected ? false : true;
-                    if (address.countPeople) {
-                        if (address.isDeselected) {
-                            $scope.totalCount.workArea -= address.countPeople;
-                        } else {
-                            $scope.totalCount.workArea += address.countPeople;
-                        }
-                    }
-
-                } else {
-                    address.isSelected = address.isSelected ? false : true;
-                    if (address.countPeople) {
-                        if (address.isSelected) {
-                            $scope.totalCount.workArea += address.countPeople;
-                        } else {
-                            $scope.totalCount.workArea -= address.countPeople;
-                        }
-                    }
-                }
-            } else {
-                address.isSelected = !address.isSelected;
-            }
-        };
-
-        $scope.markAddress = function (address) {
-            if (address.WorkAreaId && address.WorkAreaId === $scope.data.workArea.Id) {
-                return address.isDeselected ? "alert-danger" : "alert-success";
-            } else {
-                return address.isSelected ? "alert-warning" : "";
-            }
-        };
+        $scope.onPageChange = function(newPageNumber, tab) {
+            $scope.tabs[tab].currPage = newPageNumber;
+        };*/          
 
         $scope.getPeopleByName = peopleDataService.typeaheadPersonByName;
 
-        $scope.onSelectPrecinct = function(item) {
+        $scope.refreshTabAddresses = function () {
+            if (!$scope.data.workArea || !$scope.data.workArea.Precinct || !$scope.data.workArea.Precinct.Id) return;
             $scope.loader.loadingPrecinctAddresses = true;
-            precinctDataService.resources.address.getAllByPrecinctId({ precinctId: item.Id }, function (res) {
+            workAreaDataService.asyncGetPrecinctAddresses($scope.data.workArea.Precinct.Id).then(function (addresses) {
+                $scope.data.precinctAddresses = addresses;
+                calcTolatPeople();
                 $scope.loader.loadingPrecinctAddresses = false;
-                serviceUtil.sortAddresses(res.value);
-                $scope.data.precinctAddresses = res.value;
-                $scope.totalCount.workArea = 0;
-                $scope.totalCount.precinct = 0;
-            }, function(err) {
-                $scope.data.precinctAddresses = [];
-                errorHandler(err);
-            });
+            }, $scope.errorHandler);
         };
 
-        $scope.calcPeopleAtAddresses = function () {
-            if (!$scope.data.workArea || !$scope.data.workArea.PrecinctId) return;
-            $scope.loader.calcPeople = true;
-            $scope.totalCount.workArea = 0;
-            $scope.totalCount.precinct = 0;
-
-            workAreaResource.getCountPeopleByPrecinct({ "precinctId": $scope.data.workArea.PrecinctId }, function (resp) {
-                if (resp) {
-                    $scope.data.precinctAddresses.forEach(function (a) {
-                         var finded = resp.value.filter(function (c) {
-                            return c.CityId === a.CityId && c.StreetId === a.StreetId && c.House.toLocaleLowerCase() === a.House.toLocaleLowerCase();
-                         })[0];
-                         if (finded) {
-                             a.countPeople = finded.CountPeople;
-                             if (a.WorkAreaId === $scope.data.workArea.Id) $scope.totalCount.workArea += finded.CountPeople;
-                             $scope.totalCount.precinct += finded.CountPeople;
-                         }
-                    });
-                    $scope.loader.calcPeople = false;
-                }
-            }, errorHandler);
-        };
-        
-        $scope.refreshMajors = function () {
+        $scope.refreshTabMajors = function () {
             if (!$scope.data.workArea || !$scope.data.workArea.Id) return;
             $scope.loader.loadingMajors = true;
-            workAreaResource.getMajors({ "id": $scope.data.workArea.Id }, function (resp) {
-                if (resp) {
-                    $scope.loader.loadingMajors = false;
-                    $scope.data.majors = resp.value;
-                    calcTotalSupporters();
-                }
-            }, errorHandler);
+            workAreaDataService.resource.getMajors({ "id": $scope.data.workArea.Id }, function (resp) {
+                $scope.loader.loadingMajors = false;
+                $scope.data.majors = resp.value;
+                calcTotalSupporters();
+            }, $scope.errorHandler);
+        };
+
+        $scope.refreshTabEditMajors = function () {
+            if (!$scope.data.workArea || !$scope.data.workArea.Id) return;
+            $scope.loader.loadingSupporters = true;
+            workAreaDataService.resource.getSupporters({ id: $scope.data.workArea.Id, expand: "$expand=Major" }, function (resp) {
+                $scope.data.supporters = resp.value;
+                $scope.data.workAreaAddresses = workAreaDataService.reduceToAddresses(resp.value);
+                $scope.loader.loadingSupporters = false;
+            }, $scope.errorHandler);
+        };        
+
+        $scope.clearTop = function() {
+            $scope.data.workArea.Top = undefined;
+            $scope.data.workArea.TopId = 0;
+        };
+
+        $scope.selectTab = function (tabName) {
+            $location.search('tab', tabName);
+
+            if (tabName === 'addresses' && $scope.data.precinctAddresses.length === 0)
+                $scope.refreshTabAddresses();
+
+            if (tabName === 'majors' && $scope.data.majors.length === 0)
+                $scope.refreshTabMajors();
+
+            if (tabName === 'editMajors' && $scope.data.supporters.length === 0)
+                $scope.refreshTabEditMajors();
+        };
+
+        $scope.onSelectPrecinct = function () {
+            $scope.data.precinctAddresses = [];
+            $scope.refreshTabAddresses();
         };
 
         function calcTotalSupporters() {
@@ -417,165 +402,29 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
             }, 0);
         };
 
-        //function loadMajors(callback) {
-        //    workAreaResource.getMajors({ "id": $scope.data.workArea.Id }, function (resp) {
-        //        callback({ success: true, data: resp });
-        //    }, function(err) {
-        //        callback({ error: err });
-        //    });
-        //};        
+        $scope.calcTotalSupporters = calcTotalSupporters; // for using in child scope
 
-        function equalsAddresses(a, b) {
-            var equalsApartmentStr = a.ApartmentStr && b.ApartmentStr ? a.ApartmentStr.toLocaleLowerCase() === b.ApartmentStr.toLocaleLowerCase() : a.ApartmentStr === b.ApartmentStr;
-            return a.CityId === b.CityId &&
-                    a.StreetId === b.StreetId &&
-                    a.House.toLocaleLowerCase() === b.House.toLocaleLowerCase() &&
-                    a.Apartment === b.Apartment && equalsApartmentStr;
-        };
-
-        function reduceToAddresses(supporters) {
-            var addresses = supporters.reduce(function (result, curr) {
-                var address = {
-                    CityId: curr.CityId,
-                    StreetId: curr.StreetId,
-                    House: curr.House,
-                    Apartment: curr.Apartment,
-                    ApartmentStr: curr.ApartmentStr,
-                    Major: curr.Major
-                };
-                var isContains = result.some(function (i) { return equalsAddresses(address, i) });
-                if (!isContains) result.push(address);
-                return result;
-            }, []);
-            addresses.forEach(function (adr) {
-                if (!adr.Apartment) adr.Apartment = 0;
-                adr.houseOrig = adr.House;
-                adr.houseExceptBuilding = serviceUtil.getHouseExceptBuilding(adr.House);
-                adr.HouseBuilding = adr.House.replace(adr.houseExceptBuilding, '').replace(/\s[к|К]\./, '').replace(/\,/, '').replace(/\s/g, '').trim();
-                serviceUtil.parseHouseNumber(adr);
-                serviceUtil.expandAddress(adr);
-            });
-            serviceUtil.sortAddresses(addresses);
-            return addresses;
-        };
-
-        $scope.getSupporters = function () {
-            if (!$scope.data.workArea || !$scope.data.workArea.Id) return;
-            $scope.loader.loadingSupporters = true;
-            workAreaResource.getSupporters({ id: $scope.data.workArea.Id, expand: "$expand=Major" }, function (resp) {
-                if (resp) {
-                    $scope.data.supporters = resp.value;
-                    $scope.data.workAreaAddresses = reduceToAddresses(resp.value);
-                    $scope.loader.loadingSupporters = false;
-                }
-            }, errorHandler);
-        };
-
-        $scope.linkMajors = function () {
-            $rootScope.errorMsg = '';
-
-            if ($scope.data.workAreaAddresses.length === 0) return;
-            
-            if ($scope.data.selected.person && !$scope.data.selected.person.Id && !$scope.data.selected.setEmptyPerson) {
-                $rootScope.errorMsg = "Фізособу '" + $scope.data.selected.person + "' не знайдено";
-                return;
-            }
-
-            var selectedAddresses = $scope.data.workAreaAddresses.filter(function (a) { return a.isSelected });
-            var savingPeople = $scope.data.supporters.filter(function (p) {
-                return selectedAddresses.some(function (a) { return equalsAddresses(p, a) });
-            });
-            var total = savingPeople.length, count = 0;
-            if (total === 0) return;
-            $scope.loader.savingPeople = true;
-            savingPeople.forEach(function (person) {
-                var personModel = modelFactory.createObject("person", person);
-                if ($scope.data.selected.setEmptyPerson) {
-                    personModel.MajorId = 0;
-                } else {
-                    personModel.MajorId = $scope.data.selected.person.Id;
-                }
-                peopleDataService.resource.update({ id: person.Id }, personModel, function () {
-                    count++;
-                    var adr = $scope.data.workAreaAddresses.filter(function (a) {
-                        return equalsAddresses(person,a);
-                    })[0];
-                    if (adr) {
-                        adr.isSelected = false;
-                        if ($scope.data.selected.setEmptyPerson) {
-                            adr.Major = undefined;
-                        } else {
-                            adr.Major = $scope.data.selected.person;
-                        }
-                    }
-                    if (count === total) $scope.loader.savingPeople = false;
-                }, errorHandler);
+        function calcTolatPeople() {
+            $scope.totalCount.workArea = 0;
+            $scope.totalCount.precinct = 0;
+            $scope.data.precinctAddresses.forEach(function (address) {
+                if (address.WorkAreaId === $scope.data.workArea.Id) $scope.totalCount.workArea += address.countPeople;
+                $scope.totalCount.precinct += address.countPeople;
             });
         };
 
-        $scope.clearTop = function() {
-            $scope.data.workArea.Top = undefined;
-            $scope.data.workArea.TopId = 0;
-        };
-
-        $scope.selectAll = function(tabName) {
-            if (tabName === 'tabEditMajors') {
-                if ($scope.data.workAreaAddresses) {
-                    var startInd = $scope.getIndex(0, tabName),
-                        endInd = startInd + $scope.pagination.pageSize,
-                        currPage = $scope.pagination.currentPage[tabName],
-                        isChecked = false, foundInd = checkedPages[tabName].indexOf(currPage);
-                    if (foundInd >= 0) {
-                        isChecked = true;
-                        checkedPages[tabName].splice(foundInd,1);
-                    } else {
-                        checkedPages[tabName].push(currPage);
-                    }
-                    for (var i = startInd; i < endInd; i++) {
-                        $scope.data.workAreaAddresses[i].isSelected = !isChecked;
-                    }
-                }
-            }
-        };
-
-        $scope.checkedCurrentPage = function (tabName) {
-            if (tabName === 'tabEditMajors') {
-                return checkedPages[tabName].indexOf($scope.pagination.currentPage[tabName]) >= 0;
-            }
-            return false;
-        };
-
-        $scope.showApartments = function(address) {
-            var filterQuery = "CityId eq cityId and StreetId eq streetId and House eq 'house'"
-                .replace(/cityId/, address.CityId)
-                .replace(/streetId/, address.StreetId)
-                .replace(/house/, address.House);
-
-            openModalFullAddresses({
-                id: $scope.data.workArea.Id,
-                filter:'$filter=' + filterQuery
-            }, true);
-        };
-
-        $scope.showFullAddresses = function (major) {
-            openModalFullAddresses({
-                id: $scope.data.workArea.Id,
-                filter: "$filter=MajorId eq majorId".replace(/majorId/, major.Id)
-            });
-        };
-
-        function openModalFullAddresses(params, onlyApartmens)  {
+        $scope.openModalFullAddresses = function (params, onlyApartmens) {
             $modal.open({
                 animation: false,
-                templateUrl: 'Views/Modals/addresses.html',
-                controller: 'modalFullAddressesCtrl',
+                templateUrl: config.pathModalTemplates + '/addresses.html',
+                controller: 'modalFullAddressesCntl',
                 backdrop: 'static',
                 //scope: $scope, // parent scope
                 resolve: {
                     addresses: function () {
                         var def = $q.defer();
-                        workAreaResource.getSupporters(params, function (resp) {
-                            var addresses = reduceToAddresses(resp.value);
+                        workAreaDataService.resource.getSupporters(params, function (resp) {
+                            var addresses = workAreaDataService.reduceToAddresses(resp.value);
                             if (onlyApartmens) addresses = addresses.filter(function(a) {
                                 return a.ApartmentStr;
                             });
@@ -590,14 +439,6 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
             });
         };
 
-        $scope.redirectToSupporters = function(major) {
-            var q = { eq: { Major: major } };
-            q.eq.Major.label = peopleDataService.getPersonLabel(major);
-            filterSettings.remove('people');
-            filterSettings.set('people', { props: q });
-            $location.url("/people").search("query", angular.toJson({ eq: { Major: { Id: major.Id } } }));            
-        };
-
         $scope.print = function () {
             if (!$scope.data.workArea.Id) return;
             $scope.loader.preparingPrint = true;
@@ -606,7 +447,7 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
 
             $q.all({
                 computedProps: getComputedPropertiesPromise(),
-                majors: workAreaResource.getMajors({ "id": $scope.data.workArea.Id }).$promise,
+                majors: workAreaDataService.resource.getMajors({ "id": $scope.data.workArea.Id }).$promise,
                 phonePropertyKey: peopleDataService.additionalPropsResource.getKeys({ "filter": "&$filter=Name eq 'тел. моб.'" }).$promise,
                 proponentPropertyValue: peopleDataService.additionalPropsResource.getValues({ filter: "&$filter=Value eq 'прихильник' and PropertyKey/Name eq 'статус'" }).$promise
             }).then(function (resp) {
@@ -622,7 +463,7 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
                 if (resp.proponentPropertyValue.value.length > 0) {
                     var proponentPropertyValueId = resp.proponentPropertyValue.value[0].Id;
                     var filterQuery = "PersonAdditionalProperties/any(p:p/PropertyValueId eq propValueId)".replace(/propValueId/, proponentPropertyValueId);
-                    promises.workAreaProponents = workAreaResource.getSupporters({ id: $scope.data.workArea.Id, filter: "$filter=" + filterQuery }).$promise;
+                    promises.workAreaProponents = workAreaDataService.resource.getSupporters({ id: $scope.data.workArea.Id, filter: "$filter=" + filterQuery }).$promise;
                 }
                 $q.all(promises).then(function (resp) {
                     printData.majors.forEach(function (major) {
@@ -632,8 +473,8 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
                     });
                     $scope.loader.preparingPrint = false;
                     printer.print(config.pathPrintTemplates + "/workarea.print.html", printData);
-                }, errorHandler);
-            }, errorHandler);
+                }, $scope.errorHandler);
+            }, $scope.errorHandler);
 
             function getKeys(propertyKeyId) {
                 return printData.majors.map(function (m) {
@@ -642,34 +483,20 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
             };
 
             function getComputedPropertiesPromise() {
-                return workAreaResource.caclComputedProperties({ "WorkAreaIds": [$scope.data.workArea.Id] }).$promise.then(function (resp) {
-                    var data = {};
-                    if (resp && resp.value.length > 0) {
-                        var computedProps = resp.value[0];
-                        data.countElectors = computedProps.CountElectors;
-                        data.addresses = computedProps.AddressesStr;
-                        data.countMajorsPlan = serviceUtil.computational.countMajorsPlan(computedProps.CountElectors);
-                        data.voterTurnout = serviceUtil.computational.voterTurnout(computedProps.CountElectors);
-                        data.requiredVotes = serviceUtil.computational.requiredVotes(computedProps.CountElectors);
-                    }
-                    return data;
-                }, function (e) {
-                    return $q.reject(e);
-                });
+                return workAreaDataService.resource.caclComputedProperties({ "WorkAreaIds": [$scope.data.workArea.Id] }).$promise
+                    .then(function (resp) {
+                        var data = {};
+                        if (resp && resp.value.length > 0) {
+                            var computedProps = resp.value[0];
+                            data.countElectors = computedProps.CountElectors;
+                            data.addresses = computedProps.AddressesStr;
+                            data.countMajorsPlan = serviceUtil.computational.countMajorsPlan(computedProps.CountElectors);
+                            data.voterTurnout = serviceUtil.computational.voterTurnout(computedProps.CountElectors);
+                            data.requiredVotes = serviceUtil.computational.requiredVotes(computedProps.CountElectors);
+                        }
+                        return data;
+                    });
             };
-        };
-
-        $scope.clearMajor = function (major) {
-            if (config.checkDeleteItem) {
-                var ok = confirm("Увага! Старшого буде видалено зі списку, продовжити?");
-                if (!ok) return;
-            }
-            $scope.loader.loadingMajors = true;
-            peopleDataService.resource.clearMajor({ id: major.Id }, function() {
-                $scope.loader.loadingMajors = false;
-                $scope.data.majors.splice($scope.data.majors.indexOf(major), 1);
-                calcTotalSupporters();
-            },errorHandler);
         };
 
         $scope.onSelectPerson = function (item, model, label) {
@@ -677,11 +504,211 @@ workAreaControllers.controller("editWorkAreaController", ['$location', '$rootSco
         }
     }]);
 
-workAreaControllers.controller('modalFullAddressesCtrl', ['$scope', '$modalInstance', 'addresses', function ($scope, $modalInstance, addresses) {
+workAreaControllers.controller('modalFullAddressesCntl', ['$scope', '$modalInstance', 'addresses', function ($scope, $modalInstance, addresses) {
 
     $scope.addresses = addresses;
     
     $scope.cancel = function () {
         $modalInstance.dismiss();
+    };
+}]);
+
+workAreaControllers.controller('tabAddressesCntl', ['$scope', 'config', function ($scope, config) {
+
+    $scope.pagination = {
+        currentPage: 1,
+        pageSize: config.pageSizeTabularSection
+    };
+
+    $scope.getIndex = function (ind) {
+        return ($scope.pagination.currentPage - 1) * $scope.pagination.pageSize + ind;
+    };
+
+    $scope.onPageChange = function (newPageNumber) {
+        $scope.pagination.currentPage = newPageNumber;
+    };
+
+    $scope.onDblClickThead = function (propName) {
+        if (!$scope.theadEditing) {
+            $scope.theadEditing = {};
+        }
+        $scope.theadEditing[propName] = true;
+    };
+
+    $scope.doneEditingThead = function (propName) {
+        $scope.theadEditing[propName] = false;
+        $scope.query[propName] = undefined;
+    };
+
+    $scope.checked = function (address) {
+        return (address.WorkAreaId && address.WorkAreaId === $scope.data.workArea.Id) | address.isSelected;
+    };
+
+    $scope.toggleSelection = function (address) {        
+        if (address.WorkAreaId && address.WorkAreaId === $scope.data.workArea.Id) {
+            address.isDeselected = address.isDeselected ? false : true;
+            if (address.countPeople) {
+                if (address.isDeselected) {
+                    $scope.totalCount.workArea -= address.countPeople;
+                } else {
+                    $scope.totalCount.workArea += address.countPeople;
+                }
+            }
+
+        } else {
+            address.isSelected = address.isSelected ? false : true;
+            if (address.countPeople) {
+                if (address.isSelected) {
+                    $scope.totalCount.workArea += address.countPeople;
+                } else {
+                    $scope.totalCount.workArea -= address.countPeople;
+                }
+            }
+        }        
+    };
+
+    $scope.markAddress = function (address) {
+        if (address.WorkAreaId && address.WorkAreaId === $scope.data.workArea.Id) {
+            return address.isDeselected ? "alert-danger" : "alert-success";
+        } else {
+            return address.isSelected ? "alert-warning" : "";
+        }
+    };
+    
+    $scope.showApartments = function (address) {
+        if (!$scope.data.workArea || !$scope.data.workArea.Id) return;
+        var filterQuery = "CityId eq cityId and StreetId eq streetId and House eq 'house'"
+            .replace(/cityId/, address.CityId)
+            .replace(/streetId/, address.StreetId)
+            .replace(/house/, address.House);
+
+        $scope.openModalFullAddresses({
+            id: $scope.data.workArea.Id,
+            filter: '$filter=' + filterQuery
+        }, true);
+    };
+}]);
+
+workAreaControllers.controller('tabMajorsCntl', ['$scope', '$location', 'config', 'peopleDataService', 'filterSettings', function ($scope, $location, config, peopleDataService, filterSettings) {
+
+    $scope.pagination = {
+        currentPage: 1,
+        pageSize: config.pageSizeTabularSection
+    };
+
+    $scope.getIndex = function (ind) {
+        return ($scope.pagination.currentPage - 1) * $scope.pagination.pageSize + ind;
+    };
+
+    $scope.onPageChange = function (newPageNumber) {
+        $scope.pagination.currentPage = newPageNumber;
+    };
+
+    $scope.clearMajor = function (major) {
+        if (config.checkDeleteItem) {
+            var ok = confirm("Увага! Старшого буде видалено зі списку, продовжити?");
+            if (!ok) return;
+        }
+        $scope.loader.loadingMajors = true;
+        peopleDataService.resource.clearMajor({ id: major.Id }, function () {
+            $scope.loader.loadingMajors = false;
+            $scope.data.majors.splice($scope.data.majors.indexOf(major), 1);
+            $scope.calcTotalSupporters();
+        }, $scope.errorHandler);
+    };
+
+    $scope.redirectToSupporters = function (major) {
+        var q = { eq: { Major: major } };
+        q.eq.Major.label = peopleDataService.getPersonLabel(major);
+        filterSettings.remove('people');
+        filterSettings.set('people', { props: q });
+        $location.url("/people").search("query", angular.toJson({ eq: { Major: { Id: major.Id } } }));
+    };
+
+    $scope.showFullAddresses = function (major) {
+        if (!$scope.data.workArea || !$scope.data.workArea.Id) return;
+        $scope.openModalFullAddresses({
+            id: $scope.data.workArea.Id,
+            filter: "$filter=MajorId eq majorId".replace(/majorId/, major.Id)
+        });
+    };
+}]);
+
+workAreaControllers.controller('tabEditMajorsCntl', ['$scope', '$rootScope', 'serviceUtil', 'config', 'peopleResource', 'modelFactory', function ($scope, $rootScope, serviceUtil, config, peopleResource, modelFactory) {
+    var checkedPages = [];
+
+    $scope.pagination = {
+        currentPage: 1,
+        pageSize: config.pageSizeTabularSection
+    };
+
+    $scope.getIndex = function (ind) {
+        return ($scope.pagination.currentPage - 1) * $scope.pagination.pageSize + ind;
+    };
+
+    $scope.onPageChange = function (newPageNumber) {
+        $scope.pagination.currentPage = newPageNumber;
+    };
+
+    $scope.selectAll = function () {       
+        if ($scope.data.workAreaAddresses) {
+            var startInd = $scope.getIndex(0),
+                endInd = startInd + $scope.pagination.pageSize,
+                isChecked = false, foundInd = checkedPages.indexOf($scope.pagination.currentPage);
+            if (foundInd >= 0) {
+                isChecked = true;
+                checkedPages.splice(foundInd, 1);
+            } else {
+                checkedPages.push($scope.pagination.currentPage);
+            }
+            for (var i = startInd; i < endInd; i++) {
+                $scope.data.workAreaAddresses[i].isSelected = !isChecked;
+            }
+        }
+    };
+
+    $scope.checkedCurrentPage = function () {
+        return checkedPages.indexOf($scope.pagination.currentPage) >= 0;
+    };
+
+    $scope.toggleSelection = function (address) {
+        address.isSelected = !address.isSelected;
+    };
+
+    $scope.linkMajors = function () {
+        $rootScope.errorMsg = '';
+
+        if ($scope.data.workAreaAddresses.length === 0) return;
+
+        if ($scope.data.selected.person && !$scope.data.selected.person.Id && !$scope.data.selected.setEmptyPerson) {
+            $rootScope.errorMsg = "Фізособу '" + $scope.data.selected.person + "' не знайдено";
+            return;
+        }
+
+        var selectedAddresses = $scope.data.workAreaAddresses.filter(function (a) { return a.isSelected });
+        var savingPeople = $scope.data.supporters.filter(function (p) {
+            return selectedAddresses.some(function (a) { return serviceUtil.equalsAddresses(p, a) });
+        });
+        var total = savingPeople.length, count = 0;
+        if (total === 0) return;
+        $scope.loader.savingPeople = true;
+        savingPeople.forEach(function (person) {
+            var personModel = modelFactory.createObject("person", person);
+            personModel.MajorId = $scope.data.selected.setEmptyPerson ? 0 : $scope.data.selected.person.Id;
+            peopleResource.update({ id: person.Id }, personModel, function () {
+                count++;
+                var adr = $scope.data.workAreaAddresses.filter(function (a) {
+                    return serviceUtil.equalsAddresses(person, a);
+                })[0];
+                if (adr) {
+                    adr.isSelected = false;
+                    adr.Major = $scope.data.selected.setEmptyPerson ? undefined : $scope.data.selected.person;
+                }
+                if (count === total) {
+                    $scope.loader.savingPeople = false;
+                    checkedPages = [];
+                }
+            }, $scope.errorHandler);
+        });
     };
 }]);

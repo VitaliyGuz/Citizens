@@ -25,21 +25,80 @@ angular.module("workAreaServices", ['ngResource', 'precinctServices', 'peopleSer
             });
         }
     ])
-    .factory('workAreaDataService', ['$q', 'serviceUtil', 'precinctAddressResource', 'workAreaResource', 'peopleResource',
-        function ($q, serviceUtil, precinctAddressResource, workAreaResource, peopleResource) {
+    .factory('workAreaDataService', ['$q', 'serviceUtil', 'precinctDataService', 'workAreaResource', 'peopleResource',
+        function ($q, serviceUtil, precinctDataService, workAreaResource, peopleResource) {
+
+            function getPrecinctAddresses(precinctId) {
+                return $q.all({
+                    addresses: precinctDataService.asyncGetPrecinctAddresses(precinctId),
+                    countPeople: workAreaResource.getCountPeopleByPrecinct({ "precinctId": precinctId }).$promise
+                        .catch(function (e) {
+                            e.description = 'Підрахунок кількості фізосіб не виконано';
+                            return $q.reject(e);
+                        })
+                }).then(function (data) {
+                    data.addresses.forEach(function (a) {
+                        var found = data.countPeople.value.filter(function (c) {
+                            return serviceUtil.equalsAddresses(a,c);
+                        })[0];
+                        a.countPeople = found ? found.CountPeople : 0;
+                    });
+                    return data.addresses;
+                });
+            };
+
+            function reduceToAddresses(people) {
+                if (!people) return [];
+                var addresses = people.reduce(function (result, curr) {
+                    var address = {
+                        CityId: curr.CityId,
+                        StreetId: curr.StreetId,
+                        House: curr.House,
+                        Apartment: curr.Apartment,
+                        ApartmentStr: curr.ApartmentStr,
+                        Major: curr.Major
+                    };
+                    var isContains = result.some(function (i) { return serviceUtil.equalsAddresses(address, i) });
+                    if (!isContains) result.push(address);
+                    return result;
+                }, []);
+                addresses.forEach(function (adr) {
+                    if (!adr.Apartment) adr.Apartment = 0;
+                    adr.houseOrig = adr.House;
+                    adr.houseExceptBuilding = serviceUtil.getHouseExceptBuilding(adr.House);
+                    adr.HouseBuilding = adr.House.replace(adr.houseExceptBuilding, '').replace(/\s[к|К]\./, '').replace(/\,/, '').replace(/\s/g, '').trim();
+                    serviceUtil.parseHouseNumber(adr);
+                    serviceUtil.expandAddress(adr);
+                });
+                serviceUtil.sortAddresses(addresses);
+                return addresses;
+            };
+
             return {
                 asyncLoad: function(routeParams) {
-                    var promises = {};
+                    var promises = {
+                        precinctAddresses: [],
+                        majors: [],
+                        supporters: []
+                    };
 
                     if (routeParams.id) {
                         promises.workArea = workAreaResource.getById({ id: routeParams.id }).$promise;
-                        if (routeParams.precinctId) {
-                            promises.precinctAddresses = precinctAddressResource.getAllByPrecinctId({ precinctId: routeParams.precinctId }).$promise
-                                .then(function (data) {
-                                    serviceUtil.sortAddresses(data.value);
-                                    return data.value;
+                        var tab = routeParams.tab || 'addresses';
+                        if (tab === 'addresses') {
+                            promises.precinctAddresses = getPrecinctAddresses(routeParams.precinctId);
+                        }
+                        if (tab === 'majors') {
+                            promises.majors = workAreaResource.getMajors({ "id": routeParams.id }).$promise
+                                .then(function (resp) {
+                                    return resp.value;
                                 });
-                            
+                        }
+                        if (tab === 'editMajors') {
+                            promises.supporters = workAreaResource.getSupporters({ id: routeParams.id, expand: "$expand=Major" }).$promise
+                                .then(function(resp) {
+                                    return resp.value;
+                                });
                         }
                         if (routeParams.majorId) {
                             promises.appointedMajor = peopleResource.getById({ id: routeParams.majorId }).$promise;
@@ -50,7 +109,13 @@ angular.module("workAreaServices", ['ngResource', 'precinctServices', 'peopleSer
                     }
 
                     return $q.all(promises);
-                }
+                },
+
+                asyncGetPrecinctAddresses: getPrecinctAddresses,
+
+                reduceToAddresses: reduceToAddresses,
+
+                resource: workAreaResource
             };
         }
     ])

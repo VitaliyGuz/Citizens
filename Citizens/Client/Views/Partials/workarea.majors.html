@@ -1,0 +1,36 @@
+﻿<div ng-controller="tabMajorsCntl">
+    <label>Всього виборців: {{totalCount.supporters}} </label>
+    <table class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>№</th>
+                <th>П.І.Б.</th>
+                <th>К-сть виборців</th>
+                <th>Дії</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr dir-paginate="major in data.majors | itemsPerPage: pagination.pageSize" current-page="pagination.currentPage" pagination-id="workAreaMajorsPagination">
+                <td>{{ getIndex($index) + 1 }}</td>
+                <td>
+                    <a ng-href="/person/{{major.Id}}" title="Перейти на сторінку фізособи">
+                        {{ major.LastName }} {{ major.FirstName }} {{ major.MidleName }}
+                    </a>
+                </td>
+                <td>{{ major.CountSupporters }}</td>
+                <td>
+                    <button class="btn btn-xs" ng-click="showFullAddresses(major)" title="Показати адреси">
+                        <span class="glyphicon glyphicon-expand"></span>
+                    </button>
+                    <button class="btn btn-xs" ng-click="redirectToSupporters(major)" title="Показати выборців">
+                        <span class="glyphicon glyphicon-filter"></span>
+                    </button>
+                    <button class="btn btn-xs" ng-click="clearMajor(major)" title="Видалити">
+                        <span class="glyphicon glyphicon-remove"></span>
+                    </button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <dir-pagination-controls boundary-links="true" on-page-change="onPageChange(newPageNumber)" pagination-id="workAreaMajorsPagination"></dir-pagination-controls>
+</div>

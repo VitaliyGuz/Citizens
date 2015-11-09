@@ -40,7 +40,7 @@
         <tr dir-paginate="workArea in workAreas | itemsPerPage: pagination.pageSize" current-page="pagination.currentPage" total-items="pagination.totalItems" pagination-id="workAreasPagination">
             <td>{{ getIndex($index) }}</td>
             <td>
-                <a ng-href="/work-area/{{workArea.Id}}/{{pagination.currentPage}}?precinctId={{workArea.PrecinctId}}" title="Перейти на сторінку робочої дільниці">
+                <a ng-href="/work-area/{{workArea.Id}}/{{workArea.PrecinctId}}/{{pagination.currentPage}}?tab=addresses" title="Перейти на сторінку робочої дільниці">
                     {{ workArea.Precinct.Number }}.{{ workArea.Number }}
                 </a>
             </td>

@@ -145,6 +145,7 @@ app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider',
         routeEditWorkArea = {
             templateUrl: 'Views/EditWorkArea.html',
             controller: 'editWorkAreaController',
+            reloadOnSearch: false,
             resolve: {
                 commonData: function (commonData) { return commonData.asyncLoad() },
                 resolvedData: function ($route, workAreaDataService) {
@@ -191,8 +192,8 @@ app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider',
         when('/work-areas/:currPage', routeListWorkAreas).
         when('/work-area/new', routeEditWorkArea).
         when('/work-area/new/:currPage', routeEditWorkArea).
-        when('/work-area/:id', routeEditWorkArea).
-        when('/work-area/:id/:currPage', routeEditWorkArea).
+        when('/work-area/:id/:precinctId', routeEditWorkArea).
+        when('/work-area/:id/:precinctId/:currPage', routeEditWorkArea).
         when('/uploadXls', {
             templateUrl: 'Views/Admin/UploadXls.html',
             controller: 'uploadXlsController',
@@ -247,6 +248,7 @@ app.constant("config", Object.freeze({
     LOCALE_ISO_DATE_FORMAT: 'yyyy-MM-ddT00:00:00+00:00',
     pathPrintTemplates: '/Views/Print',
     pathModalTemplates: '/Views/Modals',
+    pathPartialTemplates: '/Views/Partials',
     patterns: {
         houseExceptBuilding: /^(\d+[а-яА-Яі-їІ-Ї]*-?\d*\/)?\d*[а-яА-Яі-їІ-Ї]*-?\d*$/,
         houseBuilding: /^\d+[а-яА-Яі-їІ-Ї]*,?-?\d*[а-яА-Яі-їІ-Ї]*\/?\d*$/
@@ -472,6 +474,13 @@ app.factory("serviceUtil", ["$filter", '$routeParams', '$rootScope', function ($
                 return obj;
             };
             return build({});
+        },
+        equalsAddresses: function (a, b) {
+            var equalsApartmentStr = a.ApartmentStr && b.ApartmentStr ? a.ApartmentStr.toLocaleLowerCase() === b.ApartmentStr.toLocaleLowerCase() : a.ApartmentStr === b.ApartmentStr;
+            return a.CityId === b.CityId &&
+                a.StreetId === b.StreetId &&
+                a.House.toLocaleLowerCase() === b.House.toLocaleLowerCase() &&
+                a.Apartment === b.Apartment && equalsApartmentStr;
         }
     }
 }]);

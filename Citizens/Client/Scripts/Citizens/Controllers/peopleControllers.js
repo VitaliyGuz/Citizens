@@ -738,7 +738,7 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
                 if (!ok) return;
             }
             peopleDataService.additionalPropsResource.remove({ personId: $scope.person.Id, propertyKeyId: prop.key.Id},function() {
-                    $scope.person.additionalProperties.splice(ind, 1)
+                    $scope.person.additionalProperties.splice(ind, 1);
                 },
                 errorHandler
             );
@@ -751,25 +751,37 @@ peopleControllers.controller('editPersonController', ['$rootScope', '$scope', '$
             $scope.person.MajorId = 0;
         };
 
-        $scope.openWorkAreaSelection = function (searchParam) {
+        $scope.searchParams = {
+            top: {
+                name: 'topId',
+                activeTab:'addresses'
+            },
+            major: {
+                name: 'majorId',
+                activeTab:'editMajors'
+            }
+        };
+
+        $scope.openWorkAreaSelection = function (searchParam) { 
             var modalInstance = $modal.open({
                 animation: false,
-                templateUrl: 'Views/Modals/workarea.selection.html',
+                templateUrl: config.pathModalTemplates + '/workarea.selection.html',
                 controller: 'modalWorkAreaSelectionCtrl',
                 backdrop: 'static',
                 resolve: {
                     data: function () {
-                        var promise = workAreaResource.getAll({ filter: "&$filter=PrecinctId eq " + $scope.person.PrecinctAddress.Precinct.Id }).$promise;
-                        promise.catch(function(err) {
-                            $rootScope.errorMsg = serviceUtil.getErrorMessage(err);
-                        });
-                        return promise;
+                        return workAreaResource.getAll({ filter: "&$filter=PrecinctId eq " + $scope.person.PrecinctAddress.Precinct.Id }).$promise
+                            .catch(function (err) {
+                                $rootScope.errorMsg = serviceUtil.getErrorMessage(err);
+                            });
                     }
                 }
             });
 
             modalInstance.result.then(function (selectedWorkArea) {
-                $location.path('/work-area/' + selectedWorkArea.Id).search(searchParam, $scope.person.Id).search("precinctId", $scope.person.PrecinctAddress.Precinct.Id);
+                $location.url('/work-area/' + selectedWorkArea.Id + '/' + $scope.person.PrecinctAddress.Precinct.Id)
+                    .search(searchParam.name, $scope.person.Id)
+                    .search('tab', searchParam.activeTab);
             });
         };
 

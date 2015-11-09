@@ -117,10 +117,10 @@
                 <span class="glyphicon glyphicon-save"></span> Зберегти
                 <i ng-show="saving" class="fa fa-refresh fa-spin"></i>
             </button>
-            <button type="button" class="btn btn-sm btn-success" ng-click="openWorkAreaSelection('topId')" ng-disabled="!person.Id" title="Призначити топом">
+            <button type="button" class="btn btn-sm btn-success" ng-click="openWorkAreaSelection(searchParams.top)" ng-disabled="!person.Id" title="Призначити топом">
                 <span class="glyphicon glyphicon-user"></span> Призначити топом
             </button>
-            <button type="button" class="btn btn-sm btn-success" ng-click="openWorkAreaSelection('majorId')" ng-disabled="!person.Id" title="Призначити відповідальним">
+            <button type="button" class="btn btn-sm btn-success" ng-click="openWorkAreaSelection(searchParams.major)" ng-disabled="!person.Id" title="Призначити відповідальним">
                 <span class="fa fa-users"></span> Призначити старшим
             </button>
         </div>
