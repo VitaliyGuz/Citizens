@@ -13,8 +13,7 @@ app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider',
     var routeListCities = {
             templateUrl: 'Views/ListCities.html',
             controller: 'listCitiesController',
-            resolve: { commonData: function(commonData) { return commonData.asyncLoad() } },
-            reloadOnSearch: true
+            resolve: { commonData: function(commonData) { return commonData.asyncLoad() } }
         },
         routeEditCity = {
             templateUrl: 'Views/EditCity.html',
@@ -215,10 +214,12 @@ app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider',
         }).
         when('/logout', {
             resolve: {
-                logout: function ($location, Credentials, usersHolder) {
-                    //todo: remove all cached data
+                logout: function ($location, Credentials, usersHolder, commonData, districtDataService) {
                     Credentials.clear();
+                    //remove all cached data
                     usersHolder.removeAll();
+                    commonData.removeAll();
+                    districtDataService.cache.removeAll();
                     $location.path('/login');
                 }
             }
@@ -236,7 +237,7 @@ app.config(['$routeProvider', '$locationProvider', 'paginationTemplateProvider',
 }]);
 
 app.constant("config", Object.freeze({
-    baseUrl: 'https://poltava2015.azurewebsites.net',//'https://localhost:44301','http://localhost:6600','http://apicitizens.azurewebsites.net', #Deploy
+    baseUrl: 'https://localhost:44301',//'https://poltava2015.azurewebsites.net','http://localhost:6600','http://apicitizens.azurewebsites.net', #Deploy
     pageSize: 20, // by default 20
     pageSizeTabularSection: 10,
     checkDeleteItem: true,
@@ -642,47 +643,62 @@ app.filter("filterByFirstChar", function () {
         return result;
     }
 });
-//todo: try load data in run func 
+//todo: replace to utils.js file 
 app.factory('commonData', ['$q', '$rootScope', 'cityData', 'streetData', 'regionPartData', 'neighborhoodData', 'serviceUtil', function ($q, $rootScope, cityData, streetData, regionPartData, neighborhoodData, serviceUtil) {
+    var params = [
+        {
+            propName: 'cities',
+            dataSource: cityData,
+            method: 'getAll',
+            desc: 'Населені пункти'
+        },
+        {
+            propName: 'streets',
+            dataSource: streetData,
+            method: 'query',
+            desc: 'Вулиці'
+        },
+        {
+            propName: 'regionParts',
+            dataSource: regionPartData,
+            method: 'getAll',
+            desc: 'Райони'
+        },
+        {
+            propName: 'neighborhoods',
+            dataSource: neighborhoodData,
+            method: 'getAll',
+            desc: 'Мікрорайони'
+        }
+    ];
 
     function getPromiseAndLoadData(param) {
-        var deferred = $q.defer();
         if ($rootScope[param.propName] && $rootScope[param.propName].length > 0) {
-            deferred.resolve();
-            return deferred.promise;
+            return $q.when();
         }
-        param.dataSource[param.method](function (res) {
-            $rootScope[param.propName] = res.value;
-            deferred.resolve();
-        }, function (err) {
-            err.description = param.desc + ' не завантажено';
-            deferred.reject(serviceUtil.getErrorMessage(err));
-        });
-        return deferred.promise;
+        return param.dataSource[param.method].call().$promise
+            .then(function (resp) {
+                $rootScope[param.propName]= resp.value;
+            }, function (err) {
+                err.description = param.desc + ' не завантажено';
+                return $q.reject(err);
+            });
     };
     return {
         asyncLoad: function () {
-            //return getDataPromise({ propName: 'cities', dataSource: cityData, method: 'getAll', desc: 'Населені пункти' })
-            //    .then(function() {
-            //        return getDataPromise({ propName: 'streets', dataSource: streetData, method: 'query', desc: 'Вулиці' });
-            //    })
-            //    .then(function() {
-            //        return getDataPromise({ propName: 'regionParts', dataSource: regionPartData, method: 'getAll', desc: 'Райони' });
-            //    })
-            //    .then(function () {
-            //        return getDataPromise({ propName: 'neighborhoods', dataSource: neighborhoodData, method: 'getAll', desc: 'Мікрорайони' });
-            //    });
-            var params = [
-                    { propName: 'cities', dataSource: cityData, method: 'getAll', desc: 'Населені пункти' },
-                    { propName: 'streets', dataSource: streetData, method: 'query', desc: 'Вулиці' },
-                    { propName: 'regionParts', dataSource: regionPartData, method: 'getAll', desc: 'Райони' },
-                    { propName: 'neighborhoods', dataSource: neighborhoodData, method: 'getAll', desc: 'Мікрорайони' }
-                ],
-                promises = [];
+            var promises = [];
             params.forEach(function(param) {
                 promises.push(getPromiseAndLoadData(param));
             });
             return $q.all(promises);
+        },
+        remove: function(propName) {
+            $rootScope[propName]=[];
+        },
+        removeAll : function() {
+            params.forEach(function (param) {
+                $rootScope[param.propName]=[];
+            });
         }
     };
 }]);
